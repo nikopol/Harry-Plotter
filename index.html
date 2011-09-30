@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<meta name="author" content="niko" />
+	<title>Harry Plotter - Demo page</title>
+	<style>
+		body { margin:0; padding:0; font:normal 9pt "Sans Serif","Trebuchet MS"; }
+		.tinybox,.smallbox,.mediumbox { float:left; margin:3px; }
+		.clear { clear:both; }
+		h1,h2 { margin:2px 0 3px 0; }
+		h1 { font-size:12pt; }
+		h2 { font-size:10pt; }
+	</style>
+	<script src="harry.js"></script>
+	<script>
+		window.onload=function(){
+			var maxds=3, maxdata=14,ds=[],d;
+			for(var i=0;i<maxds;i++) {
+				for(var j=0, d=[];j<maxdata;j++)
+					d.push(Math.floor(Math.random()*50));
+				ds.push(d);
+			}
+			new harry({ container:"box40", width:40, height:16, datas:ds[0], mode:"river", grid:{y:[0,50,100]} });
+			new harry({ canvas:"box00", title:"line", datas:ds[0] });
+			new harry({ canvas:"box01", title:"river", datas:ds[0], mode:"river" });
+			new harry({ canvas:"box02", title:"chart", datas:ds[0], mode:"chart" });
+			new harry({ canvas:"box03", title:"pie", datas:ds[0], mode:"pie" });
+			new harry({ canvas:"box10", datas:ds, mode:"line", labels:{x:["x1","","x3","","x5","","x6"],y:[25,50,75,100]} });
+			new harry({ canvas:"box11", datas:ds, mode:"river", labels:{x:["x1","x2","x3","x4"],y:[25,50,75,100]} });
+			new harry({ canvas:"box12", datas:ds, mode:"chart" });
+			new harry({ canvas:"box13", datas:ds, mode:"pie", labels:{x:"percent"} });
+			new harry({ container:"box20", width:300, height:200,datas:ds, linewidth:3 });
+			new harry({ canvas:"box21", datas:ds, linewidth:3, mode:"river" });
+			new harry({ canvas:"box22", datas:ds, mode:"chart" });
+			new harry({ canvas:"box23", datas:ds, mode:"pie" });
+			new harry({ canvas:"box30", datas:ds, mode:"river" });
+		};
+	</script>
+</head>
+<body>
+	<h1>Harry Plotter - Demo page [<a href="generator.html">generator</a>]  [<a href="harry.js">download</a>]</h1>
+	<h2>Tiny - Simple dataset</h2>
+	<div class="tinybox" id="box40"></div>
+	<div class="clear"></div>
+	<h2>Small - Simple dataset</h2>
+	<div class="smallbox"><canvas id="box00" width="200" height="100"></canvas></div>
+	<div class="smallbox"><canvas id="box01" width="200" height="100"></canvas></div>
+	<div class="smallbox"><canvas id="box02" width="200" height="100"></canvas></div>
+	<div class="smallbox"><canvas id="box03" width="200" height="100"></canvas></div>
+	<div class="clear"></div>
+	<h2>Small - Multiple dataset</h2>
+	<div class="smallbox"><canvas id="box10" width="200" height="100"></canvas></div>
+	<div class="smallbox"><canvas id="box11" width="200" height="100"></canvas></div>
+	<div class="smallbox"><canvas id="box12" width="200" height="100"></canvas></div>
+	<div class="smallbox"><canvas id="box13" width="200" height="100"></canvas></div>
+	<div class="clear"></div>
+	<h2>Medium - Multiple dataset</h2>
+	<div class="mediumbox" id="box20"></canvas></div>
+	<div class="mediumbox"><canvas id="box21" width="300" height="200"></canvas></div>
+	<div class="mediumbox"><canvas id="box22" width="300" height="200"></canvas></div>
+	<div class="mediumbox"><canvas id="box23" width="300" height="200"></canvas></div>
+	<div class="clear"></div>
+	<h2>Big - Multiple dataset</h2>
+	<div class="bigbox"><canvas id="box30" width="1000" height="400"></div>
+</body>
+</html>
