@@ -1,5 +1,5 @@
 // harry plotter 0.2
-// ~L~ nikomomo@gmail.com 2009-2010
+// ~L~ nikomomo@gmail.com 2011
 
 /*
 	everything is optional
