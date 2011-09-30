@@ -47,7 +47,7 @@
 				$('#'+t).val(d.join(','));
 			});
 			
-			$("input.generate").click(function(){
+			var build=function(){
 				var o={container:'container'},v,w;
 
 				//get datas
@@ -110,7 +110,9 @@
 				$('#js pre').text("new harry("+json.tidy(json.encode(o,true))+")");
 				$('#container').empty();
 				new harry(o);
-			});
+			};
+			$("input.generate").click(build);
+			build();
 			
 		});
 	</script>
@@ -135,7 +137,7 @@
 			<tr><th>#</th><th>datas</th><th>title</th><th>color</th></tr>
 			<tr>
 				<td>#1</td>
-				<td><input type="text" id="data1" title="y1,y2,y3..." value="" class="data" /><input type="button" class="rnd" value="random" target="data1" /></td>
+				<td><input type="text" id="data1" title="y1,y2,y3..." value="1,2,4,8,16,32,64,32,16,8,4,2,1" class="data" /><input type="button" class="rnd" value="random" target="data1" /></td>
 				<td><input type="text" id="title1" value="" /></td>
 				<td><input type="text" id="color1" title="#rrggbb" value="" class="color" /></td>
 			</tr>
