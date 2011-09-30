@@ -5,7 +5,7 @@ samples can be viewed here http://alibabar.org/harry/
 generator can be used here http://alibabar.org/harry/generator.html
 
 
-everything is optional
+almost everything is optional
 
 options={
 	datas: [v1,v2,v3,...],        //simple values mono set
@@ -44,5 +44,6 @@ options={
 }
 
 eg:
-	new harry({datas:[1,2,3,4,5]});
+	<div id="box"></div>
+	<script>new harry({container:'box',datas:[1,2,3,4,5]})</script>
 
