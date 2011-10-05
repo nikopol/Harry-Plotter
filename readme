@@ -1,11 +1,8 @@
-harry plotter 0.2
-~L~ nikomomo@gmail.com 2009-2010
+harry plotter 0.3
+~L~ nikomomo@gmail.com 2009-2011
 
 samples can be viewed here http://alibabar.org/harry/
 generator can be used here http://alibabar.org/harry/generator.html
-
-
-almost everything is optional
 
 options={
 	datas: [v1,v2,v3,...],        //simple values mono set
@@ -23,22 +20,23 @@ options={
 	fill: "none|auto|solid|vertical|horizontal|radial", //fill style (only first letter matter), default=auto
 	opacity: 0.8,                 //fill opacity, between 0 and 1, override if fill=auto
 	title: {                      //title options
-		font: "9px Trebuchet MS",  //font size & family, default=bold 12px "Sans Serif"
-		color: "rgba(4,4,4,0.3)",  //font color, default=rgba(4,4,4,0.3)
-		text: "title"              //clear enough
-		x: 5,                      //title position x
-		y: 10                      //title position y
+		font: "9px Trebuchet MS", //font size & family, default=bold 12px "Sans Serif"
+		color: "rgba(4,4,4,0.3)", //font color, default=rgba(4,4,4,0.3)
+		text: "title"             //clear enough
+		x: 5,                     //title position x
+		y: 10                     //title position y
 	},
 	labels: {                     //labels options
-		font: "9px Trebuchet MS",  //font size & family, important:use px size, default=normal 9px "Sans Serif","Trebuchet MS"
-		color: "#a0a0a0",          //font color, default=a0a0a0
+		font: "9px Trebuchet MS", //font size & family, important:use px size, default=normal 9px "Sans Serif","Trebuchet MS"
+		color: "#a0a0a0",         //font color, default=a0a0a0
 		y: [0,50,100,"max|min|avg"]//y legend, numbers are %, default=none
-		x: ['label 1','label 2',etc]//x legend using value keys, all=print all raw keys, date=draw key as date, 
-	},                            //  step indicate step between labels (2 print one label on two), default=none
+		x: ['label 1','label 2',etc]//x legend using value keys, all=print all raw keys, date=draw key as date,
+		stepx: 2,                 //step indicate step between labels (2 print one label on two), default=none
+	},
 	grid: {                       //grid options
-		color:"#a0a0a0",           //grid color, default=#a0a0a0
-		y: [0,50,100]              //y legend, number are %, default=[0,25,50,75,100]
-		x: [0,100]                 //x legend, number are %, default=[0,100]
+		color:"#a0a0a0",          //grid color, default=#a0a0a0
+		y: [0,50,100]             //y legend, number are %, default=[0,25,50,75,100]
+		x: [0,100]                //x legend, number are %, default=[0,100]
 	},
 	margins:[top,right,bot.,left] //margin size (for labels), default=auto
 }
@@ -47,3 +45,5 @@ eg:
 	<div id="box"></div>
 	<script>new harry({container:'box',datas:[1,2,3,4,5]})</script>
 
+note:
+	harry log things on console when "jsdebug" is found in the url
