@@ -1,4 +1,4 @@
-// harry plotter 0.2
+// harry plotter 0.3
 // ~L~ nikomomo@gmail.com 2011
 
 /*
@@ -20,22 +20,23 @@ options={
 	fill: "none|auto|solid|vertical|horizontal|radial", //fill style (only first letter matter), default=auto
 	opacity: 0.8,                 //fill opacity, between 0 and 1, override if fill=auto
 	title: {                      //title options
-		font: "9px Trebuchet MS",  //font size & family, default=bold 12px "Sans Serif"
-		color: "rgba(4,4,4,0.3)",  //font color, default=rgba(4,4,4,0.3)
-		text: "title"              //clear enough
-		x: 5,                      //title position x
-		y: 10                      //title position y
+		font: "9px Trebuchet MS", //font size & family, default=bold 12px "Sans Serif"
+		color: "rgba(4,4,4,0.3)", //font color, default=rgba(4,4,4,0.3)
+		text: "title"             //clear enough
+		x: 5,                     //title position x
+		y: 10                     //title position y
 	},
 	labels: {                     //labels options
-		font: "9px Trebuchet MS",  //font size & family, important:use px size, default=normal 9px "Sans Serif","Trebuchet MS"
-		color: "#a0a0a0",          //font color, default=a0a0a0
+		font: "9px Trebuchet MS", //font size & family, important:use px size, default=normal 9px "Sans Serif","Trebuchet MS"
+		color: "#a0a0a0",         //font color, default=a0a0a0
 		y: [0,50,100,"max|min|avg"]//y legend, numbers are %, default=none
 		x: ['label 1','label 2',etc]//'all' display data index, or array of labels
+		stepx: 1                  //draw each stepx
 	},                            //  step indicate step between labels (2 print one label on two), default=none
 	grid: {                       //grid options
-		color:"#a0a0a0",           //grid color, default=#a0a0a0
-		y: [0,50,100]              //y legend, number are %, default=[0,25,50,75,100]
-		x: [0,100]                 //x legend, number are %, default=[0,100]
+		color:"#a0a0a0",          //grid color, default=#a0a0a0
+		y: [0,50,100]             //y legend, number are %, default=[0,25,50,75,100]
+		x: [0,100]                //x legend, number are %, default=[0,100]
 	},
 	margins:[top,right,bot.,left] //margin size (for labels), default=auto
 }
@@ -47,10 +48,11 @@ eg:
 */
 
 if(log==undefined) {
-	var log;
-	if(window.console) log=function(m){window.console.log(m)};
-	else if(console) log=function(m){console.log(m)};
-	else log=function(){};
+	var log=function(){};
+	if(/jsdebug/i.test(document.location.href)) {
+		if(window.console) log=window.console.log;
+		else if(console)   log=console.log;
+	}
 }
 
 var harryTools={
@@ -109,6 +111,7 @@ var harry=function(o) {
 	this.labels.color=this.labels.color || "#a0a0a0";
 	this.labels.font=this.labels.font || 'normal 9px "Sans Serif","Trebuchet MS"';
 	this.labels.fontpx=harryTools.fontPixSize(this.labels.font);
+	this.labels.stepx=this.labels.stepx||1;
 	this.margins=o.margins || [0,0,0,0];
 	if(!o.margins) {
 		if(/pie/.test(this.mode)) {
@@ -262,7 +265,7 @@ harry.prototype={
 	},
 
 	drawXLabel: function(n,x,y,align,baseline) {
-		if(this.gc.font && this.labels.x) {
+		if(this.gc.font && this.labels.x && (n%this.labels.stepx)==0) {
 			var l=(typeof this.labels.x=="object")
 					?(this.labels.x[n]==undefined?'':this.labels.x[n])
 					:n;
