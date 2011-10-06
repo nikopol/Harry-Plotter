@@ -1,10 +1,12 @@
 // harry plotter 0.3
 // ~L~ nikomomo@gmail.com 2011
+// http://alibabar.org/harry
 
 /*
-everything is optional
 
-options={
+//----- reference
+
+var h=new harry({ //everything is optional
 	datas: [v1,v2,v3,...],        //simple values mono set
 	datas: [[v1,v2],[w1,w2],...], //simple values multi set
 	datitle: "string" or [..],    //dataset title, if multi set title must be an array, default=dataset#$n
@@ -39,12 +41,19 @@ options={
 		x: [0,100]                //x legend, number are %, default=[0,100]
 	},
 	margins:[top,right,bot.,left] //margin size (for labels), default=auto
-}
+});
 
-eg:
+h.clear()          //delete all dataset
+ .cls()            //erase canvas
+ .addDataSet(data) //add a dataset, see contructor
+ .draw();          //draw all dataset 
+h.mode='river';    //change current draw mode
 
-<div id="box"></div>
-<script>new harry({container:'box',datas:[1,2,3,4,5]})</script>
+//----- short sample
+
+<canvas id="box" height="50" width="100"></canvas>
+<script>new harry({canvas:'box',datas:[1,2,3,4,5]})</script>
+
 */
 
 if(log==undefined) {
