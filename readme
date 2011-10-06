@@ -10,7 +10,8 @@ var h=new harry({ //everything is optional
 	datas: [v1,v2,v3,...],        //simple values mono set
 	datas: [[v1,v2],[w1,w2],...], //simple values multi set
 	datitle: "string" or [..],    //dataset title, if multi set title must be an array, default=dataset#$n
-	color: "112233" or [..],      //dataset color, if multi set color must be an array, default=a modulo from default harry colors 
+	color: "112233" or [..],      //dataset color, if multi set color must be an array, 
+	                              //default=a modulo from default harry colors 
 	id: "str",                    //canvas's id, by default harry$n
 	container: "str/elem",	      //container where to append canvas, default=body
 	canvas: "str/elem",           //canvas element, default=create it into container
@@ -29,7 +30,8 @@ var h=new harry({ //everything is optional
 		y: 10                     //title position y
 	},
 	labels: {                     //labels options
-		font: "9px Trebuchet MS", //font size & family, important:use px size, default=normal 9px "Sans Serif","Trebuchet MS"
+		font: "9px Trebuchet MS", //font size & family, important:use px size,
+		                          // default=normal 9px "Sans Serif","Trebuchet MS"
 		color: "#a0a0a0",         //font color, default=a0a0a0
 		y: [0,50,100,"max|min|avg"]//y legend, numbers are %, default=none
 		x: ['label 1','label 2',etc]//'all' display data index, or array of labels
