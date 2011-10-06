@@ -98,9 +98,7 @@ var harryTools={
 };
 
 var harry=function(o) {
-	this.dataset=[];
-	this.dmin=0xffffffff;
-	this.dmax=0;
+	this.clear();
 	if(o.canvas) {
 		this.canvas=document.getElementById(o.canvas);
 	} else {
