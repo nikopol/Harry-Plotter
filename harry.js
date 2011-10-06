@@ -152,6 +152,13 @@ var harry=function(o) {
 }
 
 harry.prototype={		
+
+	clear: function() {
+		this.dataset=[];
+		this.dmin=0xffffffff;
+		this.dmax=0;
+		return this;
+	},
 		
 	addDataSet: function(d,title,color) {
 		var t,v,k,datas={

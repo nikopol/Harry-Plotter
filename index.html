@@ -21,6 +21,8 @@
 				ds.push(d);
 			}
 			new harry({ container:"box40", width:40, height:16, datas:ds[0], mode:"river", grid:{y:[0,50,100]} });
+			var h=new harry({ container:"box41", width:40, height:16, datas:d, mode:"river", grid:{y:[0,50,100]} });
+
 			new harry({ canvas:"box00", title:"line", datas:ds[0] });
 			new harry({ canvas:"box01", title:"river", datas:ds[0], mode:"river" });
 			new harry({ canvas:"box02", title:"chart", datas:ds[0], mode:"chart" });
@@ -34,6 +36,12 @@
 			new harry({ canvas:"box22", datas:ds, mode:"chart" });
 			new harry({ canvas:"box23", datas:ds, mode:"pie" });
 			new harry({ canvas:"box30", datas:ds, mode:"river" });
+			
+			setInterval(function(){
+				d=d.slice(1);
+				d.push(Math.floor(Math.random()*50));
+				h.clear().cls().addDataSet(d).draw();
+			}, 1000);
 		};
 	</script>
 </head>
@@ -41,6 +49,7 @@
 	<h1>Harry Plotter - Demo page [<a href="generator.html">generator</a>]  [<a href="harry.js">download</a>]</h1>
 	<h2>Tiny - Simple dataset</h2>
 	<div class="tinybox" id="box40"></div>
+	<div class="tinybox" id="box41"></div>
 	<div class="clear"></div>
 	<h2>Small - Simple dataset</h2>
 	<div class="smallbox"><canvas id="box00" width="200" height="100"></canvas></div>
