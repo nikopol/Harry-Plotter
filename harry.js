@@ -61,8 +61,8 @@ h.mode='river';    //change current draw mode
 if(log==undefined) {
 	var log=function(){};
 	if(/jsdebug/i.test(document.location.href)) {
-		if(window.console) log=window.console.log;
-		else if(console)   log=console.log;
+		if(window.console) log=function(m){window.console.log(m)};
+		else if(console)   log=function(m){console.log(m)};
 	}
 }
 
@@ -94,7 +94,7 @@ var harryTools={
 		p=f.match(/\d+pt/i);
 		if(p) return Math.floor(1.3333*parseInt(p,10));
 		return 10;
-	},
+	}
 };
 
 var harry=function(o) {
@@ -163,16 +163,17 @@ var harry=function(o) {
 harry.prototype={		
 
 	clear: function() {
+		log('[harry] clear');
 		this.dataset=[];
 		this.dmin=0xffffffff;
 		this.dmax=0;
 		return this;
 	},
 		
-	addDataSet: function(d,title,color) {
+	addDataSet: function(d,title,color,dmin,dmax) {
 		var t,v,k,datas={
 			val:[], lab:[], 
-			len:0, sum:0, avg:0, max:0, min:0xffffffff, 
+			len:0, sum:0, avg:0, max:dmax?dmax:0, min:dmin?dmin:0xffffffff, 
 			tit:title || "dataset#"+(this.dataset.length+1),
 			col:color || harryTools.COLORS[this.dataset.length%harryTools.COLORS.length]
 		};

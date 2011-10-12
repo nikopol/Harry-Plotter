@@ -40,7 +40,7 @@
 			setInterval(function(){
 				d=d.slice(1);
 				d.push(Math.floor(Math.random()*50));
-				h.clear().cls().addDataSet(d).draw();
+				h.clear().cls().addDataSet(d,false,false,0,100).draw();
 			}, 1000);
 		};
 	</script>
