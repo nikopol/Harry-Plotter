@@ -20,27 +20,39 @@
 					d.push(Math.floor(Math.random()*50));
 				ds.push(d);
 			}
-			new harry({ container:"box40", width:40, height:16, datas:ds[0], mode:"river", grid:{y:[0,50,100]} });
-			var h=new harry({ container:"box41", width:40, height:16, datas:d, mode:"river", grid:{y:[0,50,100]} });
-
-			new harry({ canvas:"box00", title:"line", datas:ds[0] });
-			new harry({ canvas:"box01", title:"river", datas:ds[0], mode:"river" });
-			new harry({ canvas:"box02", title:"chart", datas:ds[0], mode:"chart" });
-			new harry({ canvas:"box03", title:"pie", datas:ds[0], mode:"pie" });
-			new harry({ canvas:"box10", datas:ds, mode:"line", labels:{x:["x1","x2","x3","x4","x5","x6","x7"],stepx:2,y:[25,50,75,100]} });
-			new harry({ canvas:"box11", datas:ds, mode:"river", labels:{x:["x1","x2","x3","x4"],y:[25,50,75,100]} });
-			new harry({ canvas:"box12", datas:ds, mode:"chart" });
-			new harry({ canvas:"box13", datas:ds, mode:"pie", labels:{x:"percent"} });
-			new harry({ container:"box20", width:300, height:200,datas:ds, linewidth:3 });
-			new harry({ canvas:"box21", datas:ds, linewidth:3, mode:"river" });
-			new harry({ canvas:"box22", datas:ds, mode:"chart" });
-			new harry({ canvas:"box23", datas:ds, mode:"pie" });
-			new harry({ canvas:"box30", datas:ds, mode:"river" });
+			var h=[];
 			
+			//tiny - simple dataset
+			h.push(new harry({ container:"box40", width:40, height:16, datas:d, mode:"line", linewidth:2, fill:"n", grid:{y:[0,50,100]} }));
+			h.push(new harry({ container:"box41", width:40, height:16, datas:d, mode:"curve", grid:{y:[0,50,100]} }));
+
+			//small - simple dataset
+			h.push(new harry({ canvas:"box00", title:"line", datas:d, labels:{y:[25,50,75,100]} }));
+			h.push(new harry({ canvas:"box01", title:"curve", datas:d, mode:"curve:river" }));
+			h.push(new harry({ canvas:"box02", title:"chart", datas:d, mode:"chart" }));
+			h.push(new harry({ canvas:"box03", title:"pie", datas:d, mode:"pie" }));
+			
+			//small - multi dataset
+			plotter({ canvas:"box10", datas:ds, title:"line", mode:"line", labels:{x:["x1","x2","x3","x4","x5","x6","x7"],stepx:2,y:[25,50,75,100]} });
+			plotter({ canvas:"box11", datas:ds, title:"line:river", mode:"line:river", labels:{x:["x1","x2","x3","x4","x5","x6","x7"],stepx:2,y:[25,50,75,100]} });
+			plotter({ canvas:"box12", datas:ds, title:"curve", mode:"curve", labels:{x:["x1","x2","x3","x4"],y:[25,50,75,100]} });
+			plotter({ canvas:"box13", datas:ds, title:"curve:river", mode:"curve:river", labels:{x:["x1","x2","x3","x4"],y:[25,50,75,100]} });
+			plotter({ canvas:"box14", datas:ds, mode:"chart" });
+			plotter({ canvas:"box15", datas:ds, mode:"pie", labels:{x:"percent"} });
+
+			//medium - multi dataset
+			plotter({ container:"box20", width:300, height:200,datas:ds, linewidth:3 });
+			plotter({ canvas:"box21", datas:ds, linewidth:3, mode:"curve:river" });
+			plotter({ canvas:"box22", datas:ds, mode:"chart" });
+			plotter({ canvas:"box23", datas:ds, mode:"pie" });
+
+			//big - multi dataset
+			plotter({ canvas:"box30", datas:ds, mode:"curve:river" });
+
 			setInterval(function(){
 				d=d.slice(1);
 				d.push(Math.floor(Math.random()*50));
-				h.clear().cls().addDataSet(d,false,false,0,100).draw();
+				for(var n in h) h[n].clear().cls().addDataSet(d,false,false).draw();
 			}, 1000);
 		};
 	</script>
@@ -50,6 +62,9 @@
 	<h2>Tiny - Simple dataset</h2>
 	<div class="tinybox" id="box40"></div>
 	<div class="tinybox" id="box41"></div>
+	<div class="tinybox" id="box42"></div>
+	<div class="tinybox" id="box43"></div>
+	<div class="tinybox" id="box44"></div>
 	<div class="clear"></div>
 	<h2>Small - Simple dataset</h2>
 	<div class="smallbox"><canvas id="box00" width="200" height="100"></canvas></div>
@@ -62,6 +77,8 @@
 	<div class="smallbox"><canvas id="box11" width="200" height="100"></canvas></div>
 	<div class="smallbox"><canvas id="box12" width="200" height="100"></canvas></div>
 	<div class="smallbox"><canvas id="box13" width="200" height="100"></canvas></div>
+	<div class="smallbox"><canvas id="box14" width="200" height="100"></canvas></div>
+	<div class="smallbox"><canvas id="box15" width="200" height="100"></canvas></div>
 	<div class="clear"></div>
 	<h2>Medium - Multiple dataset</h2>
 	<div class="mediumbox" id="box20"></canvas></div>

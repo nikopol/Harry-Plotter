@@ -1,4 +1,4 @@
-// harry plotter 0.3
+// harry plotter 0.4
 // ~L~ nikomomo@gmail.com 2011
 // http://alibabar.org/harry
 
@@ -17,7 +17,7 @@ var h=new harry({ //everything is optional
 	canvas: "str/elem",           //canvas element, default=create it into container
 	width: int,                   //canvas's width, default=container.width or 300
 	height: int,                  //canvas's  height, default=container.height or 80
-	mode: "pie|chart|line|river", //draw mode, default=line
+	mode: "pie|chart|line|curve|line:river|curve:river", //draw mode, default=line
 	linewidth: int,               //line width, default=1
 	linejoin: "round|bevel|miter" //line join, default=round
 	fill: "none|auto|solid|vertical|horizontal|radial", //fill style (only first letter matter), default=auto
@@ -65,6 +65,8 @@ if(log==undefined) {
 		else if(console)   log=function(m){console.log(m)};
 	}
 }
+
+var plotter=function(d){new harry(d)};
 
 var harryTools={
 	COLORS: ["#88a4d7","#d685c9","#86d685","#ffc34f","#93c2ea","#f28989","#f9eb8a"],
@@ -160,7 +162,7 @@ var harry=function(o) {
 	this.draw();
 }
 
-harry.prototype={		
+harry.prototype={
 
 	clear: function() {
 		log('[harry] clear');
@@ -212,7 +214,8 @@ harry.prototype={
 	draw: function(mode) {
 		this.mode=(mode || this.mode).toLowerCase();
 		log("[harry] draw("+this.mode+")");
-		this.drawGrid().drawYLabels()[this.mode]().drawTitle();
+		var args=this.mode.split(/:/);
+		this.drawGrid().drawYLabels()[args[0]](args.length==1?false:args[1]).drawTitle();
 		return this;
 	},
 	
@@ -224,6 +227,8 @@ harry.prototype={
 	drawTitle: function() {
 		if(this.title && this.gc.font) {
 			this.gc.font=this.title.font;
+			this.gc.textAlign='left';
+			this.gc.textBaseline='alphabetic';
 			this.gc.fillStyle=this.title.color;
 			this.gc.fillText(this.title.text,this.title.x,this.title.y);
 		}
@@ -231,7 +236,7 @@ harry.prototype={
 	},
 	
 	drawGrid: function() {
-		if(/chart|line|river/.test(this.mode)) {
+		if(/chart|line|curve/.test(this.mode)) {
 			var i,l,x,y;
 			this.gc.lineWidth=this.grid.linewidth || 1;
 			this.gc.strokeStyle=this.grid.color;
@@ -260,8 +265,8 @@ harry.prototype={
 	drawYLabels: function() {
 		if(this.dlen && this.labels.y && this.gc.font) {
 			log("[harry] labels y("+this.labels.y.join(",")+") "+this.labels.font);
-			if(/chart|line|river/.test(this.mode)) {
-				var max=/river/.test(this.mode)?this.dsum:this.dmax;
+			if(/chart|line|curve/.test(this.mode)) {
+				var max=/\:r/.test(this.mode)?this.dsum:this.dmax;
 				var i,l,x,y,w,v,dec=max<10?100:(max<100?10:1);
 				var fh=this.labels.fontpx;
 				var fh2=Math.floor(fh/2.5);
@@ -390,55 +395,23 @@ harry.prototype={
 		return this;
 	},
 	
-	line: function() {
-		var nds=0,d,cy=(this.dmax)?this.rh/this.dmax:0;
-		this.gc.lineWidth=this.linewidth;
-		this.gc.lineJoin=this.linejoin;
-		while(d=this.dataset[nds++])
-			if(d.val.length) {
-				log("[harry] line("+d.tit+")");
-				var g,x,y,i,l=d.val.length;
-				//fill
-				if(g=this.getGradient(d.col)){
-					this.gc.beginPath();
-					this.gc.moveTo(this.rx,this.ry2);
-					for(i=0;i<l;++i) {
-						x=this.rx+Math.round(i*(this.rw/(l-1)));
-						y=this.ry2-Math.round(cy*d.val[i]);
-						this.gc.lineTo(x,y);
-					}
-					this.gc.lineTo(this.rx2,this.ry2);
-					this.gc.closePath();
-					this.gc.fillStyle=g;
-					this.gc.fill();
-				}
-				//draw lines
-				this.gc.strokeStyle=d.col;
-				this.gc.beginPath();
-				this.gc.moveTo(this.rx,this.ry2-Math.round(cy*d.val[0]));
-				if(nds==1) this.drawXLabel(0,this.rx,this.h);
-				for(i=1;i<l;++i) {
-					x=this.rx+Math.round(i*(this.rw/(l-1)));
-					y=this.ry2-Math.round(cy*d.val[i]);
-					this.gc.lineTo(x,y);
-					if(nds==1) this.drawXLabel(i,x,this.h);
-				}
-				this.gc.stroke();
-			}
-		return this;
+	curve: function(river) {
+		return this.line(river,true);
 	},
 
-	river: function() {
-		var nds=this.dlen,d,cy=(this.dmax)?this.rh/this.dsum:0,g,i,j,v,l;
+	line: function(river,curve) {
+		var nds=this.dlen,cy=river?(this.dsum?this.rh/this.dsum:0):(this.dmax?this.rh/this.dmax:0),
+		    d,g,i,j,v,l;
 		this.gc.lineWidth=this.linewidth;
 		while(d=this.dataset[--nds])
 			if((l=d.val.length)>1) {
-				log("[harry] river("+d.tit+")");
+				log("[harry] curve("+d.tit+")"+(river?" river":""));
 				//calc
 				var px,py,lx,ly,x=[],y=[];
 				for(i=0;i<l;++i) {
 					v=0;
-					for(j=0;j<=nds;j++) v+=this.dataset[j].val[i];
+					if(river) for(j=0;j<=nds;j++) v+=this.dataset[j].val[i];
+					else v=d.val[i];
 					x.push(this.rx+Math.round(i*(this.rw/(l-1))));
 					y.push(this.ry2-Math.round(cy*v));
 				}
@@ -450,11 +423,15 @@ harry.prototype={
 					this.gc.beginPath();
 					this.gc.moveTo(this.rx,this.ry2);
 					this.gc.lineTo(x[0],y[0]);
-					for(i=1;i<=l;++i) {
-						px=(x[i-1]+x[i])/2;
-						py=(y[i-1]+y[i])/2;
-						this.gc.quadraticCurveTo(x[i-1],y[i-1],px,py);
-					}
+					if(curve)
+						for(i=1;i<=l;++i) {
+							px=(x[i-1]+x[i])/2;
+							py=(y[i-1]+y[i])/2;
+							this.gc.quadraticCurveTo(x[i-1],y[i-1],px,py);
+						}
+					else
+						for(i=1;i<=l;++i)
+							this.gc.lineTo(x[i-1],y[i-1]);
 					this.gc.lineTo(this.rx2,this.ry2);
 					this.gc.closePath();
 					this.gc.fillStyle=g;
@@ -465,27 +442,32 @@ harry.prototype={
 				this.gc.beginPath();
 				this.gc.moveTo(x[0],y[0]);
 				if(nds==0) this.drawXLabel(0,x[0],this.h);
-				for(i=1;i<=l;++i) {
-					px=(x[i-1]+x[i])/2;
-					py=(y[i-1]+y[i])/2;
-					this.gc.quadraticCurveTo(x[i-1],y[i-1],px,py);
-					if(nds==0 && i<l) this.drawXLabel(i,x[i],this.h);
-				}
+				if(curve)
+					for(i=1;i<=l;++i) {
+						px=(x[i-1]+x[i])/2;
+						py=(y[i-1]+y[i])/2;
+						this.gc.quadraticCurveTo(x[i-1],y[i-1],px,py);
+						if(nds==0 && i<l) this.drawXLabel(i,x[i],this.h);
+					}
+				else
+					for(i=1;i<=l;++i) {
+						this.gc.lineTo(x[i-1],y[i-1]);
+						if(nds==0 && i<l) this.drawXLabel(i,x[i],this.h);
+					}
 				this.gc.stroke();
 			}
 		return this;
-	},	
+	},
 
 	getFillMode: function() {
 		if(this.fill=="a") {
 			this.opacity=1;
-			switch(this.mode){
-				case "line":  return this.dlen>1?"n":"v";
-				case "river": { this.opacity=0.8; return "v"; }
-				case "chart": return this.dlen>1?"s":"v";
-				case "pie":   return "r";
-				default:      return "s";
-			}
+			if(/\:river/.test(this.mode)) { this.opacity=0.8; return "v"; }
+			if(/line/.test(this.mode)) return this.dlen>1?"n":"v";
+			if(/curve/.test(this.mode)) return this.dlen>1?"n":"v";
+			if(/chart/.test(this.mode)) return this.dlen>1?"s":"v";
+			if(/pie/.test(this.mode.test)) return "r";
+			return "s";
 		}
 		return this.fill;
 	},

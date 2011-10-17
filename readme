@@ -1,4 +1,4 @@
-harry plotter 0.3
+harry plotter 0.4
 ~L~ nikomomo@gmail.com 2009-2011
 
 samples can be viewed here http://alibabar.org/harry/
@@ -17,7 +17,7 @@ var h=new harry({ //everything is optional
 	canvas: "str/elem",           //canvas element, default=create it into container
 	width: int,                   //canvas's width, default=container.width or 300
 	height: int,                  //canvas's  height, default=container.height or 80
-	mode: "pie|chart|line|river", //draw mode, default=line
+	mode: "pie|chart|line|curve|line:river|curve:river", //draw mode, default=line
 	linewidth: int,               //line width, default=1
 	linejoin: "round|bevel|miter" //line join, default=round
 	fill: "none|auto|solid|vertical|horizontal|radial", //fill style (only first letter matter), default=auto
