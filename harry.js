@@ -462,7 +462,7 @@ harry.prototype={
 	getFillMode: function() {
 		if(this.fill=="a") {
 			this.opacity=1;
-			if(/\:river/.test(this.mode)) { this.opacity=0.8; return "v"; }
+			if(/\:river/.test(this.mode)) return "v";
 			if(/line/.test(this.mode)) return this.dlen>1?"n":"v";
 			if(/curve/.test(this.mode)) return this.dlen>1?"n":"v";
 			if(/chart/.test(this.mode)) return this.dlen>1?"s":"v";
