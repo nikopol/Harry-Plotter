@@ -9,7 +9,7 @@
 		div.formcol { float:left; width:49%; }
 		div.footer { clear:both; margin-top:10px; text-align:right; }
 		form,#render { padding:3px; }
-		pre { font-size:8pt; margin:0; padding:0; height:350px; overflow:auto; }
+		pre { font-size:8pt; margin:0; padding:0; height:350px; overflow:auto; width:300px}
 		table { font:normal 9pt "Sans Serif","Trebuchet MS"; }
 		label { display:block; width:70px; float:left; text-align:right; Margin-right:5px; }
 		input[type="button"],input[type="reset"] { font:bold 9pt "Sans Serif","Trebuchet MS"; border:none; background-color:#444; color:#fff; }
@@ -25,7 +25,6 @@
 	</style>
 	<script src="js/harry.js"></script>
 	<script src="js/jquery-1.6.4.min.js"></script> <!-- only needed by the generator, not harry -->
-	<script src="js/tools.js"></script>
 	<script src="js/colorpicker/colorpicker.js"></script>
 	<link rel="stylesheet" href="js/colorpicker/colorpicker.css" type="text/css" />
 	<script>
@@ -36,6 +35,47 @@
 			for(i=0;i<s.length;i++) n.push(parseFloat(s[i],10));
 			return n;
 		};
+		
+		var json={
+			encode: function(o,jsquote) { /*ignore functions*/
+				jsquote=jsquote||false;
+				var lines=[], isarray=(o.constructor==Array),k,v,s;
+				for(k in o) {
+					v=o[k];
+					if(typeof v=="object") {
+						if(isarray) lines.push(json.encode(v,jsquote));
+						else lines.push((jsquote?k:'"'+k+'"')+':'+json.encode(v,jsquote));
+					} else if(typeof v!="function") {
+						s=(isarray)?"":(jsquote?k+':':'"'+k+'":');
+						if(typeof v=="number") s+=v.toString(10);
+						else if(v===false) s+='false';
+						else if(v===true) s+='true';
+						else s+='"'+(v || "").replace(/"/g,"\\\"").replace(/\n|\r/g,' ')+'"';
+						lines.push(s);
+					}
+				}
+				return (isarray) ? "["+lines.join(",")+"]" : "{"+lines.join(",")+"}";
+			},
+			tidy: function(txt) {
+				txt=txt.replace(/\n|\r|\t/gi,"").replace(/^\s+/g,'');
+				var l=txt.length,n=0,c,nc,i=0,fmt="",iq=false,ip=0,newline=function(i){ return "\n"+("                                   ".substr(0,i*3)); };
+				while(n<l) {
+					c=txt[n++];
+					nc=(n<l) ? txt[n] : '';
+					if(c=='"') { fmt+=c; iq=!iq; } 
+					else if(iq) fmt+=c;
+					else if(c=='[') {ip++; fmt+=c;}
+					else if(c==']') {ip--; fmt+=c;}
+					else if(ip)     fmt+=c;
+					else if(c=='{') fmt+=c+newline(++i);
+					else if(c==',') fmt+=c+newline(i);
+					else if(c=='}') fmt+=newline(--i)+c;
+					else fmt+=c;
+				}
+				return fmt;
+			}
+		}
+
 		
 		$(document).ready(function(){
 			
@@ -95,6 +135,7 @@
 					if(w.length) o.labels.y=str2nums(w);
 					if((v=$('#labelfont').val()).length) o.labels.font=v;
 					if((v=$('#labelcolor').val()).length) o.labels.color=v;
+					if((v=$('#stepx').val()).length) o.labels.stepx=v;
 				}
 
 				//get render
@@ -107,9 +148,9 @@
 				if((v=$('#linejoin').val()).length) o.linejoin=v;
 
 				//show
-				$('#js pre').text("new harry("+json.tidy(json.encode(o,true))+")");
+				$('#js pre').text("plotter("+json.tidy(json.encode(o,true))+")");
 				$('#container').empty();
-				new harry(o);
+				plotter(o);
 			};
 			$("input.generate").click(build);
 			build();
@@ -171,20 +212,21 @@
 			<label for="labelcolor">label.color</label><input type="text" id="labelcolor" class="color" value="" /><br/>
 		</div>
 		<div class="formcol">
-			<label for="labelx">label.x</label><input type="text" id="labelx" title="labelx1,labelx2,.." value="" /><br/>
-			<label for="labely">label.y</label><input type="text" id="labely" title="%,%,%..." value="" /><br/>
+			<label for="labely">label.y</label><input type="text" id="labely" title="%,%,%..." value="0,50,100" /><br/>
+			<label for="labelx">label.x</label><input type="text" id="labelx" title="labelx1,labelx2,.." value="x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13" /><br/>
+			<label for="stepx">step.x</label><input type="text" id="stepx" title="int" value="" /><br/>
 		</div>
 
 		<h2>Rendering</h2>
 		<div class="formcol">
 			<label for="width">width</label><input type="text" id="width" class="int" value="" />px<br/>
 			<label for="height">height</label><input type="text" id="height" class="int" value="" />px<br/>
-			<label for="mode">mode</label><select id="mode"><option></option><option>line</option><option>line:river</option><option>pie</option><option>chart</option><option>curve</option><option>curve:river</option></select><br/>
+			<label for="mode">mode</label><select id="mode"><option></option><option>line</option><option>line:river</option><option>pie</option><option>chart</option><option selected="selected">curve</option><option>curve:river</option></select><br/>
 		</div>
 		<div class="formcol">
-			<label for="fill">fill</label><select id="fill"><option></option><option>none</option><option>solid</option><option>vertical</option><option>horizontal</option><option>radial</option></select><br/>
+			<label for="fill">fill</label><select id="fill"><option></option><option selected="selected">none</option><option>solid</option><option>vertical</option><option>horizontal</option><option>radial</option></select><br/>
 			<label for="opacity">opacity</label><select id="opacity"><option></option><option value="0.1">0.1 - transparent</option><option>0.2</option><option>0.3</option><option>0.4</option><option value="0.5">0.5 - semi transparent</option><option>0.6</option><option>0.7</option><option>0.8</option><option>0.9</option><option value="1">1.0 - opaque</option></select><br/>
-			<label for="linewidth">linewidth</label><select id="linewidth"><option></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
+			<label for="linewidth">linewidth</label><select id="linewidth"><option></option><option>1</option><option>2</option><option  selected="selected">3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
 			<label for="linejoin">linejoin</label><select id="linejoin"><option></option><option>round</option><option>miter</option><option>bevel</option></select><br/>
 		</div>
 
