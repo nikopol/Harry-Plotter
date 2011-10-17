@@ -403,6 +403,7 @@ harry.prototype={
 		var nds=this.dlen,cy=river?(this.dsum?this.rh/this.dsum:0):(this.dmax?this.rh/this.dmax:0),
 		    d,g,i,j,v,l;
 		this.gc.lineWidth=this.linewidth;
+		this.gc.lineJoin=this.linejoin;
 		while(d=this.dataset[--nds])
 			if((l=d.val.length)>1) {
 				log("[harry] curve("+d.tit+")"+(river?" river":""));
