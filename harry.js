@@ -19,7 +19,7 @@ var h=new harry({ //everything is optional
 	height: int,                  //canvas's  height, default=container.height or 80
 	mode: "pie|chart|line|curve|line:river|curve:river", //draw mode, default=line
 	linewidth: int,               //line width, default=1
-	linejoin: "round|bevel|miter" //line join, default=round
+	linejoin: "round|bevel|miter" //line join, default=miter
 	fill: "none|auto|solid|vertical|horizontal|radial", //fill style (only first letter matter), default=auto
 	opacity: 0.8,                 //fill opacity, between 0 and 1, override if fill=auto
 	title: {                      //title options
@@ -117,7 +117,7 @@ var harry=function(o) {
 	this.fill=(o.fill || "auto")[0].toLowerCase().replace(/[^nasvhr]/,"a");
 	this.opacity=(o.opacity || 1);
 	this.linewidth=o.linewidth || 1;
-	this.linejoin=o.linejoin || "round";
+	this.linejoin=o.linejoin || "miter";
 	this.labels=o.labels || {};
 	this.labels.color=this.labels.color || "#a0a0a0";
 	this.labels.font=this.labels.font || 'normal 9px "Sans Serif","Trebuchet MS"';
