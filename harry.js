@@ -358,28 +358,30 @@ harry.prototype={
 		return this;
 	},
 	
-	chart: function() {
+	chart: function(stack) {
 		var nbds=this.dlen;
 		log("[harry] chart ("+nbds+" dataset)");
 		if(nbds){
-			var nd,nds,nbd=this.dataset[0].len,m=nbds>1?4:0;
-			var bw=(nbd && nbds)?(((this.rw-(m*(nbd-1)))/nbd)/nbds)-1:0;
+			var nd,nds,nbd=this.dataset[0].len,m=nbds>1?4:0,nbdsv=stack?1:nbds;
+			var bw=(nbd && nbds)?(((this.rw-(m*(nbd-1)))/nbd)/nbdsv)-1:0;
 			if(bw<0) bw=0;
-			var d,g,y,x=this.rx,x1,x2,cy=(this.dmax)?this.rh/this.dmax:0;
+			var d,g,y,x=this.rx,x1,x2,cy=stack?(this.dsum?this.rh/this.dsum:0):(this.dmax?this.rh/this.dmax:0);
 			this.gc.lineWidth=this.linewidth;
 			this.gc.lineJoin="miter";
 			for(nd=0;nd<nbd;nd++) {
-				this.drawXLabel(nd,x+(((bw+1)*nbds)/2),this.h-1);
+				this.drawXLabel(nd,x+(((bw+1)*nbdsv)/2),this.h-1);
+				y=this.ry2;
 				for(nds=0;nds<nbds;nds++) {
 					d=this.dataset[nds];
-					y=this.ry2-Math.round(cy*d.val[nd]);
+					y0=stack?y:this.ry2;
+					y=y0-Math.round(cy*d.val[nd]);
 					x1=Math.round(x);
 					x2=Math.round(x+bw);
 					this.gc.beginPath();
-					this.gc.moveTo(x1,this.ry2);
+					this.gc.moveTo(x1,y0);
 					this.gc.lineTo(x1,y);
 					this.gc.lineTo(x2,y);
-					this.gc.lineTo(x2,this.ry2);
+					this.gc.lineTo(x2,y0);
 					this.gc.closePath();
 					if(g=this.getGradient(d.col)){
 						this.gc.fillStyle=g;
@@ -387,9 +389,9 @@ harry.prototype={
 					}
 					this.gc.strokeStyle=d.col;
 					this.gc.stroke();
-					x+=bw+1;
+					if(!stack)x+=bw+1;
 				}
-				x+=m;
+				x+=stack?bw+1+m:m;
 			}
 		}
 		return this;
