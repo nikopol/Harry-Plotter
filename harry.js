@@ -150,7 +150,17 @@ var harry=function(o) {
 	this.gc=this.canvas.getContext("2d");
 	log("[harry] init("+this.w+","+this.h+")");
 	if(o.datas) {
-		if(typeof o.datas[0]=="object") for(var i=0,l=o.datas.length;i<l;++i) this.addDataSet(o.datas[i],o.title?o.title[i]:false,o.color?o.color[i]:false);
+		if(typeof o.datas[0]=="object"){ 
+			var sums;
+			for(var i=0,l=o.datas.length;i<l;++i){
+				this.addDataSet(o.datas[i],o.title?o.title[i]:false,o.color?o.color[i]:false);
+				i==0?sums=o.datas[i]:sums=sums.map(function(val,j){return parseInt(val)+parseInt(o.datas[i][j])});
+			}
+			this.dsum=0;
+			for( var i=0; i<o.datas[0].length;i++ ){
+				if(this.dsum<sums[i]) this.dsum=sums[i];		
+			}
+		}
 		else this.addDataSet(o.datas,o.datitle,o.color);
 	}
 	this.rx=this.margins[3]+0.5;
@@ -200,7 +210,6 @@ harry.prototype={
 		} else {
 			this.dmin=Math.min(datas.min,this.dmin);
 			this.dmax=Math.max(datas.max,this.dmax);
-			this.dsum+=datas.max;
 			var st=[];
 			for(var i=0;i<this.dlen;++i) st.push(this.dataset[i].tit);
 			t=st.join(",\r ");
@@ -266,7 +275,7 @@ harry.prototype={
 		if(this.dlen && this.labels.y && this.gc.font) {
 			log("[harry] labels y("+this.labels.y.join(",")+") "+this.labels.font);
 			if(/chart|line|curve/.test(this.mode)) {
-				var max=/\:r/.test(this.mode)?this.dsum:this.dmax;
+				var max=/\:[r|s]/.test(this.mode)?this.dsum:this.dmax;
 				var i,l,x,y,w,v,dec=max<10?100:(max<100?10:1);
 				var fh=this.labels.fontpx;
 				var fh2=Math.floor(fh/2.5);
