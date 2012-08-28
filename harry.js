@@ -150,7 +150,17 @@ var harry=function(o) {
 	this.gc=this.canvas.getContext("2d");
 	log("[harry] init("+this.w+","+this.h+")");
 	if(o.datas) {
-		if(typeof o.datas[0]=="object") for(var i=0,l=o.datas.length;i<l;++i) this.addDataSet(o.datas[i],o.title?o.title[i]:false,o.color?o.color[i]:false);
+		if(typeof o.datas[0]=="object"){ 
+			var sums;
+			for(var i=0,l=o.datas.length;i<l;++i){
+				this.addDataSet(o.datas[i],o.title?o.title[i]:false,o.color?o.color[i]:false);
+				i==0?sums=o.datas[i]:sums=sums.map(function(val,j){return parseInt(val)+parseInt(o.datas[i][j])});
+			}
+			this.dsum=0;
+			for( var i=0; i<o.datas[0].length;i++ ){
+				if(this.dsum<sums[i]) this.dsum=sums[i];		
+			}
+		}
 		else this.addDataSet(o.datas,o.datitle,o.color);
 	}
 	this.rx=this.margins[3]+0.5;
@@ -200,7 +210,6 @@ harry.prototype={
 		} else {
 			this.dmin=Math.min(datas.min,this.dmin);
 			this.dmax=Math.max(datas.max,this.dmax);
-			this.dsum+=datas.max;
 			var st=[];
 			for(var i=0;i<this.dlen;++i) st.push(this.dataset[i].tit);
 			t=st.join(",\r ");
@@ -266,7 +275,7 @@ harry.prototype={
 		if(this.dlen && this.labels.y && this.gc.font) {
 			log("[harry] labels y("+this.labels.y.join(",")+") "+this.labels.font);
 			if(/chart|line|curve/.test(this.mode)) {
-				var max=/\:r/.test(this.mode)?this.dsum:this.dmax;
+				var max=/\:[r|s]/.test(this.mode)?this.dsum:this.dmax;
 				var i,l,x,y,w,v,dec=max<10?100:(max<100?10:1);
 				var fh=this.labels.fontpx;
 				var fh2=Math.floor(fh/2.5);
@@ -358,28 +367,30 @@ harry.prototype={
 		return this;
 	},
 	
-	chart: function() {
+	chart: function(stack) {
 		var nbds=this.dlen;
 		log("[harry] chart ("+nbds+" dataset)");
 		if(nbds){
-			var nd,nds,nbd=this.dataset[0].len,m=nbds>1?4:0;
-			var bw=(nbd && nbds)?(((this.rw-(m*(nbd-1)))/nbd)/nbds)-1:0;
+			var nd,nds,nbd=this.dataset[0].len,m=nbds>1?4:0,nbdsv=stack?1:nbds;
+			var bw=(nbd && nbds)?(((this.rw-(m*(nbd-1)))/nbd)/nbdsv)-1:0;
 			if(bw<0) bw=0;
-			var d,g,y,x=this.rx,x1,x2,cy=(this.dmax)?this.rh/this.dmax:0;
+			var d,g,y,x=this.rx,x1,x2,cy=stack?(this.dsum?this.rh/this.dsum:0):(this.dmax?this.rh/this.dmax:0);
 			this.gc.lineWidth=this.linewidth;
 			this.gc.lineJoin="miter";
 			for(nd=0;nd<nbd;nd++) {
-				this.drawXLabel(nd,x+(((bw+1)*nbds)/2),this.h-1);
+				this.drawXLabel(nd,x+(((bw+1)*nbdsv)/2),this.h-1);
+				y=this.ry2;
 				for(nds=0;nds<nbds;nds++) {
 					d=this.dataset[nds];
-					y=this.ry2-Math.round(cy*d.val[nd]);
+					y0=stack?y:this.ry2;
+					y=y0-Math.round(cy*d.val[nd]);
 					x1=Math.round(x);
 					x2=Math.round(x+bw);
 					this.gc.beginPath();
-					this.gc.moveTo(x1,this.ry2);
+					this.gc.moveTo(x1,y0);
 					this.gc.lineTo(x1,y);
 					this.gc.lineTo(x2,y);
-					this.gc.lineTo(x2,this.ry2);
+					this.gc.lineTo(x2,y0);
 					this.gc.closePath();
 					if(g=this.getGradient(d.col)){
 						this.gc.fillStyle=g;
@@ -387,9 +398,9 @@ harry.prototype={
 					}
 					this.gc.strokeStyle=d.col;
 					this.gc.stroke();
-					x+=bw+1;
+					if(!stack)x+=bw+1;
 				}
-				x+=m;
+				x+=stack?bw+1+m:m;
 			}
 		}
 		return this;
