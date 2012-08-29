@@ -5,7 +5,7 @@ harry plotter 0.5
 samples can be viewed [here](http://nikopol.github.com/Harry-Plotter/)
 generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.html)
 
-**reference**
+**constructor**
 
 	var h=new harry({ //everything is optional
 		datas: [v1,v2,v3,...],        //simple values mono set
