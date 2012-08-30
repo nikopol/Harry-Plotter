@@ -1,20 +1,26 @@
-harry plotter 0.5
+harry plotter 0.6
 -----------------
 ~L~ nikopol 2009-2012
 
 samples can be viewed [here](http://nikopol.github.com/Harry-Plotter/)  
 generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.html)
 
-<<<<<<< HEAD
-**constructor**
+**prerequisite**
 
-	//everything is optional, if data are provided, the graph is directly drawn
-	var h=new harry({ 
-=======
+  - browser supporting canvas required
+
+**key features**
+
+  - mono or multi dataset
+  - pie chart line curve support
+  - mouseover support
+  - lightweight
+  - no library dependancies
+  - fully configurable
+
 **constructors**
 
 	var h=new harry({
->>>>>>> gh-pages
 
 		//datas can be provided in these formats :
 		datas: [v1,v2,v3,...],        //simple dataset values
@@ -80,15 +86,11 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 		}
 	});
 
-<<<<<<< HEAD
-**methods**
-=======
 	//or (same effects)
 
 	var h=plotter({...});
 
 **usage**
->>>>>>> gh-pages
 
 	h.clear()           //delete all dataset
 	 .cls()             //erase canvas
