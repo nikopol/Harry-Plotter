@@ -1,0 +1,280 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<meta name="author" content="niko" />
+	<title>Harry Plotter - Demo page</title>
+	<style>
+		body { margin:0; padding:0; font:normal 9pt "Sans Serif","Trebuchet MS"; }
+		form { display:block; width:700px; float:left; background-color:#aaa; padding:0; }
+		div { margin: 5px; }
+		div#container { border: 1px #ddd dotted; }
+		div#js { margin: 0; padding: 3px; }
+		div.formcol { float:left; width:49%; margin: 4px 0 4px 0; }
+		div.footer { clear:both; margin-top:10px; text-align:right; }
+		pre { font-size:8pt; margin:0; padding:0; height:350px; overflow:auto; width:300px}
+		table { font:normal 9pt "Sans Serif","Trebuchet MS"; }
+		label { display:block; width:90px; float:left; text-align:right; Margin-right:5px; }
+		input[type="button"],input[type="reset"] { font:bold 9pt "Sans Serif","Trebuchet MS"; border:none; background-color:#444; color:#fff; }
+		input[type="text"],select { height:15px; font:normal 11px "Sans Serif","Trebuchet MS"; border:none; background-color:#ccc; }
+		input.int { width:80px; }
+		input.color { width:120px; }
+		input.font { width:240px; }
+		input.data { width:280px; }
+		#render { display:block; float:left; }
+		#js { background-color:#888; color:#fff; }
+		h1 { font-size:12pt; margin:2px 0 3px 0; }
+		h2 { font-size:10pt; background-color:#666; color:#fff; margin:0; padding: 1px 0 1px 3px; clear:both; }
+	</style>
+	<script src="harry.js"></script>
+	<script src="js/jquery-1.6.4.min.js"></script> <!-- only needed by the generator, not harry -->
+	<script src="js/colorpicker/colorpicker.js"></script>
+	<link rel="stylesheet" href="js/colorpicker/colorpicker.css" type="text/css" />
+	<script>
+		var MAXDATA=16;
+		
+		var str2nums=function(str){
+			var n=[],s=str.split(','),i;
+			for(i=0;i<s.length;i++) n.push(parseFloat(s[i],10));
+			return n;
+		};
+		
+		var json={
+			encode: function(o,jsquote) { /*ignore functions*/
+				jsquote=jsquote||false;
+				var lines=[], isarray=(o.constructor==Array),k,v,s;
+				for(k in o) {
+					v=o[k];
+					if(typeof v=="object") {
+						if(isarray) lines.push(json.encode(v,jsquote));
+						else lines.push((jsquote?k:'"'+k+'"')+':'+json.encode(v,jsquote));
+					} else if(typeof v!="function") {
+						s=(isarray)?"":(jsquote?k+':':'"'+k+'":');
+						if(typeof v=="number") s+=v.toString(10);
+						else if(v===false) s+='false';
+						else if(v===true) s+='true';
+						else s+='"'+(v || "").replace(/"/g,"\\\"").replace(/\n|\r/g,' ')+'"';
+						lines.push(s);
+					}
+				}
+				return (isarray) ? "["+lines.join(",")+"]" : "{"+lines.join(",")+"}";
+			},
+			tidy: function(txt) {
+				txt=txt.replace(/\n|\r|\t/gi,"").replace(/^\s+/g,'');
+				var l=txt.length,n=0,c,nc,i=0,fmt="",iq=false,ip=0,newline=function(i){ return "\n"+("                                   ".substr(0,i*3)); };
+				while(n<l) {
+					c=txt[n++];
+					nc=(n<l) ? txt[n] : '';
+					if(c=='"') { fmt+=c; iq=!iq; } 
+					else if(iq) fmt+=c;
+					else if(c=='[') {ip++; fmt+=c;}
+					else if(c==']') {ip--; fmt+=c;}
+					else if(ip)     fmt+=c;
+					else if(c=='{') fmt+=c+newline(++i);
+					else if(c==',') fmt+=c+newline(i);
+					else if(c=='}') fmt+=newline(--i)+c;
+					else fmt+=c;
+				}
+				return fmt;
+			}
+		}
+		
+		$(document).ready(function(){
+			
+			$(".color").colorPicker({sharped:true});
+			
+			$("input.rnd").click(function(){
+				var i,t=$(this).attr('target'), d=[];
+				for(i=0;i<MAXDATA;++i) d.push(Math.floor(Math.random()*100));
+				$('#'+t).val(d.join(','));
+			});
+
+			var isEmpty=function(o){
+  				for(var i in o) return false;
+  				return true;
+			};
+			
+			var build=function(){
+				var o={container:'container'},v,w;
+
+				//get datas
+				var i,d=[];
+				for(i=1;i<4;i++)
+					if((w=$('#data'+i).val()).length) {
+						ds={values:str2nums(w)};
+						if((v=$('#title'+i).val()).length) ds.title=v;
+						if((v=$('#color'+i).val()).length) ds.color=v;
+						d.push(ds);
+					}
+				if(d.length) o.datas=d;
+
+				//get title
+				if((v=$('#titletext').val()).length){
+					o.title={text:v};
+					if((v=$('#titlefont').val()).length) o.title.font=v;
+					if((v=$('#titlecolor').val()).length) o.title.color=v;
+					if((v=$('#titlex').val()).length) o.title.x=v;
+					if((v=$('#titley').val()).length) o.title.y=v;
+					if((v=$('#titlez').val()).length) o.title.z=v;
+				}
+
+				//get grid
+				if((v=$('#gridx').val()).length+(w=$('#gridy').val()).length){
+					o.grid={};
+					if(v.length) o.grid.x=/none|false/.test(v)?v:str2nums(v);
+					if(w.length) o.grid.y=/none|false/.test(w)?w:str2nums(w);
+					if((v=$('#gridcolor').val()).length) o.grid.color=v;
+				}
+
+				//get labels
+				if((v=$('#margins').val()).length) o.margins=str2nums(v);
+				if((v=$('#labelx').val()).length+(w=$('#labely').val()).length){
+					o.labels={};
+					if(v.length) o.labels.x=v.split(/[,:\|]+/);
+					if(w.length) o.labels.y=str2nums(w);
+					if((v=$('#labelfont').val()).length) o.labels.font=v;
+					if((v=$('#labelcolor').val()).length) o.labels.color=v;
+					if((v=$('#stepx').val()).length) o.labels.stepx=v;
+				}
+
+				//get render
+				if((v=$('#width').val()).length) o.width=parseInt(v,10);
+				if((v=$('#height').val()).length) o.height=parseInt(v,10);
+				if((v=$('#mode').val()).length) o.mode=v;
+				if((v=$('#fill').val()).length) o.fill=v;
+				if((v=$('#opacity').val()).length) o.opacity=parseFloat(v,10);
+				if((v=$('#linewidth').val()).length) o.linewidth=parseInt(v,10);
+				if((v=$('#linejoin').val()).length) o.linejoin=v;
+				if((v=$('#radiuspoint').val()).length) o.radiuspoint=parseInt(v,10);
+				o.autoscale=$('#autoscale')[0].checked?true:false;
+				if($('#mouseover')[0].checked){
+					var m={};
+					if((v=$('#moradius').val()).length) m.radius=parseInt(v,10);
+					if((v=$('#molinewidth').val()).length) m.linewidth=parseInt(v,10);
+					if((v=$('#mocircle').val()).length) m.circle=v;
+					if((v=$('#mofont').val()).length) m.font=v;
+					if((v=$('#mocolor').val()).length) m.color=v;
+					if((v=$('#moborder').val()).length) m.border=v;
+					if((v=$('#mobullet').val()).length) m.bullet=v;
+					if((v=$('#moaxis').val()).length) m.axis=v;
+					if((v=$('#motext').val()).length) m.text=v;
+					if(!isEmpty(m)) o.mouseover=m;
+				} else
+					o.mouseover=false;
+
+				//let's show
+				$('#js pre').text("plotter("+json.tidy(json.encode(o,true))+")");
+				$('#container').empty();
+				plotter(o);
+			};
+			$("input.generate").click(build);
+			build();
+			
+		});
+	</script>
+</head>
+<body>
+	<h1>Harry Plotter v0.6 - Generator page [<a href="index.html">demo</a>] [<a href="https://github.com/nikopol/Harry-Plotter">fork me!</a>]</h1>
+	<form>
+		
+		<h2>Title</h2>
+		<div class="formcol">
+			<label for="titletext">title.text</label><input type="text" id="titletext" /><br/>
+			<label for="titlefont">title.font</label><input type="text" id="titlefont" class="font" value='bold 24px "Sans Serif"' /><br/>
+			<label for="titlecolor">title.color</label><input type="text" id="titlecolor" class="color" value="" /><br/>
+		</div>
+		<div class="formcol">
+			<label for="titlex">title.x</label><input type="text" id="titlex" class="int" />px<br/>
+			<label for="titley">title.y</label><input type="text" id="titley" class="int" />px<br/>
+			<label for="titlez">title.z</label><select id="titlez"><option value="">top</option><option value="bg">background</option></select><br/>
+		</div>
+		
+		<h2>Datas</h2>
+		<table>
+			<tr><th>#</th><th>datas</th><th>title</th><th>color</th></tr>
+			<tr>
+				<td>#1</td>
+				<td><input type="text" id="data1" title="y1,y2,y3..." value="1,2,4,8,16,32,64,32,16,8,4,2,1" class="data" /><input type="button" class="rnd" value="random" target="data1" /></td>
+				<td><input type="text" id="title1" value="" /></td>
+				<td><input type="text" id="color1" title="#rrggbb" value="" class="color" /></td>
+			</tr>
+			<tr>
+				<td>#2</td>
+				<td><input type="text" id="data2" title="y1,y2,y3..." value="" class="data" /><input type="button" class="rnd" value="random" target="data2" /></td>
+				<td><input type="text" id="title2" value="" /></td>
+				<td><input type="text" id="color2" title="#rrggbb" value="" class="color" /></td>
+			</tr>
+			<tr>
+				<td>#3</td>
+				<td><input type="text" id="data3" title="y1,y2,y3..." value="" class="data" /><input type="button" class="rnd" value="random" target="data3" /></td>
+				<td><input type="text" id="title3" value="" /></td>
+				<td><input type="text" id="color3" title="#rrggbb" value="" class="color" /></td>
+			</tr>
+		</table>
+		
+		<h2>Grid</h2>
+		<div class="formcol">
+			<label for="gridx">grid.x</label><input type="text" id="gridx" title="none or %,%,%..." value="" /><br/>
+			<label for="gridy">grid.y</label><input type="text" id="gridy" title="none or %,%,%..." value="" /><br/>
+		</div>
+		<div class="formcol">
+			<label for="gridcolor">grid.color</label><input type="text" id="gridcolor" title="#rrggbb" class="color" value="" /><br/>
+		</div>
+		
+		<h2>Label</h2>
+		<div class="formcol">
+			<label for="margins">margins</label><input type="text" id="margins" title="top,right,bottom,left" value="" /><br/>
+			<label for="labelfont">label.font</label><input type="text" id="labelfont" class="font" value='normal 9px "Sans Serif","Trebuchet MS"' /><br/>
+			<label for="labelcolor">label.color</label><input type="text" id="labelcolor" class="color" value="" /><br/>
+		</div>
+		<div class="formcol">
+			<label for="labely">label.y</label><input type="text" id="labely" title="%,%,%..." value="0,50,100" /><br/>
+			<label for="labelx">label.x</label><input type="text" id="labelx" title="labelx1,labelx2,.." value="x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13" /><br/>
+			<label for="stepx">step.x</label><input type="text" id="stepx" title="int" value="" /><br/>
+		</div>
+
+		<h2>Rendering</h2>
+		<div class="formcol">
+			<label for="width">width</label><input type="text" id="width" class="int" value="" />px<br/>
+			<label for="height">height</label><input type="text" id="height" class="int" value="" />px<br/>
+			<label for="mode">mode</label><select id="mode"><option></option><option>line</option><option>line:river</option><option>pie</option><option>chart</option><option>chart:stack</option><option selected="selected">curve</option><option>curve:river</option></select><br/>
+			<label for="autoscale">autoscale</label><input type="checkbox" id="autoscale" checked="checked" /><br/>
+			
+		</div>
+		<div class="formcol">
+			<label for="fill">fill</label><select id="fill"><option></option><option selected="selected">none</option><option>solid</option><option>vertical</option><option>horizontal</option><option>radial</option></select><br/>
+			<label for="opacity">opacity</label><select id="opacity"><option></option><option value="0.1">0.1 - transparent</option><option>0.2</option><option>0.3</option><option>0.4</option><option value="0.5">0.5 - semi transparent</option><option>0.6</option><option>0.7</option><option>0.8</option><option>0.9</option><option value="1">1.0 - opaque</option></select><br/>
+			<label for="linewidth">linewidth</label><select id="linewidth"><option></option><option>1</option><option>2</option><option  selected="selected">3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
+			<label for="linejoin">linejoin</label><select id="linejoin"><option></option><option>round</option><option>miter</option><option>bevel</option></select>(line or histogram mode)<br/>
+			<label for="radiuspoint">radiuspoint</label><select id="radiuspoint"><option></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>10</option><option>15</option><option>20</option><option>40</option></select> (line or curve mode)<br/>
+		</div>
+
+		<h2>MouseOver</h2>
+		<div class="formcol">
+			<label for="mouseover">enabled</label><input type="checkbox" id="mouseover" checked="checked" /><br/>
+			<label for="moradius">spot radius</label><input type="text" id="moradius" class="int" value="" />px<br/>
+			<label for="molinewidth">spot linewidth</label><select id="molinewidth"><option></option><option value="0">filled</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
+			<label for="mocircle">spot color</label><input type="text" id="mocircle" class="color" value="" /><br/>
+			<label for="moaxis">axis</label><select id="moaxis"><option></option><option>xy</option><option>x</option><option>y</option></select>
+		</div>
+		<div class="formcol">
+			<label for="mofont">bullet font</label><input type="text" id="mofont" class="font" value="" /><br/>
+			<label for="mocolor">text color</label><input type="text" id="mocolor" class="color" value="" /><br/>
+			<label for="mobullet">bullet color</label><input type="text" id="mobullet" class="color" value="" /><br/>
+			<label for="moborder">border color</label><input type="text" id="moborder" class="color" value="" /><br/>
+			<label for="motext">text</label><input type="text" id="motext" title="%l=label %v=value %n=index" value="%v" />
+		</div>
+
+		<div class="footer">
+			<input type="reset" value="reset" />
+			<input type="button" class="generate" value="generate" />
+		</div>
+	</form>
+	<div id="render">
+		<h2>Canvas</h2>
+		<div id="container"></div>
+		<h2>Javascript</h2>
+		<div id="js"><pre></pre></div>
+	</div>
+</body>
+</html>
+
