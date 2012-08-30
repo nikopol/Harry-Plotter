@@ -1,44 +1,43 @@
-// harry plotter 0.5
-// ~L~ nikomomo@gmail.com 2011-2012
-// http://alibabar.org/harry
+// harry plotter 0.6
+// ~L~ nikomomo@gmail.com 2009-2012
+// https://github.com/nikopol/Harry-Plotter
 
 /*
-var h=new harry({ //everything is optional
-	datas: [v1,v2,v3,...],        //simple values mono set
-	datas: [[v1,v2],[w1,w2],...], //simple values multi set
-	datitle: "string" or [..],    //dataset title, if multi set title must be an array,
-	                              //  default=dataset#$n
-	color: "112233" or [..],      //dataset color, if multi set color must be an array, 
-	                              //default=a modulo from default harry colors 
+//everything is optional, if data are provided, the graph is directly drawn
+var h=new harry({
+
+	//datas can be provided in these formats :
+	datas: [v1,v2,v3,...],        //simple dataset values
+	datas: [[v1,v2],[w1,w2],...], //multiple dataset values
+	datas: {                      //simple dataset with color and title
+		values: [v1,v2,...],
+		title: "my dataset #1",
+		color: "#fc0"
+	}
+	datas: [                      //multiple dataset with color and title
+		{ values:[...],title:"...",color:"..." },
+		{ values:[...],title:"...",color:"..." }
+	],
+
 	id: "str",                    //canvas's id, by default harry$n
-	container: "str/elem",	      //container where to append canvas, default=body
+	container: "str/elem",	      //container where create canvas, default=body
 	canvas: "str/elem",           //canvas element, default=create it into container
 	width: int,                   //canvas's width, default=container.width or 300
-	height: int,                  //canvas's  height, default=container.height or 80
-	autoscale: true,              //auto round up y scale, default=true (unused for pie)
-	mouseover: {,                 //set to false to disable mouseover, default=enabled
-		radius: int,              //  spot radius, default=5
-		linewidth: int,           //  spot linewidth, default=linewidth below,0=fill
-		circle: "#888888",        //  spot color, default=#888
-		font: "9px Trebuchet MS", //  bullet text font, default=normal 9px "Sans Serif"
-		color: "#666",            //  bullet text color, default=#fff
-		bullet: "rgba(0,0,0,0.5)" //  bullet background color, default=#888
-		border: "#fc0"            //  bullet border color, default=#fff
-	},
+	height: int,                  //canvas's height, default=container.height or 80
 	mode: "pie|chart|chart:stack|line|line:river|curve|curve:river",
 	                              //draw mode, default=line
 	linewidth: int,               //line width, default=1
 	linejoin: "round|bevel|miter" //line join, default=miter
-	pointradius: int,             //radius point in mode line/curve only (default=none)
 	fill: "none|auto|solid|vertical|horizontal|radial", 
 	                              //fill style (only first letter matter), default=auto
-	opacity: 0.8,                 //fill opacity, between 0 and 1, override if fill=auto
+	opacity: 0.8,                 //fill opacity, between 0 and 1, overrided if fill=auto
 	title: {                      //title options
 		font:'9px "Trebuchet MS"',//  font size & family, default=normal 9px "Sans Serif"
 		color: "rgba(4,4,4,0.3)", //  font color, default=rgba(4,4,4,0.3)
 		text: "title"             //  clear enough
 		x: 5,                     //  title position x
 		y: 10                     //  title position y
+		z: "top|background|bg"    //  behind or on top of the graph, default=top
 	},
 	labels: {                     //labels options
 		font: "9px Trebuchet MS", //  font size & family, important:use px size,
@@ -53,8 +52,26 @@ var h=new harry({ //everything is optional
 		y: [0,50,100]             //  y legend, number are %, default=[0,25,50,75,100]
 		x: [0,100]                //  x legend, number are %, default=[0,100]
 	},
-	margins:[top,right,bot,left]  //margin size (for labels), default=auto
+	margins:[top,right,bot,left], //margin size (for labels), default=auto
+	autoscale: true,              //auto round up y scale, default=true (unused for pie)
+	pointradius: int,             //radius point in mode line/curve only (default=none)
+	mouseover: {,                 //set to false to disable mouseover, default=enabled
+		radius: int,              //  spot radius, default=5
+		linewidth: int,           //  spot linewidth, default=linewidth below,0=fill
+		circle: "#888888",        //  spot color, default=#888
+		font: "9px Trebuchet MS", //  bullet text font, default=normal 9px "Sans Serif"
+		color: "#666",            //  bullet text color, default=#fff
+		bullet: "rgba(0,0,0,0.5)" //  bullet background color, default=#888
+		border: "#fc0"            //  bullet border color, default=#fff,
+		axis: "xy|x|y"            //  draw spot axis, default=none
+		text: "%l\n%v" | cb(n,v)  //  text in the bullet %v=value %l=label %n=index
+		                          //    or a callback(n=value index,v=value)
+		                          //    default="%v"
+	}
 });
+
+//or (same effect)
+var h=plotter({...});
 
 h.clear()          //delete all dataset
  .cls()            //erase canvas
@@ -139,7 +156,9 @@ var harry=function(o) {
 			font:   o.mouseover.font   || 'normal 10px "Sans Serif"',
 			color:  o.mouseover.color  || "#fff",
 			bullet: o.mouseover.bullet || "#888",
-			border: o.mouseover.border || "#fff"
+			border: o.mouseover.border || "#fff",
+			axis:   o.mouseover.axis   || false,
+			text:   o.mouseover.text   || "%v"
 		}
 	}
 	if(!o.margins) {
@@ -164,16 +183,11 @@ var harry=function(o) {
 		if(!this.title.color) this.title.color='rgba(4,4,4,0.3)';
 		if(!this.title.x) this.title.x=this.margins[3]+2;
 		if(!this.title.y) this.title.y=this.margins[0]+12;
+		if(!this.title.z) this.title.z='top';
 	}
 	this.gc=this.canvas.getContext("2d");
 	//console.log("[harry] init("+this.w+","+this.h+")");
-	if(o.datas) {
-		if(typeof o.datas[0]=="object")
-			for(var i=0,l=o.datas.length;i<l;++i)
-				this.addDataSet(o.datas[i],o.title?o.title[i]:false,o.color?o.color[i]:false);
-		else
-			this.addDataSet(o.datas,o.datitle,o.color);
-	}
+	if(o.datas) this.addDataSets(o.datas);
 	this.rx=this.margins[3]+0.5;
 	this.ry=this.margins[0]+0.5;
 	this.rw=Math.max(this.w-this.margins[1]-this.margins[3],0);
@@ -193,39 +207,49 @@ harry.prototype={
 		return this;
 	},
 
-	setmode: function(m){
+	setmode: function(m) {
 		this.mode = m || 'line';
 		return this;
 	},
-		
-	addDataSet: function(d,title,color,dmin,dmax) {
-		var t,v,k,datas={
+
+	addDataSets: function(datas) {
+		if(datas.constructor==Array)
+			for(var i=0,l=datas.length;i<l;++i)
+				this.addDataSet(datas[i]);
+		else
+			this.addDataSet(datas);
+		return this;
+	},
+
+	addDataSet: function(d) {
+		var t,v,k,vals=d.values||d,
+		ds={
 			val:[], lab:[], 
-			len:0, sum:0, avg:0, max:dmax?dmax:0, min:dmin?dmin:0xffffffff, 
-			tit:title || "dataset#"+(this.dataset.length+1),
-			col:color || harryTools.COLORS[this.dataset.length%harryTools.COLORS.length]
+			len:0, sum:0, avg:0, max:0, min:0xffffffffffff, 
+			tit:d.title || "dataset#"+(this.dataset.length+1),
+			col:d.color || harryTools.COLORS[this.dataset.length%harryTools.COLORS.length]
 		};
-		for(k in d) {
-			if(typeof d[k]!="function"){
-				datas.val.push(v=parseFloat(d[k],10));
-				datas.lab.push(k);
-				datas.sum+=v;
-				if(v>datas.max) datas.max=v;
-				if(v<datas.min) datas.min=v;
+		for(k in vals) {
+			if(/string|number/.test(typeof vals[k])){
+				ds.val.push(v=parseFloat(vals[k],10));
+				ds.lab.push(k);
+				ds.sum+=v;
+				if(v>ds.max) ds.max=v;
+				if(v<ds.min) ds.min=v;
 			}
 		}
-		datas.len=datas.val.length;
-		datas.avg=(datas.len) ? datas.sum/datas.len : 0;
-		this.dataset.push(datas);
+		ds.len=ds.val.length;
+		ds.avg=ds.len ? ds.sum/ds.len : 0;
+		this.dataset.push(ds);
 		this.dlen=this.dataset.length;
 		if(this.dlen==1) {
-			this.dmin=datas.min;
-			this.dmax=this.autoscale?harryTools.scaleUp(datas.max):datas.max;
+			this.dmin=ds.min;
+			this.dmax=this.autoscale?harryTools.scaleUp(ds.max):ds.max;
 			this.dsum=this.dmax;
-			t=datas.tit;
+			t=ds.tit;
 		} else {
-			this.dmin=Math.min(datas.min,this.dmin);
-			this.dmax=Math.max(datas.max,this.dmax);
+			this.dmin=Math.min(ds.min,this.dmin);
+			this.dmax=Math.max(ds.max,this.dmax);
 			this.dsum = 0;
 			for(var i=0,l=this.dataset[0].val.length;i<l;++i){
 				var sum=0;
@@ -233,7 +257,7 @@ harry.prototype={
 				if(sum>this.dsum) this.dsum=this.autoscale?harryTools.scaleUp(sum):sum;
 			}
 		}
-		//console.log("[harry] addDataSet "+datas.tit+" len="+this.dlen+" sum="+this.dsum+" max="+this.dmax);
+		//console.log("[harry] addDataSet "+ds.tit+" len="+this.dlen+" sum="+this.dsum+" max="+this.dmax);
 		return this;
 	},
 	
@@ -241,7 +265,9 @@ harry.prototype={
 		this.mode=(mode || this.mode).toLowerCase();
 		//console.log("[harry] draw("+this.mode+")");
 		var args=this.mode.split(/:/);
-		this.drawGrid().drawYLabels()[args[0]](args.length==1?false:args[1]).drawTitle();
+		this.drawGrid().drawYLabels();
+		if(this.title && this.title.z=='top') this[args[0]](args.length==1?false:args[1]).drawTitle();
+		else                                  this.drawTitle()[args[0]](args.length==1?false:args[1]);
 		if(this.mouseover && this[args[0]+'Over']){
 			var self = this;
 			this.imgdata = this.gc.getImageData(0,0,this.w,this.h);
@@ -250,7 +276,8 @@ harry.prototype={
 				self.canvas.onmousemove=function(e){
 					e=e||window.event;
 					self.gc.putImageData(self.imgdata,0,0);
-					self.mousepos={x:e.pageX-self.canvas.offsetLeft,y:e.pageY-self.canvas.offsetTop};
+					//self.mousepos={x:e.pageX-self.canvas.offsetLeft,y:e.pageY-self.canvas.offsetTop};
+					self.mousepos={x:e.offsetX,y:e.offsetY};
 					self[args[0]+'Over'](self.mousepos.x,self.mousepos.y,args[1]);
 				};
 			};
@@ -344,16 +371,27 @@ harry.prototype={
 		return this;
 	},
 
-	drawBullet: function(x,y,r,text,mod) {
+	drawBullet: function(x,y,r,v,n,nds) {
 		this.gc.font=this.mouseover.font;
-		var x1,y1,x2,y2,s=3,m,
-			h=harryTools.fontPixSize(this.mouseover.font)+s*2,
-			h2=Math.floor(h/2),
-			w=this.gc.measureText(text).width+s*2;
+		var x1,y1,x2,y2,ly,lh,s=3,i,m,w=0,
+		    lab=(this.labels.x && this.labels.x[n]!=undefined)
+		      ? this.labels.x[n]
+		      : '',
+		    text=typeof(this.mouseover.text)=="function"
+		      ? this.mouseover.text(n,v)
+		      : this.mouseover.text.replace('%v',v).replace('%l',lab).replace('%n',n),
+		    lines=text.split(/\n|\\n/),
+		    lh=harryTools.fontPixSize(this.mouseover.font)+s,
+		    h=s+lines.length*lh,
+		    h2=Math.floor(h/2);
+		for(i in lines) {
+			m=this.gc.measureText(lines[i]).width+s*2;
+			if(m>w) w=m;
+		}
 		//left
 		x1=x+r;
 		x2=x1+w;
-		if(x2>=this.rw || (mod%2 && (x-r-w)>0)){
+		if(x2>=this.rw || (nds%2 && (x-r-w)>0)){
 			//right
 			x2=x-r;
 			x1=x2-w;
@@ -382,10 +420,10 @@ harry.prototype={
 		this.gc.stroke();
 		//draw text
 		this.gc.textAlign='left';
-		this.gc.textBaseline='middle';
+		this.gc.textBaseline='top';
 		this.gc.fillStyle=this.mouseover.color;
-		this.gc.fillText(text,x1+s-1,y2+h2);
-		//console.log(text,'x',x1,x2,'w',this.rw,'y',y1,y2,'h',this.rh)
+		for(i=0,ly=y2+s; i<lines.length; ++i,ly+=lh)
+			this.gc.fillText(lines[i],x1+s-1,ly);
 		return this;
 	},
 	
@@ -588,7 +626,7 @@ harry.prototype={
 			if(n!==false) {
 				var lw=this.mouseover.linewidth||1;
 				for(i=0;i<this.overpoints.length;++i) {
-					var o=this.overpoints[i]
+					var o=this.overpoints[i];
 					this.gc.beginPath();
 					this.gc.lineWidth=lw;
 					this.gc.arc(o.x[n],o.y[n],this.mouseover.radius,0,2*Math.PI);
@@ -598,9 +636,35 @@ harry.prototype={
 					} else {
 						this.gc.strokeStyle=this.mouseover.circle;
 						this.gc.stroke();
-
 					}
-					this.drawBullet(o.x[n],o.y[n],3+this.mouseover.radius,o.v[n],i);
+					if(this.mouseover.axis){
+						var xy,y,s=2;
+						this.gc.lineWidth=1;
+						//draw axis
+						if(/x/i.test(this.mouseover.axis)){
+							y=o.y[n]+this.mouseover.radius;
+							while(y<this.ry2){
+								this.gc.moveTo(o.x[n],y);
+								y+=s;
+								if(y>this.ry2) y=this.ry2;
+								this.gc.lineTo(o.x[n],y);
+								y+=s;
+							}
+							this.gc.stroke();
+						}
+						if(/y/i.test(this.mouseover.axis)){
+							x=o.x[n]+this.mouseover.radius;
+							while(x<this.rx2){
+								this.gc.moveTo(x,o.y[n]);
+								x+=s;
+								if(x>this.rx2) x=this.rx2;
+								this.gc.lineTo(x,o.y[n]);
+								x+=s;
+							}
+							this.gc.stroke();
+						}
+					}
+					this.drawBullet(o.x[n],o.y[n],3+this.mouseover.radius,o.v[n],n,i);
 				}
 			}
 		}
