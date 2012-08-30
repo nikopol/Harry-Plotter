@@ -1,35 +1,33 @@
 // harry plotter 0.5
-// ~L~ nikomomo@gmail.com 2011-2012
-// http://alibabar.org/harry
+// ~L~ nikomomo@gmail.com 2009-2012
+// https://github.com/nikopol/Harry-Plotter
 
 /*
-var h=new harry({ //everything is optional
-	datas: [v1,v2,v3,...],        //simple values mono set
-	datas: [[v1,v2],[w1,w2],...], //simple values multi set
-	datitle: "string" or [..],    //dataset title, if multi set title must be an array,
-	                              //  default=dataset#$n
-	color: "112233" or [..],      //dataset color, if multi set color must be an array, 
-	                              //default=a modulo from default harry colors 
+//everything is optional
+var h=new harry({
+
+	#datas can be provided in these formats :
+	datas: [v1,v2,v3,...],        //simple dataset values
+	datas: [[v1,v2],[w1,w2],...], //multiple dataset values
+	datas: {                      //simple dataset with color and title
+		values: [v1,v2,...],
+		title: "my dataset #1",
+		color: "#fc0"
+	}
+	datas: [                      //multiple dataset with color and title
+		{ values:[],title:"",color:"" },
+		{ values:[],title:"",color:"" }
+	]
+
 	id: "str",                    //canvas's id, by default harry$n
 	container: "str/elem",	      //container where to append canvas, default=body
 	canvas: "str/elem",           //canvas element, default=create it into container
 	width: int,                   //canvas's width, default=container.width or 300
 	height: int,                  //canvas's  height, default=container.height or 80
-	autoscale: true,              //auto round up y scale, default=true (unused for pie)
-	mouseover: {,                 //set to false to disable mouseover, default=enabled
-		radius: int,              //  spot radius, default=5
-		linewidth: int,           //  spot linewidth, default=linewidth below,0=fill
-		circle: "#888888",        //  spot color, default=#888
-		font: "9px Trebuchet MS", //  bullet text font, default=normal 9px "Sans Serif"
-		color: "#666",            //  bullet text color, default=#fff
-		bullet: "rgba(0,0,0,0.5)" //  bullet background color, default=#888
-		border: "#fc0"            //  bullet border color, default=#fff
-	},
 	mode: "pie|chart|chart:stack|line|line:river|curve|curve:river",
 	                              //draw mode, default=line
 	linewidth: int,               //line width, default=1
 	linejoin: "round|bevel|miter" //line join, default=miter
-	pointradius: int,             //radius point in mode line/curve only (default=none)
 	fill: "none|auto|solid|vertical|horizontal|radial", 
 	                              //fill style (only first letter matter), default=auto
 	opacity: 0.8,                 //fill opacity, between 0 and 1, override if fill=auto
@@ -39,6 +37,7 @@ var h=new harry({ //everything is optional
 		text: "title"             //  clear enough
 		x: 5,                     //  title position x
 		y: 10                     //  title position y
+		z: "top|background|bg"    //  behind or on top of the graphn default=top
 	},
 	labels: {                     //labels options
 		font: "9px Trebuchet MS", //  font size & family, important:use px size,
@@ -53,7 +52,19 @@ var h=new harry({ //everything is optional
 		y: [0,50,100]             //  y legend, number are %, default=[0,25,50,75,100]
 		x: [0,100]                //  x legend, number are %, default=[0,100]
 	},
-	margins:[top,right,bot,left]  //margin size (for labels), default=auto
+	margins:[top,right,bot,left], //margin size (for labels), default=auto
+	autoscale: true,              //auto round up y scale, default=true (unused for pie)
+	pointradius: int,             //radius point in mode line/curve only (default=none)
+	mouseover: {,                 //set to false to disable mouseover, default=enabled
+		radius: int,              //  spot radius, default=5
+		linewidth: int,           //  spot linewidth, default=linewidth below,0=fill
+		circle: "#888888",        //  spot color, default=#888
+		font: "9px Trebuchet MS", //  bullet text font, default=normal 9px "Sans Serif"
+		color: "#666",            //  bullet text color, default=#fff
+		bullet: "rgba(0,0,0,0.5)" //  bullet background color, default=#888
+		border: "#fc0"            //  bullet border color, default=#fff,
+		axis: "xy|x|y"            //  draw spot axis, default=none
+	}
 });
 
 h.clear()          //delete all dataset
@@ -167,13 +178,7 @@ var harry=function(o) {
 	}
 	this.gc=this.canvas.getContext("2d");
 	//console.log("[harry] init("+this.w+","+this.h+")");
-	if(o.datas) {
-		if(typeof o.datas[0]=="object")
-			for(var i=0,l=o.datas.length;i<l;++i)
-				this.addDataSet(o.datas[i],o.title?o.title[i]:false,o.color?o.color[i]:false);
-		else
-			this.addDataSet(o.datas,o.datitle,o.color);
-	}
+	if(o.datas) this.addDataSets(o.datas);
 	this.rx=this.margins[3]+0.5;
 	this.ry=this.margins[0]+0.5;
 	this.rw=Math.max(this.w-this.margins[1]-this.margins[3],0);
@@ -193,11 +198,20 @@ harry.prototype={
 		return this;
 	},
 
-	setmode: function(m){
+	setmode: function(m) {
 		this.mode = m || 'line';
 		return this;
 	},
-		
+
+	addDataSets: function(datas) {
+		if(datas.constructor==Array)
+			for(var i=0,l=datas.length;i<l;++i)
+				this.addDataSet(datas[i]);
+		else
+			this.addDataSet(datas);
+		return this;
+	},
+
 	addDataSet: function(d,title,color,dmin,dmax) {
 		var t,v,k,datas={
 			val:[], lab:[], 
@@ -250,7 +264,8 @@ harry.prototype={
 				self.canvas.onmousemove=function(e){
 					e=e||window.event;
 					self.gc.putImageData(self.imgdata,0,0);
-					self.mousepos={x:e.pageX-self.canvas.offsetLeft,y:e.pageY-self.canvas.offsetTop};
+					//self.mousepos={x:e.pageX-self.canvas.offsetLeft,y:e.pageY-self.canvas.offsetTop};
+					self.mousepos={x:e.offsetX,y:e.offsetY};
 					self[args[0]+'Over'](self.mousepos.x,self.mousepos.y,args[1]);
 				};
 			};
