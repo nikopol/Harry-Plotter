@@ -3,10 +3,10 @@
 // https://github.com/nikopol/Harry-Plotter
 
 /*
-//everything is optional
+//everything is optional, if data are provided, the graph is directly drawn
 var h=new harry({
 
-	#datas can be provided in these formats :
+	//datas can be provided in these formats :
 	datas: [v1,v2,v3,...],        //simple dataset values
 	datas: [[v1,v2],[w1,w2],...], //multiple dataset values
 	datas: {                      //simple dataset with color and title
@@ -15,9 +15,9 @@ var h=new harry({
 		color: "#fc0"
 	}
 	datas: [                      //multiple dataset with color and title
-		{ values:[],title:"",color:"" },
-		{ values:[],title:"",color:"" }
-	]
+		{ values:[...],title:"...",color:"..." },
+		{ values:[...],title:"...",color:"..." }
+	],
 
 	id: "str",                    //canvas's id, by default harry$n
 	container: "str/elem",	      //container where to append canvas, default=body

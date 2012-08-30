@@ -1,20 +1,28 @@
 harry plotter 0.5
 -----------------
-~L~ nikomomo@gmail.com 2009-2012
+~L~ nikopol 2009-2012
 
-samples can be viewed [here](http://nikopol.github.com/Harry-Plotter/)
+samples can be viewed [here](http://nikopol.github.com/Harry-Plotter/)  
 generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.html)
 
 **constructor**
 
-	var h=new harry({ //everything is optional
-		datas: [v1,v2,v3,...],        //simple values mono set
-		datas: [[v1,v2],[w1,w2],...], //simple values multi set
-		datitle: "string" or [..],    //dataset title, if multi set title must
-		                              //be an array, default=dataset#$n
-		color: "112233" or [..],      //dataset color, if multi set color must 
-		                              //be an array, default=a modulo from default 
-		                              //harry colors 
+	//everything is optional, if data are provided, the graph is directly drawn
+	var h=new harry({ 
+
+		//datas can be provided in these formats :
+		datas: [v1,v2,v3,...],        //simple dataset values
+		datas: [[v1,v2],[w1,w2],...], //multiple dataset values
+		datas: {                      //simple dataset with color and title
+			values: [v1,v2,...],
+			title: "my dataset #1",
+			color: "#fc0"
+		}
+		datas: [                      //multiple dataset with color and title
+			{ values:[...],title:"...",color:"..." },
+			{ values:[...],title:"...",color:"..." }
+		],
+
 		id: "str",                    //canvas's id, by default harry$n
 		container: "str/elem",	      //container where to append canvas,default=body
 		canvas: "str/elem",           //canvas element, default=create it into container
@@ -48,15 +56,22 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 		margins:[top,right,bot.,left] //margin size (for labels), default=auto
 	});
 
-**usage**
+**methods**
 
-	h.clear()          //delete all dataset
-	 .cls()            //erase canvas
-	 .addDataSet(data) //add a dataset, see contructor
-	 .draw();          //draw all dataset 
-	h.mode='river';    //change current draw mode
+	h.clear()           //delete all dataset
+	 .cls()             //erase canvas
+	 .addDataSet(data)  //add a dataset, see contructor
+	 .setMode('chart')  //change current draw mode
+	 .draw();           //
 
 **short sample**
 
 	<canvas id="box" height="50" width="100"></canvas>
-	<script>new harry({canvas:'box',datas:[1,2,3,4,5]})</script>
+	<script>
+		new harry({
+			canvas:'box',
+			datas:[1,2,4,8,4,2,1],
+			mode:'river',
+			fill:'vertical'
+		});
+	</script>
