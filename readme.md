@@ -23,29 +23,47 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 	var h=new harry({
 
 		//datas can be provided in these formats :
+		
 		datas: [v1,v2,v3,...],        //simple dataset values
 		datas: [[v1,v2],[w1,w2],...], //multiple dataset values
-		datas: {                      //simple dataset with color and title
-			values: [v1,v2,...],
+		datas: {                      //simple dataset with optionaly labels, color and title
+			values: [v1,v2,...],      //  excepting values, all keys are
+			labels: [l1,l2,...],      //  optionals in this format
 			title: "my dataset #1",
 			color: "#fc0"
-		}
+		},
 		datas: [                      //multiple dataset with color and title
-			{ values:[...],title:"...",color:"..." },
-			{ values:[...],title:"...",color:"..." }
+			{ values:[...],labels:[...],title:"...",color:"..." },
+			{ values:[...],labels:[...],title:"...",color:"..." }
 		],
+
+		//context
 
 		id: "str",                    //canvas's id, by default harry$n
 		container: "str/elem",	      //container where create canvas, default=body
 		canvas: "str/elem",           //canvas element, default=create it into container
 		width: int,                   //canvas's width, default=container.width or 300
 		height: int,                  //canvas's height, default=container.height or 80
-		mode: "pie|chart|chart:stack|line|line:river|curve|curve:river",
-		                              //draw mode, default=line
+		
+		//rendering
+
+		mode: "curve:river",          //draw mode, can be:
+		                              //  pie          cheesecake
+		                              //  chart        histogram, side by side
+		                              //  chart:stack  stacked histograms
+		                              //  line         lines (default)
+		                              //  line:river   stacked lines
+		                              //  curve        curved lines
+		                              //  curve:river  stacked curved lines
 		linewidth: int,               //line width, default=1
-		linejoin: "round|bevel|miter" //line join, default=miter
-		fill: "none|auto|solid|vertical|horizontal|radial", 
-		                              //fill style (only first letter matter), default=auto
+		linejoin: "round",            //line join, can be round|bevel|miter default=miter
+		fill: "vertical",             //fill style (only first letter matter), can be:
+		                              //  none         without fills
+		                              //  auto         fill or not depending mode (default)
+		                              //  solid        uniform fill
+		                              //  vertical     vertical gradient fill
+		                              //  horizontal   horizontal gradient fill
+		                              //  radial       radial gradient fill
 		opacity: 0.8,                 //fill opacity, between 0 and 1, overrided if fill=auto
 		title: {                      //title options
 			font:'9px "Trebuchet MS"',//  font size & family, default=normal 9px "Sans Serif"
@@ -53,24 +71,26 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 			text: "title"             //  clear enough
 			x: 5,                     //  title position x
 			y: 10                     //  title position y
-			z: "top|background|bg"    //  behind or on top of the graph, default=top
+			z: "background"           //  behind or on top of the graph, default=top
 		},
-		labels: {                     //labels options
+		labels: {                     //axis labels options
 			font: "9px Trebuchet MS", //  font size & family, important:use px size,
 			                          //    default=normal 9px "Sans Serif"
 			color: "#a0a0a0",         //  font color, default=a0a0a0
-			y: [0,50,100,"max|min|avg"]// y legend, numbers are %, default=none
-			x: ['label 1','lab 2',etc]//  'all' display data index, or array of labels
-			stepx: 1                  //  draw each stepx between labels (2 print one label
-		},                            //    on two), default=none
+			y: [0,50,100,"max|min|avg"]// y axis, numbers are %, default=none
+			x: int                    //  x axis, 1=draw all label, 2=one/two..., default=none
+		},
 		grid: {                       //grid options
 			color:"#a0a0a0",          //  grid color, default=#a0a0a0
-			y: [0,50,100]             //  y legend, number are %, default=[0,25,50,75,100]
-			x: [0,100]                //  x legend, number are %, default=[0,100]
+			y: [0,50,100]             //  y axis, numbers are %, default=[0,25,50,75,100]
+			x: [0,100]                //  x axis, numbers are %, default=[0,100]
 		},
 		margins:[top,right,bot,left], //margin size (for labels), default=auto
 		autoscale: true,              //auto round up y scale, default=true (unused for pie)
 		pointradius: int,             //radius point in mode line/curve only (default=none)
+
+		//interaction
+
 		mouseover: {,                 //set to false to disable mouseover, default=enabled
 			radius: int,              //  spot radius, default=5
 			linewidth: int,           //  spot linewidth, default=linewidth below,0=fill
@@ -80,9 +100,9 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 			bullet: "rgba(0,0,0,0.5)" //  bullet background color, default=#888
 			border: "#fc0"            //  bullet border color, default=#fff,
 			axis: "xy|x|y"            //  draw spot axis, default=none
-			text: "%l\n%v" | cb(n,v)  //  text in the bullet %v=value %l=label %n=index
-			                          //    or a callback(n=value index,v=value)
-			                          //    default="%v"
+			text: "%l\n%v"            //  text in the bullet %v=value %l=label %n=index
+			text: callback(n,v,l,x,y) //  or text can trigger a callback
+			                          //     if it returns a string, it'll be displayed
 		}
 	});
 
@@ -96,7 +116,7 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 	 .cls()             //erase canvas
 	 .addDataSet(data)  //add a dataset, see contructor
 	 .setMode('chart')  //change current draw mode
-	 .draw();           //
+	 .draw();           //spawn a deamon
 
 **short sample**
 
