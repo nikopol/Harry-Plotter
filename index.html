@@ -22,6 +22,26 @@
 			}
 			var h=[];
 			
+			new harry({
+				container:"box0",
+				width:100,
+				height:60,
+				datas: [
+					{ values: [12,null,42], labels: ['first','second','third'] },
+					{ values: [100,null,300], labels: ['a','b','c'] },
+				],
+				labels: {
+					x: 1
+				},
+				mode:"line",
+				linewidth:2,
+				fill:"n",
+				grid:{y:[0,50,100]},
+				mouseover:{
+					text: "%l: %v"
+				}
+			});
+
 			//tiny - simple dataset
 			h.push(new harry({ container:"box40", width:40, height:16, datas:d, mode:"line", linewidth:2, fill:"n", grid:{y:[0,50,100]} }));
 			h.push(new harry({ container:"box41", width:40, height:16, datas:d, mode:"curve", grid:{y:[0,50,100]} }));
@@ -59,6 +79,7 @@
 </head>
 <body>
 	<h1>Harry Plotter v0.6 - Demo page [<a href="generator.html">generator</a>] [<a href="https://github.com/nikopol/Harry-Plotter">fork me!</a>]</h1>
+	<div class="tinybox" id="box0"></div>
 	<h2>Tiny - Simple dataset</h2>
 	<div class="tinybox" id="box40"></div>
 	<div class="tinybox" id="box41"></div>

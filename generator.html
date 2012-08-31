@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta name="author" content="niko" />
-	<title>Harry Plotter - Demo page</title>
+	<title>Harry Plotter - Generator</title>
 	<style>
 		body { margin:0; padding:0; font:normal 9pt "Sans Serif","Trebuchet MS"; }
 		form { display:block; width:700px; float:left; background-color:#aaa; padding:0; }
@@ -15,9 +15,9 @@
 		table { font:normal 9pt "Sans Serif","Trebuchet MS"; }
 		label { display:block; width:90px; float:left; text-align:right; Margin-right:5px; }
 		input[type="button"],input[type="reset"] { font:bold 9pt "Sans Serif","Trebuchet MS"; border:none; background-color:#444; color:#fff; }
-		input[type="text"],select { height:15px; font:normal 11px "Sans Serif","Trebuchet MS"; border:none; background-color:#ccc; }
+		input[type="text"],select { height:15px; font:normal 11px "Sans Serif","Trebuchet MS"; border:none; background-color:#ddd; }
 		input.int { width:80px; }
-		input.color { width:120px; }
+		input[type=color] { height:16px; background-color:#ccc; border:none; }
 		input.font { width:240px; }
 		input.data { width:280px; }
 		#render { display:block; float:left; }
@@ -26,20 +26,40 @@
 		h2 { font-size:10pt; background-color:#666; color:#fff; margin:0; padding: 1px 0 1px 3px; clear:both; }
 	</style>
 	<script src="harry.js"></script>
-	<script src="js/jquery-1.6.4.min.js"></script> <!-- only needed by the generator, not harry -->
-	<script src="js/colorpicker/colorpicker.js"></script>
-	<link rel="stylesheet" href="js/colorpicker/colorpicker.css" type="text/css" />
 	<script>
 		var MAXDATA=16;
 		
-		var str2nums=function(str){
-			var n=[],s=str.split(','),i;
-			for(i=0;i<s.length;i++) n.push(parseFloat(s[i],10));
+		var _=function(id){ return document.getElementById(id); };
+		var val=function(id){ return document.getElementById(id).value; };
+
+		var values=function(str){
+			var n,s=str.split(/\s*,\s*/),i,v,k;
+			if(/:/.test(str)){
+				n={};
+				for(i=0;i<s.length;i++){
+					if(s[i].match(/^(.+)\:(.+)$/)){
+						k=RegExp.$1;
+						v=RegExp.$2;
+					} else {
+						k=i;
+						v=s[i];
+					}
+					v=v==""||v=="null"?null:parseFloat(v,10);
+					n[k]=v;
+				} 
+			} else {
+				n=[];
+				for(i=0;i<s.length;i++){
+					v=s[i]==""||s[i]=="null"?null:parseFloat(s[i],10);
+					n.push(v);
+				} 
+			}
 			return n;
 		};
 		
 		var json={
 			encode: function(o,jsquote) { /*ignore functions*/
+				if(o==undefined) return 'null';
 				jsquote=jsquote||false;
 				var lines=[], isarray=(o.constructor==Array),k,v,s;
 				for(k in o) {
@@ -78,15 +98,15 @@
 			}
 		}
 		
-		$(document).ready(function(){
+		window.onload=function(){
 			
-			$(".color").colorPicker({sharped:true});
-			
-			$("input.rnd").click(function(){
-				var i,t=$(this).attr('target'), d=[];
+			_("butrnd1").onclick=
+			_("butrnd2").onclick=
+			_("butrnd3").onclick=function(){
+				var i,t=this.getAttribute('target'), d=[];
 				for(i=0;i<MAXDATA;++i) d.push(Math.floor(Math.random()*100));
-				$('#'+t).val(d.join(','));
-			});
+				_(t).value=d.join(',');
+			};
 
 			var isEmpty=function(o){
   				for(var i in o) return false;
@@ -99,77 +119,76 @@
 				//get datas
 				var i,d=[];
 				for(i=1;i<4;i++)
-					if((w=$('#data'+i).val()).length) {
-						ds={values:str2nums(w)};
-						if((v=$('#title'+i).val()).length) ds.title=v;
-						if((v=$('#color'+i).val()).length) ds.color=v;
+					if((w=val('data'+i)).length) {
+						ds={values:values(w)};
+						if((v=val('title'+i)).length) ds.title=v;
+						if((v=val('color'+i)).length) ds.color=v;
 						d.push(ds);
 					}
 				if(d.length) o.datas=d;
 
 				//get title
-				if((v=$('#titletext').val()).length){
+				if((v=val('titletext')).length){
 					o.title={text:v};
-					if((v=$('#titlefont').val()).length) o.title.font=v;
-					if((v=$('#titlecolor').val()).length) o.title.color=v;
-					if((v=$('#titlex').val()).length) o.title.x=v;
-					if((v=$('#titley').val()).length) o.title.y=v;
-					if((v=$('#titlez').val()).length) o.title.z=v;
+					if((v=val('titlefont')).length) o.title.font=v;
+					if((v=val('titlecolor')).length) o.title.color=v;
+					if((v=val('titlex')).length) o.title.x=v;
+					if((v=val('titley')).length) o.title.y=v;
+					if((v=val('titlez')).length) o.title.z=v;
 				}
 
 				//get grid
-				if((v=$('#gridx').val()).length+(w=$('#gridy').val()).length){
+				if((v=val('gridx')).length+(w=val('gridy')).length){
 					o.grid={};
-					if(v.length) o.grid.x=/none|false/.test(v)?v:str2nums(v);
-					if(w.length) o.grid.y=/none|false/.test(w)?w:str2nums(w);
-					if((v=$('#gridcolor').val()).length) o.grid.color=v;
+					if(v.length) o.grid.x=/none|false/.test(v)?v:values(v);
+					if(w.length) o.grid.y=/none|false/.test(w)?w:values(w);
+					if((v=val('gridcolor')).length) o.grid.color=v;
 				}
 
 				//get labels
-				if((v=$('#margins').val()).length) o.margins=str2nums(v);
-				if((v=$('#labelx').val()).length+(w=$('#labely').val()).length){
+				if((v=val('margins')).length) o.margins=values(v);
+				if((v=val('labelx')).length+(w=val('labely')).length){
 					o.labels={};
-					if(v.length) o.labels.x=v.split(/[,:\|]+/);
-					if(w.length) o.labels.y=str2nums(w);
-					if((v=$('#labelfont').val()).length) o.labels.font=v;
-					if((v=$('#labelcolor').val()).length) o.labels.color=v;
-					if((v=$('#stepx').val()).length) o.labels.stepx=v;
+					if(v.length) o.labels.x=parseInt(v,10);
+					if(w.length) o.labels.y=values(w);
+					if((v=val('labelfont')).length) o.labels.font=v;
+					if((v=val('labelcolor')).length) o.labels.color=v;
 				}
 
 				//get render
-				if((v=$('#width').val()).length) o.width=parseInt(v,10);
-				if((v=$('#height').val()).length) o.height=parseInt(v,10);
-				if((v=$('#mode').val()).length) o.mode=v;
-				if((v=$('#fill').val()).length) o.fill=v;
-				if((v=$('#opacity').val()).length) o.opacity=parseFloat(v,10);
-				if((v=$('#linewidth').val()).length) o.linewidth=parseInt(v,10);
-				if((v=$('#linejoin').val()).length) o.linejoin=v;
-				if((v=$('#radiuspoint').val()).length) o.radiuspoint=parseInt(v,10);
-				o.autoscale=$('#autoscale')[0].checked?true:false;
-				if($('#mouseover')[0].checked){
+				if((v=val('width')).length) o.width=parseInt(v,10);
+				if((v=val('height')).length) o.height=parseInt(v,10);
+				if((v=val('mode')).length) o.mode=v;
+				if((v=val('fill')).length) o.fill=v;
+				if((v=val('opacity')).length) o.opacity=parseFloat(v,10);
+				if((v=val('linewidth')).length) o.linewidth=parseInt(v,10);
+				if((v=val('linejoin')).length) o.linejoin=v;
+				if((v=val('radiuspoint')).length) o.radiuspoint=parseInt(v,10);
+				o.autoscale=_('autoscale').checked?true:false;
+				if(_('mouseover').checked){
 					var m={};
-					if((v=$('#moradius').val()).length) m.radius=parseInt(v,10);
-					if((v=$('#molinewidth').val()).length) m.linewidth=parseInt(v,10);
-					if((v=$('#mocircle').val()).length) m.circle=v;
-					if((v=$('#mofont').val()).length) m.font=v;
-					if((v=$('#mocolor').val()).length) m.color=v;
-					if((v=$('#moborder').val()).length) m.border=v;
-					if((v=$('#mobullet').val()).length) m.bullet=v;
-					if((v=$('#moaxis').val()).length) m.axis=v;
-					if((v=$('#motext').val()).length) m.text=v;
+					if((v=val('moradius')).length) m.radius=parseInt(v,10);
+					if((v=val('molinewidth')).length) m.linewidth=parseInt(v,10);
+					if((v=val('mocircle')).length) m.circle=v;
+					if((v=val('mofont')).length) m.font=v;
+					if((v=val('mocolor')).length) m.color=v;
+					if((v=val('moborder')).length) m.border=v;
+					if((v=val('mobullet')).length) m.bullet=v;
+					if((v=val('moaxis')).length) m.axis=v;
+					if((v=val('motext')).length) m.text=v;
 					if(!isEmpty(m)) o.mouseover=m;
 				} else
 					o.mouseover=false;
 
 				//let's show
-				$('#js pre').text("plotter("+json.tidy(json.encode(o,true))+")");
-				$('#container').empty();
+				_('jsout').innerText="plotter("+json.tidy(json.encode(o,true))+")";
+				_('container').innerHTML='';
 				plotter(o);
 			};
-			$("input.generate").click(build);
+			_("generate").onclick=build;
 			build();
 			
-		});
+		};
 	</script>
 </head>
 <body>
@@ -180,7 +199,7 @@
 		<div class="formcol">
 			<label for="titletext">title.text</label><input type="text" id="titletext" /><br/>
 			<label for="titlefont">title.font</label><input type="text" id="titlefont" class="font" value='bold 24px "Sans Serif"' /><br/>
-			<label for="titlecolor">title.color</label><input type="text" id="titlecolor" class="color" value="" /><br/>
+			<label for="titlecolor">title.color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="titlecolor" value="" /><br/>
 		</div>
 		<div class="formcol">
 			<label for="titlex">title.x</label><input type="text" id="titlex" class="int" />px<br/>
@@ -188,48 +207,47 @@
 			<label for="titlez">title.z</label><select id="titlez"><option value="">top</option><option value="bg">background</option></select><br/>
 		</div>
 		
-		<h2>Datas</h2>
+		<h2>Datasets</h2>
 		<table>
-			<tr><th>#</th><th>datas</th><th>title</th><th>color</th></tr>
+			<tr><th>#</th><th>values</th><th>title</th><th>color</th></tr>
 			<tr>
 				<td>#1</td>
-				<td><input type="text" id="data1" title="y1,y2,y3..." value="1,2,4,8,16,32,64,32,16,8,4,2,1" class="data" /><input type="button" class="rnd" value="random" target="data1" /></td>
+				<td><input type="text" id="data1" placeholder="y1,y2,y3... or L1:y1,L2:y2,..." value="1,2,4,8,16,32,64,32,16,8,4,2,1" class="data" /><input id="butrnd1" type="button" class="rnd" value="random" target="data1" /></td>
 				<td><input type="text" id="title1" value="" /></td>
-				<td><input type="text" id="color1" title="#rrggbb" value="" class="color" /></td>
+				<td><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="color1" value="" /></td>
 			</tr>
 			<tr>
 				<td>#2</td>
-				<td><input type="text" id="data2" title="y1,y2,y3..." value="" class="data" /><input type="button" class="rnd" value="random" target="data2" /></td>
+				<td><input type="text" id="data2" placeholder="y1,y2,y3... or L1:y1,L2:y2,..." value="" class="data" /><input id="butrnd2" type="button" class="rnd" value="random" target="data2" /></td>
 				<td><input type="text" id="title2" value="" /></td>
-				<td><input type="text" id="color2" title="#rrggbb" value="" class="color" /></td>
+				<td><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="color2" value="" /></td>
 			</tr>
 			<tr>
 				<td>#3</td>
-				<td><input type="text" id="data3" title="y1,y2,y3..." value="" class="data" /><input type="button" class="rnd" value="random" target="data3" /></td>
+				<td><input type="text" id="data3" placeholder="y1,y2,y3... or L1:y1,L2:y2,..." value="" class="data" /><input id="butrnd3" type="button" class="rnd" value="random" target="data3" /></td>
 				<td><input type="text" id="title3" value="" /></td>
-				<td><input type="text" id="color3" title="#rrggbb" value="" class="color" /></td>
+				<td><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="color3" value="" /></td>
 			</tr>
 		</table>
 		
 		<h2>Grid</h2>
 		<div class="formcol">
-			<label for="gridx">grid.x</label><input type="text" id="gridx" title="none or %,%,%..." value="" /><br/>
-			<label for="gridy">grid.y</label><input type="text" id="gridy" title="none or %,%,%..." value="" /><br/>
+			<label for="gridx">grid.x</label><input type="text" id="gridx" placeholder="none or %,%,%..." value="" /><br/>
+			<label for="gridy">grid.y</label><input type="text" id="gridy" placeholder="none or %,%,%..." value="" /><br/>
 		</div>
 		<div class="formcol">
-			<label for="gridcolor">grid.color</label><input type="text" id="gridcolor" title="#rrggbb" class="color" value="" /><br/>
+			<label for="gridcolor">grid.color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="gridcolor" value="" /><br/>
 		</div>
 		
-		<h2>Label</h2>
+		<h2>Labels</h2>
 		<div class="formcol">
-			<label for="margins">margins</label><input type="text" id="margins" title="top,right,bottom,left" value="" /><br/>
-			<label for="labelfont">label.font</label><input type="text" id="labelfont" class="font" value='normal 9px "Sans Serif","Trebuchet MS"' /><br/>
-			<label for="labelcolor">label.color</label><input type="text" id="labelcolor" class="color" value="" /><br/>
+			<label for="margins">margins</label><input type="text" id="margins" placeholder="top,right,bottom,left" value="" /> in px<br/>
+			<label for="labelfont">labels.font</label><input type="text" id="labelfont" class="font" value='normal 9px "Sans Serif","Trebuchet MS"' /><br/>
+			<label for="labelcolor">labels.color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="labelcolor" value="" /><br/>
 		</div>
 		<div class="formcol">
-			<label for="labely">label.y</label><input type="text" id="labely" title="%,%,%..." value="0,50,100" /><br/>
-			<label for="labelx">label.x</label><input type="text" id="labelx" title="labelx1,labelx2,.." value="x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13" /><br/>
-			<label for="stepx">step.x</label><input type="text" id="stepx" title="int" value="" /><br/>
+			<label for="labely">labels.y</label><input type="text" id="labely" placeholder="%,%,%..." value="0,50,100" title="show veritcals labels for each labels.y percent"/><br/>
+			<label for="labelx">labels.x</label><input type="text" id="labelx" placeholder="int" value="1" title="show horizontals labels every labels.x"/><br/>
 		</div>
 
 		<h2>Rendering</h2>
@@ -253,27 +271,27 @@
 			<label for="mouseover">enabled</label><input type="checkbox" id="mouseover" checked="checked" /><br/>
 			<label for="moradius">spot radius</label><input type="text" id="moradius" class="int" value="" />px<br/>
 			<label for="molinewidth">spot linewidth</label><select id="molinewidth"><option></option><option value="0">filled</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
-			<label for="mocircle">spot color</label><input type="text" id="mocircle" class="color" value="" /><br/>
+			<label for="mocircle">spot color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocircle" value="" /><br/>
 			<label for="moaxis">axis</label><select id="moaxis"><option></option><option>xy</option><option>x</option><option>y</option></select>
 		</div>
 		<div class="formcol">
 			<label for="mofont">bullet font</label><input type="text" id="mofont" class="font" value="" /><br/>
-			<label for="mocolor">text color</label><input type="text" id="mocolor" class="color" value="" /><br/>
-			<label for="mobullet">bullet color</label><input type="text" id="mobullet" class="color" value="" /><br/>
-			<label for="moborder">border color</label><input type="text" id="moborder" class="color" value="" /><br/>
+			<label for="mocolor">text color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocolor" value="" /><br/>
+			<label for="mobullet">bullet color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mobullet" value="" /><br/>
+			<label for="moborder">border color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="moborder" value="" /><br/>
 			<label for="motext">text</label><input type="text" id="motext" title="%l=label %v=value %n=index" value="%v" />
 		</div>
 
 		<div class="footer">
 			<input type="reset" value="reset" />
-			<input type="button" class="generate" value="generate" />
+			<input type="button" id="generate" value="generate" />
 		</div>
 	</form>
 	<div id="render">
 		<h2>Canvas</h2>
 		<div id="container"></div>
 		<h2>Javascript</h2>
-		<div id="js"><pre></pre></div>
+		<div id="js"><pre id="jsout"></pre></div>
 	</div>
 </body>
 </html>
