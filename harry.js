@@ -443,7 +443,7 @@ harry.prototype={
 			this.gc.textBaseline='top';
 			this.gc.fillStyle=this.mouseover.color;
 			for(i=0,ly=y2+s; i<lines.length; ++i,ly+=lh)
-				this.gc.fillText(lines[i],x1+s-1,ly);
+				this.gc.fillText(lines[i],x1+s,ly);
 		}
 		return this;
 	},
@@ -523,25 +523,27 @@ harry.prototype={
 				y=this.ry2;
 				for(nds=0;nds<nbds;nds++) {
 					d=this.dataset[nds];
-					y0=stack?y:this.ry2;
-					y=y0-Math.round(cy*d.val[nd]);
-					x1=Math.round(x);
-					x2=Math.round(x+bw);
-					this.gc.beginPath();
-					this.gc.moveTo(x1,y0);
-					this.gc.lineTo(x1,y);
-					this.gc.lineTo(x2,y);
-					this.gc.lineTo(x2,y0);
-					this.gc.closePath();
-					if(g=this.getGradient(d.col)){
-						this.gc.fillStyle=g;
-						this.gc.fill();
+					if(d.val[nd]) {
+						y0=stack?y:this.ry2;
+						y=y0-Math.round(cy*d.val[nd]);
+						x1=Math.round(x);
+						x2=Math.round(x+bw);
+						this.gc.beginPath();
+						this.gc.moveTo(x1,y0);
+						this.gc.lineTo(x1,y);
+						this.gc.lineTo(x2,y);
+						this.gc.lineTo(x2,y0);
+						this.gc.closePath();
+						if(g=this.getGradient(d.col)){
+							this.gc.fillStyle=g;
+							this.gc.fill();
+						}
+						this.gc.strokeStyle=d.col;
+						this.gc.stroke();
+						this.overpoints[nds].x.push(0.5+Math.floor(x+bw/2));
+						this.overpoints[nds].y.push(y);
+						this.overpoints[nds].v.push(d.val[nd]);
 					}
-					this.gc.strokeStyle=d.col;
-					this.gc.stroke();
-					this.overpoints[nds].x.push(0.5+Math.floor(x+bw/2));
-					this.overpoints[nds].y.push(y);
-					this.overpoints[nds].v.push(d.val[nd]);
 					if(!stack) x+=bw+1;
 				}
 				x+=stack?bw+1+m:m;
@@ -564,7 +566,7 @@ harry.prototype={
 
 	line: function(river,curve) {
 		var nds=this.dlen,cy=river?(this.dsum?this.rh/this.dsum:0):(this.dmax?this.rh/this.dmax:0),
-		    d,g,i,j,v,l,mx,my;
+		    d,g,i,j,v,l;
 		this.gc.lineWidth=this.linewidth;
 		this.gc.lineJoin=this.linejoin;
 		this.overpoints = [];
@@ -572,7 +574,7 @@ harry.prototype={
 			if((l=d.val.length)>1) {
 				//console.log("[harry] curve("+d.tit+")"+(river?" river":""));
 				//calc
-				var px,py,lx,ly,x=[],y=[];
+				var px,py,mx,my,lx,ly,x=[],y=[],o;
 				for(i=0;i<l;++i) {
 					v=0;
 					if(river) for(j=0;j<=nds;j++) v+=this.dataset[j].val[i];
@@ -586,51 +588,67 @@ harry.prototype={
 				y.push(this.ry2-Math.round(cy*v));
 				//fill
 				if(g=this.getGradient(d.col)){
-					this.gc.beginPath();
-					this.gc.moveTo(this.rx,this.ry2);
-					this.gc.lineTo(x[0],y[0]);
-					if(curve)
-						for(i=1;i<=l;++i) {
-							mx=(x[i-1]+x[i])/2;
-							my=(y[i-1]+y[i])/2;
-							px=(x[i-1]+mx)/2;
-							py=(y[i-1]+my)/2;
-							this.gc.quadraticCurveTo(x[i-1],y[i-1],px,py);
-							px=(mx+x[i])/2;
-							py=(my+y[i])/2;
+					this.gc.fillStyle=g;
+					for(o=false,i=0;i<l;++i) {
+						if(d.val[i]===null) {
+							if(o){
+								this.gc.lineTo(x[i-1],this.ry2);
+								this.gc.closePath();
+								this.gc.fill();
+								o=false;
+							}
+						} else if(!o) {
+							this.gc.beginPath();
+							this.gc.moveTo(x[i],this.ry2);
+							this.gc.lineTo(x[i],y[i]);
+							o=true;
+						} else if(d.val[i+1]===null || !curve) {
+							this.gc.lineTo(x[i],y[i]);
+						} else {
+							mx=(x[i]+x[i+1])/2;
+							my=(y[i]+y[i+1])/2;
+							px=(x[i]+mx)/2;
+							py=(y[i]+my)/2;
+							this.gc.quadraticCurveTo(x[i],y[i],px,py);
+							px=(mx+x[i+1])/2;
+							py=(my+y[i+1])/2;
 							this.gc.quadraticCurveTo(mx,my,px,py);
 						}
-					else
-						for(i=0;i<l;++i)
-							this.gc.lineTo(x[i],y[i]);
-					this.gc.lineTo(this.rx2,this.ry2);
-					this.gc.closePath();
-					this.gc.fillStyle=g;
-					this.gc.fill();
+					}
+					if(o){
+						this.gc.lineTo(x[i-1],this.ry2);
+						this.gc.closePath();
+						this.gc.fill();
+					}
 				}
 				//draw lines
 				this.gc.strokeStyle=d.col;
 				this.gc.beginPath();
-				this.gc.moveTo(x[0],y[0]);
-				if(nds==0) this.drawXLabel(0,x[0],this.h);
-				if(curve)
-					for(i=1;i<=l;++i) {
-						mx=(x[i-1]+x[i])/2;
-						my=(y[i-1]+y[i])/2;
-						px=(x[i-1]+mx)/2;
-						py=(y[i-1]+my)/2;
-						this.gc.quadraticCurveTo(x[i-1],y[i-1],px,py);
-						px=(mx+x[i])/2;
-						py=(my+y[i])/2;
+				for(o=false,i=0;i<l;++i) {
+					if(d.val[i]===null) {
+						o=false;
+					} else if(!o) {
+						o=true;
+						this.gc.moveTo(x[i],y[i]);
+					} else if(d.val[i+1]===null || !curve) {
+						this.gc.lineTo(x[i],y[i]);
+					} else {
+						mx=(x[i]+x[i+1])/2;
+						my=(y[i]+y[i+1])/2;
+						px=(x[i]+mx)/2;
+						py=(y[i]+my)/2;
+						this.gc.quadraticCurveTo(x[i],y[i],px,py);
+						px=(mx+x[i+1])/2;
+						py=(my+y[i+1])/2;
 						this.gc.quadraticCurveTo(mx,my,px,py);
-						if(nds==0 && i<l) this.drawXLabel(i,x[i],this.h);
 					}
-				else
-					for(i=1;i<=l;++i) {
-						this.gc.lineTo(x[i-1],y[i-1]);
-						if(nds==0 && i<l) this.drawXLabel(i,x[i],this.h);
-					}
+				}
 				this.gc.stroke();
+				//draw x labels
+				if(nds==0)
+					for(i=0;i<l;++i)
+						this.drawXLabel(i,x[i],this.h);
+				//draw points
 				if(this.radiuspoint) {
 					this.gc.fillStyle=d.col;
 					for(i=0;i<l;++i) {
@@ -696,7 +714,7 @@ harry.prototype={
 								this.gc.stroke();
 							}
 						}
-						this.drawBullet(o.x[n],o.y[n],3+this.mouseover.radius,o.v[n],n,o.nds);
+						this.drawBullet(o.x[n],o.y[n],lw/2+1+this.mouseover.radius,o.v[n],n,o.nds);
 					}
 				}
 			}
