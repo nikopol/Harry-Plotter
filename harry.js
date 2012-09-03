@@ -397,52 +397,54 @@ harry.prototype={
 		var x1,y1,x2,y2,ly,lh,s=3,i,m,w=0,
 		    lab=this.dataset[nds].lab[n],
 		    text=typeof(this.mouseover.text)=="function"
-		      ? this.mouseover.text(n,v,x,y)
+		      ? this.mouseover.text(n,v,lab,x,y)
 		      : this.mouseover.text.replace('%v',v).replace('%l',lab).replace('%n',n),
 		    lines=text.split(/\n|\\n/),
 		    lh=harryTools.fontPixSize(this.mouseover.font)+s,
 		    h=s+lines.length*lh,
 		    h2=Math.floor(h/2);
-		for(i in lines) {
-			m=this.gc.measureText(lines[i]).width+s*2;
-			if(m>w) w=m;
-		}
-		//left
-		x1=x+r;
-		x2=x1+w;
-		if(x2>=this.rw || (nds%2 && (x-r-w)>0)){
-			//right
-			x2=x-r;
-			x1=x2-w;
-		}
-		y1=y+h2;
-		y2=y1-h;
-		if(y1>=this.rh) {
-			y1=this.rh-0.5;
+		if(text) {
+			for(i in lines) {
+				m=this.gc.measureText(lines[i]).width+s*2;
+				if(m>w) w=m;
+			}
+			//left
+			x1=x+r;
+			x2=x1+w;
+			if(x2>=this.rw || (nds%2 && (x-r-w)>0)){
+				//right
+				x2=x-r;
+				x1=x2-w;
+			}
+			y1=y+h2;
 			y2=y1-h;
-		} else if(y2<0) {
-			y2=1.5;
-			y1=y2+h;
+			if(y1>=this.rh) {
+				y1=this.rh-0.5;
+				y2=y1-h;
+			} else if(y2<0) {
+				y2=1.5;
+				y1=y2+h;
+			}
+			//draw bullet
+			this.gc.beginPath();
+			this.gc.moveTo(x1,y1);
+			this.gc.lineTo(x2,y1);
+			this.gc.lineTo(x2,y2);
+			this.gc.lineTo(x1,y2);
+			this.gc.closePath();
+			this.gc.fillStyle=this.mouseover.bullet;
+			this.gc.fill();
+			this.gc.lineWidth=1;
+			this.gc.lineJoin='round';
+			this.gc.strokeStyle=this.mouseover.border;
+			this.gc.stroke();
+			//draw text
+			this.gc.textAlign='left';
+			this.gc.textBaseline='top';
+			this.gc.fillStyle=this.mouseover.color;
+			for(i=0,ly=y2+s; i<lines.length; ++i,ly+=lh)
+				this.gc.fillText(lines[i],x1+s-1,ly);
 		}
-		//draw bullet
-		this.gc.beginPath();
-		this.gc.moveTo(x1,y1);
-		this.gc.lineTo(x2,y1);
-		this.gc.lineTo(x2,y2);
-		this.gc.lineTo(x1,y2);
-		this.gc.closePath();
-		this.gc.fillStyle=this.mouseover.bullet;
-		this.gc.fill();
-		this.gc.lineWidth=1;
-		this.gc.lineJoin='round';
-		this.gc.strokeStyle=this.mouseover.border;
-		this.gc.stroke();
-		//draw text
-		this.gc.textAlign='left';
-		this.gc.textBaseline='top';
-		this.gc.fillStyle=this.mouseover.color;
-		for(i=0,ly=y2+s; i<lines.length; ++i,ly+=lh)
-			this.gc.fillText(lines[i],x1+s-1,ly);
 		return this;
 	},
 	
