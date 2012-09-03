@@ -562,7 +562,7 @@ harry.prototype={
 
 	line: function(river,curve) {
 		var nds=this.dlen,cy=river?(this.dsum?this.rh/this.dsum:0):(this.dmax?this.rh/this.dmax:0),
-		    d,g,i,j,v,l;
+		    d,g,i,j,v,l,mx,my;
 		this.gc.lineWidth=this.linewidth;
 		this.gc.lineJoin=this.linejoin;
 		this.overpoints = [];
@@ -589,9 +589,14 @@ harry.prototype={
 					this.gc.lineTo(x[0],y[0]);
 					if(curve)
 						for(i=1;i<=l;++i) {
-							px=(x[i-1]+x[i])/2;
-							py=(y[i-1]+y[i])/2;
+							mx=(x[i-1]+x[i])/2;
+							my=(y[i-1]+y[i])/2;
+							px=(x[i-1]+mx)/2;
+							py=(y[i-1]+my)/2;
 							this.gc.quadraticCurveTo(x[i-1],y[i-1],px,py);
+							px=(mx+x[i])/2;
+							py=(my+y[i])/2;
+							this.gc.quadraticCurveTo(mx,my,px,py);
 						}
 					else
 						for(i=0;i<l;++i)
@@ -608,9 +613,14 @@ harry.prototype={
 				if(nds==0) this.drawXLabel(0,x[0],this.h);
 				if(curve)
 					for(i=1;i<=l;++i) {
-						px=(x[i-1]+x[i])/2;
-						py=(y[i-1]+y[i])/2;
+						mx=(x[i-1]+x[i])/2;
+						my=(y[i-1]+y[i])/2;
+						px=(x[i-1]+mx)/2;
+						py=(y[i-1]+my)/2;
 						this.gc.quadraticCurveTo(x[i-1],y[i-1],px,py);
+						px=(mx+x[i])/2;
+						py=(my+y[i])/2;
+						this.gc.quadraticCurveTo(mx,my,px,py);
 						if(nds==0 && i<l) this.drawXLabel(i,x[i],this.h);
 					}
 				else
