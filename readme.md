@@ -15,7 +15,7 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
   - pie chart line curve support
   - mouseover support
   - lightweight
-  - no library dependancies
+  - standalone
   - fully configurable
 
 **constructors**
@@ -32,7 +32,7 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 			title: "my dataset #1",
 			color: "#fc0"
 		},
-		datas: [                      //multiple dataset with color and title
+		datas: [                      //multiple dataset with label,color and title
 			{ values:[...],labels:[...],title:"...",color:"..." },
 			{ values:[...],labels:[...],title:"...",color:"..." }
 		],
@@ -69,8 +69,8 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 			font:'9px "Trebuchet MS"',//  font size & family, default=normal 9px "Sans Serif"
 			color: "rgba(4,4,4,0.3)", //  font color, default=rgba(4,4,4,0.3)
 			text: "title"             //  clear enough
-			x: 5,                     //  title position x
-			y: 10                     //  title position y
+			x: 5,                     //  title position left position
+			y: 10                     //  title position top position
 			z: "background"           //  behind or on top of the graph, default=top
 		},
 		labels: {                     //axis labels options
