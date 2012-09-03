@@ -164,7 +164,7 @@
 				if((v=val('linewidth')).length) o.linewidth=parseInt(v,10);
 				if((v=val('linejoin')).length) o.linejoin=v;
 				if((v=val('radiuspoint')).length) o.radiuspoint=parseInt(v,10);
-				o.autoscale=_('autoscale').checked?true:false;
+				if(!_('autoscale').checked) o.autoscale=false;
 				if(_('mouseover').checked){
 					var m={};
 					if((v=val('moradius')).length) m.radius=parseInt(v,10);
@@ -242,7 +242,7 @@
 		<h2>Labels</h2>
 		<div class="formcol">
 			<label for="margins">margins</label><input type="text" id="margins" placeholder="top,right,bottom,left" value="" /> in px<br/>
-			<label for="labelfont">labels.font</label><input type="text" id="labelfont" class="font" value='normal 9px "Sans Serif","Trebuchet MS"' /><br/>
+			<label for="labelfont">labels.font</label><input type="text" id="labelfont" class="font" value='normal 9px "Sans Serif"' /><br/>
 			<label for="labelcolor">labels.color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="labelcolor" value="" /><br/>
 		</div>
 		<div class="formcol">
