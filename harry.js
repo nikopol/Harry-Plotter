@@ -612,15 +612,45 @@ harry.prototype={
 
 	line: function(river,curve) {
 		var nds=this.dlen,cy=river?(this.dsum?this.rh/this.dsum:0):(this.dmax?this.rh/this.dmax:0),
-		    d,g,i,j,v,l;
+		    d,g,i,j,v,l,
+		    drawPath=function(gc,x,y,v,n1,n2) {
+		    	var n=n1,nx,ny,mx,my,px,py;
+		    	gc.moveTo(x[n1],y[n2]);
+		    	while(n<=n2) {
+					if(v[n]===null)
+						n++;
+					else if(curve) {
+						nx=x[n];
+						ny=y[n];
+						n++;
+						while(n<=n2 && v[n]===null) n++;
+						if(n>n2)
+							gc.lineTo(nx,ny);
+						else {
+							mx=(nx+x[n])/2;
+							my=(ny+y[n])/2;
+							px=(nx+mx)/2;
+							py=(ny+my)/2;
+							gc.quadraticCurveTo(nx,ny,px,py);
+							px=(mx+x[n])/2;
+							py=(my+y[n])/2;
+							gc.quadraticCurveTo(mx,my,px,py);
+						}
+					} else {
+						gc.lineTo(x[n],y[n]);
+						n++;
+					}
+				}
+		    };
 		this.gc.lineWidth=this.linewidth;
 		this.gc.lineJoin=this.linejoin;
 		this.overpoints = [];
+
 		while(d=this.dataset[--nds])
 			if((l=d.val.length)>1) {
 				//console.log("[harry] curve("+d.tit+")"+(river?" river":""));
 				//calc
-				var px,py,mx,my,lx,ly,x=[],y=[],o;
+				var x=[],y=[],n1,n2;
 				for(i=0;i<l;++i) {
 					v=0;
 					if(river) for(j=0;j<=nds;j++) v+=this.dataset[j].val[i];
@@ -632,63 +662,26 @@ harry.prototype={
 				i--;
 				x.push(this.rx+Math.round(i*(this.rw/(l-1))));
 				y.push(this.ry2-Math.round(cy*v));
+				//dont draw leading/ending null values
+				n1=0;
+				while(d.val[n1]===null) n1++;
+				n2=l-1;
+				while(d.val[n2]===null) n2--;
 				//fill
-				if(g=this.getGradient(d.col)){
+				if(g=this.getGradient(d.col) && n1<=n2){
 					this.gc.fillStyle=g;
-					for(o=false,i=0;i<l;++i) {
-						if(d.val[i]===null) {
-							if(o){
-								this.gc.lineTo(x[i-1],this.ry2);
-								this.gc.closePath();
-								this.gc.fill();
-								o=false;
-							}
-						} else if(!o) {
-							this.gc.beginPath();
-							this.gc.moveTo(x[i],this.ry2);
-							this.gc.lineTo(x[i],y[i]);
-							o=true;
-						} else if(d.val[i+1]===null || !curve) {
-							this.gc.lineTo(x[i],y[i]);
-						} else {
-							mx=(x[i]+x[i+1])/2;
-							my=(y[i]+y[i+1])/2;
-							px=(x[i]+mx)/2;
-							py=(y[i]+my)/2;
-							this.gc.quadraticCurveTo(x[i],y[i],px,py);
-							px=(mx+x[i+1])/2;
-							py=(my+y[i+1])/2;
-							this.gc.quadraticCurveTo(mx,my,px,py);
-						}
-					}
-					if(o){
-						this.gc.lineTo(x[i-1],this.ry2);
-						this.gc.closePath();
-						this.gc.fill();
-					}
+					this.gc.beginPath();
+					this.gc.moveTo(x[n1],this.ry2);
+					this.gc.lineTo(x[n1],y[n2]);
+					drawPath(this.gc,x,y,d.val,n1,n2);
+					this.gc.lineTo(x[n2],this.ry2);
+					this.gc.closePath();
+					this.gc.fill();
 				}
 				//draw lines
 				this.gc.strokeStyle=d.col;
 				this.gc.beginPath();
-				for(o=false,i=0;i<l;++i) {
-					if(d.val[i]===null) {
-						o=false;
-					} else if(!o) {
-						o=true;
-						this.gc.moveTo(x[i],y[i]);
-					} else if(d.val[i+1]===null || !curve) {
-						this.gc.lineTo(x[i],y[i]);
-					} else {
-						mx=(x[i]+x[i+1])/2;
-						my=(y[i]+y[i+1])/2;
-						px=(x[i]+mx)/2;
-						py=(y[i]+my)/2;
-						this.gc.quadraticCurveTo(x[i],y[i],px,py);
-						px=(mx+x[i+1])/2;
-						py=(my+y[i+1])/2;
-						this.gc.quadraticCurveTo(mx,my,px,py);
-					}
-				}
+				drawPath(this.gc,x,y,d.val,n1,n2);
 				this.gc.stroke();
 				//draw x labels
 				if(nds==0)
