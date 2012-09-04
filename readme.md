@@ -48,6 +48,7 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 		
 		//rendering
 
+		background: "rgba(0,0,0,0.5)" //background color, default=transparent
 		mode: "curve:river",          //draw mode, can be:
 		                              //  pie          cheesecake
 		                              //  chart        histogram, side by side

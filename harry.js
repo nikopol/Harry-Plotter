@@ -35,6 +35,7 @@ var h=new harry({
 	
 	//rendering
 
+	background: "rgba(0,0,0,0.5)" //background color, default=transparent
 	mode: "curve:river",          //draw mode, can be:
 	                              //  pie          cheesecake
 	                              //  chart        histogram, side by side
@@ -157,6 +158,7 @@ var harry=function(o) {
 	this.w=this.canvas.width;
 	this.h=this.canvas.height;
 	this.id=o.id || "harry"+(++harryTools.count);
+	this.bg=o.background;
 	this.setMode(o.mode);
 	this.fill=(o.fill || "auto")[0].toLowerCase().replace(/[^nasvhr]/,"a");
 	this.opacity=parseFloat(o.opacity,10) || 1;
@@ -218,7 +220,7 @@ var harry=function(o) {
 	this.rh=Math.max(this.h-this.margins[0]-this.margins[2],0);
 	this.rx2=this.rx+this.rw;
 	this.ry2=this.ry+this.rh;
-	this.draw();
+	this.cls().draw();
 }
 
 harry.prototype={
@@ -322,6 +324,10 @@ harry.prototype={
 	
 	cls: function() {
 		this.gc.clearRect(0,0,this.w,this.h);
+		if(this.bg) {
+			this.gc.fillStyle=this.bg;
+			this.gc.fillRect(0,0,this.w,this.h);
+		}
 		return this;
 	},
 
