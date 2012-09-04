@@ -12,11 +12,12 @@ var h=new harry({
 	//datas can be provided in these formats :
 	
 	datas: [v1,v2,v3,...],        //simple dataset values
+	datas: [v1,v2,v3,...],        //simple dataset values
 	datas: [[v1,v2],[w1,w2],...], //multiple dataset values
 	datas: {                      //simple dataset with optionaly labels, color and title
 		values: [v1,v2,...],      //  excepting values, all keys are
 		labels: [l1,l2,...],      //  optionals in this format
-		title: "my dataset #1",
+		title: "my dataset #1",   //  values can also be an hash {label:value,...}
 		color: "#fc0"
 	},
 	datas: [                      //multiple dataset with label,color and title
@@ -186,7 +187,7 @@ var harry=function(o) {
 	}
 	if(!o.margins) {
 		if(/pie/.test(this.mode)) {
-			var m=this.labels.x?this.labels.fontpx:0;
+			var m=this.labels.x?this.labels.fontpx*2:0;
 			this.margins=[m,m,m,m];
 		} else {
 			var m=this.labels.fontpx,sm=Math.floor(this.labels.fontpx/2);
@@ -283,33 +284,38 @@ harry.prototype={
 		return this;
 	},
 	
-	draw: function(mode) {
+	draw: function(mode,nover) {
 		this.mode=(mode || this.mode).toLowerCase();
 		//console.log("[harry] draw("+this.mode+")");
 		var args=this.mode.split(/:/);
 		this.drawGrid().drawYLabels();
 		if(this.title && this.title.z=='top') this[args[0]](args.length==1?false:args[1]).drawTitle();
 		else                                  this.drawTitle()[args[0]](args.length==1?false:args[1]);
-		if(this.mouseover && this[args[0]+'Over']){
-			var self = this;
-			this.imgdata = this.gc.getImageData(0,0,this.w,this.h);
-			if(this.mousepos != undefined) self[args[0]+'Over'](self.mousepos.x,self.mousepos.y,args[1]);
-			this.canvas.onmouseover=function(){
-				self.canvas.onmousemove=function(e){
-					e=e||window.event;
-					self.gc.putImageData(self.imgdata,0,0);
-					self.mousepos={
-						x: e.offsetX!=undefined && e.offsetX || e.layerX!=undefined && e.layerX || e.clientX!=undefined && e.clientX,
-						y: e.offsetY!=undefined && e.offsetY || e.layerY!=undefined && e.layerY || e.clientY!=undefined && e.clientY
+		if(!nover) {
+			this.canvas.onmouseover=
+			this.canvas.onmousemove=
+			this.canvas.onmouseout=undefined;
+			if(this.mouseover && this[args[0]+'Over']){
+				var self = this;
+				this.imgdata = this.gc.getImageData(0,0,this.w,this.h);
+				if(this.mousepos != undefined) self[args[0]+'Over'](self.mousepos.x,self.mousepos.y,args[1]);
+				this.canvas.onmouseover=function(){
+					self.canvas.onmousemove=function(e){
+						e=e||window.event;
+						self.gc.putImageData(self.imgdata,0,0);
+						self.mousepos={
+							x: e.offsetX!=undefined && e.offsetX || e.layerX!=undefined && e.layerX || e.clientX!=undefined && e.clientX,
+							y: e.offsetY!=undefined && e.offsetY || e.layerY!=undefined && e.layerY || e.clientY!=undefined && e.clientY
+						};
+						self[args[0]+'Over'](self.mousepos.x,self.mousepos.y,args[1]);
 					};
-					self[args[0]+'Over'](self.mousepos.x,self.mousepos.y,args[1]);
 				};
-			};
-			this.canvas.onmouseout=function(){
-				self.mousepos=undefined;
-				self.canvas.onmousemove=null;
-				self.gc.putImageData(self.imgdata,0,0);
-			};
+				this.canvas.onmouseout=function(){
+					self.mousepos=undefined;
+					self.canvas.onmousemove=null;
+					self.gc.putImageData(self.imgdata,0,0);
+				};
+			}
 		}
 		return this;
 	},
@@ -392,7 +398,8 @@ harry.prototype={
 		return this;
 	},
 
-	drawBullet: function(x,y,r,v,n,nds) {
+	drawBullet: function(x,y,r,v,n,nds,center) {
+		this.gc.save();
 		this.gc.font=this.mouseover.font;
 		var x1,y1,x2,y2,ly,lh,s=3,i,m,w=0,
 		    lab=this.dataset[nds].lab[n],
@@ -408,22 +415,35 @@ harry.prototype={
 				m=this.gc.measureText(lines[i]).width+s*2;
 				if(m>w) w=m;
 			}
-			//left
-			x1=x+r;
-			x2=x1+w;
-			if(x2>=this.rw || (nds%2 && (x-r-w)>0)){
-				//right
-				x2=x-r;
-				x1=x2-w;
-			}
-			y1=y+h2;
-			y2=y1-h;
-			if(y1>=this.rh) {
-				y1=this.rh-0.5;
+			if(center) {
+				x1=x+r-(w/2);
+				if(x1<this.rx) x1=this.rx;
+				x2=x1+w;
+				if(x2>this.rx2) {
+					x2 = this.rx2-1;
+					x1 = x2-w;
+				}
+				y1=y+(h/2);
+				if(y1>this.ry2) y1=this.ry2-1;
 				y2=y1-h;
-			} else if(y2<0) {
-				y2=1.5;
-				y1=y2+h;
+			} else {
+				//left
+				x1=x+r;
+				x2=x1+w;
+				if(x2>=this.rx2 || (nds%2 && (x-r-w)>0)){
+					//right
+					x2=x-r;
+					x1=x2-w;
+				}
+				y1=y+h2;
+				y2=y1-h;
+				if(y1>=this.rh) {
+					y1=this.rh-0.5;
+					y2=y1-h;
+				} else if(y2<0) {
+					y2=1.5;
+					y1=y2+h;
+				}
 			}
 			//draw bullet
 			this.gc.beginPath();
@@ -445,12 +465,15 @@ harry.prototype={
 			for(i=0,ly=y2+s; i<lines.length; ++i,ly+=lh)
 				this.gc.fillText(lines[i],x1+s,ly);
 		}
+		this.gc.restore();
 		return this;
 	},
 	
-	pie: function() {
+	pie: function(n) {
 		var nbds=this.dlen;
 		//console.log("[harry] pie ("+nbds+" dataset)");
+		this.overpoints = [];
+		n=n!=undefined && n.length ? parseInt(n,10) : -1;
 		if(nbds){
 			//precalc angles
 			var i,nb=0,va=[],vc=[],pi2=Math.PI*2,labs=[],pc=/percent/.test(this.labels.x);
@@ -480,17 +503,26 @@ harry.prototype={
 			}
 			//draw
 			var cx=this.rx+Math.round(this.rw/2),cy=this.ry+Math.round(this.rh/2);
-			var r=Math.min(this.rh/2,this.rw/2)-1, rl=r+this.labels.fontpx*0.7;
-			var g,a1=-Math.PI/2,a2,a;
-			var l
+			var r=Math.min(this.rh/2,this.rw/2)-1, rl=r+this.labels.fontpx*1,dx,dy;
+			var g,a1=Math.PI*1.5,a2,a;
+			this.overpie={r:r,x:cx,y:cy};
 			this.gc.lineWidth=this.linewidth;
 			this.gc.lineJoin="miter";
 			for(i=0;i<nb;i++) {
 				a2=a1+va[i];
+				a=(a1+a2)/2;
+				this.overpoints.push({a:a1%(2*Math.PI),n:i});
+				if(i==n) {
+					dx=cx+Math.cos(a)*10;
+					dy=cy+Math.sin(a)*10;
+				} else {
+					dx=cx;
+					dy=cy;
+				}
 				g=this.getGradient(vc[i]);
 				this.gc.beginPath();
-				this.gc.moveTo(cx,cy);
-				this.gc.arc(cx,cy,r,a1,a2,false);
+				this.gc.moveTo(dx,dy);
+				this.gc.arc(dx,dy,r,a1,a2,false);
 				this.gc.closePath();
 				if(g) {
 					this.gc.fillStyle=g;
@@ -498,14 +530,28 @@ harry.prototype={
 				}
 				this.gc.strokeStyle=vc[i];
 				this.gc.stroke();
-				a=(a1+a2)/2;
-				this.drawXLabel(labs[i],cx+rl*Math.cos(a),cy+rl*Math.sin(a),'center','middle');
+				if(i==n) this.drawBullet(dx+rl/2*Math.cos(a),dy+rl/2*Math.sin(a),0,labs[i],i,0,true);
+				else     this.drawXLabel(labs[i],dx+rl*Math.cos(a),dy+rl*Math.sin(a),'center','middle');
 				a1=a2;
 			}
+			this.overpoints.sort(function(a,b){return a.a-b.a});
 		}
 		return this;
 	},
-	
+
+	pieOver: function(x,y) {
+		var d=Math.sqrt(Math.pow(x-this.overpie.x,2)+Math.pow(y-this.overpie.y,2)),a,n,i=0;
+		if(d<=this.overpie.r){
+			a=Math.PI-Math.atan2(this.overpie.y-y,x-this.overpie.x);
+			a=(a+3*Math.PI)%(2*Math.PI);
+			while(i<this.overpoints.length && a>this.overpoints[i].a) i++;
+			if(--i<0) i=this.overpoints.length-1;
+			n=this.overpoints[i].n;
+			this.cls().draw('pie:'+n,true);
+		}
+		return this;
+	},
+
 	chart: function(stack) {
 		var nbds=this.dlen;
 		//console.log("[harry] chart ("+nbds+" dataset)");
@@ -714,11 +760,12 @@ harry.prototype={
 								this.gc.stroke();
 							}
 						}
-						this.drawBullet(o.x[n],o.y[n],lw/2+1+this.mouseover.radius,o.v[n],n,o.nds);
+						this.drawBullet(o.x[n],o.y[n],lw/2+1+this.mouseover.radius,o.v[n],n,o.nds,false);
 					}
 				}
 			}
 		}
+		return this;
 	},
 
 	getFillMode: function() {
