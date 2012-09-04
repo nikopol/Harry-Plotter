@@ -47,10 +47,10 @@
 			h.push(new harry({ container:"box41", width:40, height:16, datas:d, mode:"curve", grid:{y:[0,50,100]} }));
 
 			//small - simple dataset
-			h.push(new harry({ canvas:"box00", title:"line", datas:d, labels:{y:[25,50,75,100]} }));
-			h.push(new harry({ canvas:"box01", title:"curve", datas:d, mode:"curve:river" }));
-			h.push(new harry({ canvas:"box02", title:"chart", datas:d, mode:"chart" }));
-			h.push(new harry({ canvas:"box03", title:"pie", datas:d, mode:"pie" }));
+			h.push(new harry({ canvas:"box00", legends:false, title:"line", datas:d, labels:{y:[25,50,75,100]} }));
+			h.push(new harry({ canvas:"box01", legends:false, title:"curve", datas:d, mode:"curve:river" }));
+			h.push(new harry({ canvas:"box02", legends:false, title:"chart", datas:d, mode:"chart" }));
+			h.push(new harry({ canvas:"box03", legends:false, title:"pie", datas:d, mode:"pie" }));
 			
 			//small - multi dataset
 			plotter({ canvas:"box10", datas:ds, title:"line", mode:"line", labels:{x:["x1","x2","x3","x4","x5","x6","x7"],stepx:2,y:[25,50,75,100]} });
@@ -78,7 +78,7 @@
 	</script>
 </head>
 <body>
-	<h1>Harry Plotter v0.6 - Demo page [<a href="generator.html">generator</a>] [<a href="https://github.com/nikopol/Harry-Plotter">fork me!</a>]</h1>
+	<h1>Harry Plotter v0.7 - Demo page [<a href="generator.html">generator</a>] [<a href="https://github.com/nikopol/Harry-Plotter">fork me!</a>]</h1>
 	<div class="tinybox" id="box0"></div>
 	<h2>Tiny - Simple dataset</h2>
 	<div class="tinybox" id="box40"></div>

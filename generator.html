@@ -15,7 +15,7 @@
 		table { font:normal 9pt "Sans Serif","Trebuchet MS"; }
 		label { display:block; width:90px; float:left; text-align:right; Margin-right:5px; }
 		input[type="button"],input[type="reset"] { font:bold 9pt "Sans Serif","Trebuchet MS"; border:none; background-color:#444; color:#fff; }
-		input[type="text"],select { height:15px; font:normal 11px "Sans Serif","Trebuchet MS"; border:none; background-color:#ddd; }
+		input[type="text"],select { color:#000; height:15px; font:normal 11px "Sans Serif","Trebuchet MS"; border:none; background-color:#ddd; }
 		input.int { width:80px; }
 		input[type=color] { height:16px; background-color:#ccc; border:none; }
 		input.font { width:240px; }
@@ -24,6 +24,8 @@
 		#js { background-color:#888; color:#fff; }
 		h1 { font-size:12pt; margin:2px 0 3px 0; }
 		h2 { font-size:10pt; background-color:#666; color:#fff; margin:0; padding: 1px 0 1px 3px; clear:both; }
+		::-webkit-input-placeholder { color:#999; }
+		input:-moz-placeholder { color:#999; }
 	</style>
 	<script src="harry.js"></script>
 	<script>
@@ -100,14 +102,6 @@
 		
 		window.onload=function(){
 			
-			_("butrnd1").onclick=
-			_("butrnd2").onclick=
-			_("butrnd3").onclick=function(){
-				var i,t=this.getAttribute('target'), d=[];
-				for(i=0;i<MAXDATA;++i) d.push(Math.floor(Math.random()*100));
-				_(t).value=d.join(',');
-			};
-
 			var isEmpty=function(o){
   				for(var i in o) return false;
   				return true;
@@ -166,6 +160,8 @@
 				if((v=val('linejoin')).length) o.linejoin=v;
 				if((v=val('radiuspoint')).length) o.radiuspoint=parseInt(v,10);
 				if(!_('autoscale').checked) o.autoscale=false;
+				
+				//get mousevore
 				if(_('mouseover').checked){
 					var m={};
 					if((v=val('moradius')).length) m.radius=parseInt(v,10);
@@ -181,19 +177,50 @@
 				} else
 					o.mouseover=false;
 
+				//get legends
+				if(_('legends').checked){
+					var m={};
+					if((v=val('legx')).length) m.x=parseInt(v,10);
+					if((v=val('legy')).length) m.y=parseInt(v,10);
+					if((v=val('legfont')).length) m.font=v;
+					if((v=val('legbg')).length) m.background=v;
+					if((v=val('legcolor')).length) m.color=v;
+					if((v=val('legborder')).length) m.border=v;
+					if((v=val('legborder2')).length) m.border2=v;
+					if(!isEmpty(m)) o.legends=m;
+				} else
+					o.legends=false;
+
 				//let's show
 				_('jsout').innerText="plotter("+json.tidy(json.encode(o,true))+")";
 				_('container').innerHTML='';
 				plotter(o);
 			};
+			
 			_("generate").onclick=build;
+			for(var i=0, l=document.getElementsByTagName("input"); i<l.length; ++i)
+				if(/checkbox|text/.test(l[i].type))
+					l[i].onclick=l[i].onkeyup=build;
+			for(var i=0, l=document.getElementsByTagName("select"); i<l.length; ++i)
+				l[i].onclick=l[i].onkeyup=build;
+
+			_("butrnd1").onclick=
+			_("butrnd2").onclick=
+			_("butrnd3").onclick=function(){
+				var i,t=this.getAttribute('target'), d=[];
+				for(i=0;i<MAXDATA;++i) d.push(Math.floor(Math.random()*100));
+				_(t).value=d.join(',');
+				build();
+			};
+
+
 			build();
 			
 		};
 	</script>
 </head>
 <body>
-	<h1>Harry Plotter v0.6 - Generator page [<a href="index.html">demo</a>] [<a href="https://github.com/nikopol/Harry-Plotter">fork me!</a>]</h1>
+	<h1>Harry Plotter v0.7 - Generator page [<a href="index.html">demo</a>] [<a href="https://github.com/nikopol/Harry-Plotter">fork me!</a>]</h1>
 	<form>
 		
 		<h2>Title</h2>
@@ -230,6 +257,22 @@
 				<td><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="color3" value="" /></td>
 			</tr>
 		</table>
+
+		<h2>Rendering</h2>
+		<div class="formcol">
+			<label for="bg">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="bg" value="" /><br/>
+			<label for="width">width</label><input type="text" id="width" class="int" value="" />px<br/>
+			<label for="height">height</label><input type="text" id="height" class="int" value="" />px<br/>
+			<label for="mode">mode</label><select id="mode"><option></option><option>line</option><option>line:river</option><option>pie</option><option>chart</option><option>chart:stack</option><option selected="selected">curve</option><option>curve:river</option></select><br/>
+			<label for="autoscale">autoscale</label><input type="checkbox" id="autoscale" checked="checked" /><br/>
+		</div>
+		<div class="formcol">
+			<label for="fill">fill</label><select id="fill"><option></option><option selected="selected">none</option><option>solid</option><option>light</option><option>dark</option><option>vertical</option><option>horizontal</option><option>radial</option></select><br/>
+			<label for="opacity">opacity</label><select id="opacity"><option></option><option value="0.1">0.1 - transparent</option><option>0.2</option><option>0.3</option><option>0.4</option><option value="0.5">0.5 - semi transparent</option><option>0.6</option><option>0.7</option><option>0.8</option><option>0.9</option><option value="1">1.0 - opaque</option></select><br/>
+			<label for="linewidth">linewidth</label><select id="linewidth"><option></option><option>1</option><option>2</option><option  selected="selected">3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
+			<label for="linejoin">linejoin</label><select id="linejoin"><option></option><option>round</option><option>miter</option><option>bevel</option></select>(line or histogram mode)<br/>
+			<label for="radiuspoint">radiuspoint</label><select id="radiuspoint"><option></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>10</option><option>15</option><option>20</option><option>40</option></select> (line or curve mode)<br/>
+		</div>
 		
 		<h2>Grid</h2>
 		<div class="formcol">
@@ -251,21 +294,18 @@
 			<label for="labelx">labels.x</label><input type="text" id="labelx" placeholder="int" value="1" title="show horizontals labels every labels.x"/><br/>
 		</div>
 
-		<h2>Rendering</h2>
+		<h2>Legends</h2>
 		<div class="formcol">
-			<label for="bg">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="bg" value="" /><br/>
-			<label for="width">width</label><input type="text" id="width" class="int" value="" />px<br/>
-			<label for="height">height</label><input type="text" id="height" class="int" value="" />px<br/>
-			<label for="mode">mode</label><select id="mode"><option></option><option>line</option><option>line:river</option><option>pie</option><option>chart</option><option>chart:stack</option><option selected="selected">curve</option><option>curve:river</option></select><br/>
-			<label for="autoscale">autoscale</label><input type="checkbox" id="autoscale" checked="checked" /><br/>
-			
+			<label for="legends">enabled</label><input type="checkbox" id="legends" checked="checked" /><br/>
+			<label for="legx">legends.x</label><input type="text" id="legx" placeholder="int" value="" /><br/>
+			<label for="legy">legends.y</label><input type="text" id="legy" placeholder="int" value="" /><br/>
+			<label for="legbg">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legbg" value="" /><br/>
 		</div>
 		<div class="formcol">
-			<label for="fill">fill</label><select id="fill"><option></option><option selected="selected">none</option><option>solid</option><option>vertical</option><option>horizontal</option><option>radial</option></select><br/>
-			<label for="opacity">opacity</label><select id="opacity"><option></option><option value="0.1">0.1 - transparent</option><option>0.2</option><option>0.3</option><option>0.4</option><option value="0.5">0.5 - semi transparent</option><option>0.6</option><option>0.7</option><option>0.8</option><option>0.9</option><option value="1">1.0 - opaque</option></select><br/>
-			<label for="linewidth">linewidth</label><select id="linewidth"><option></option><option>1</option><option>2</option><option  selected="selected">3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
-			<label for="linejoin">linejoin</label><select id="linejoin"><option></option><option>round</option><option>miter</option><option>bevel</option></select>(line or histogram mode)<br/>
-			<label for="radiuspoint">radiuspoint</label><select id="radiuspoint"><option></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>10</option><option>15</option><option>20</option><option>40</option></select> (line or curve mode)<br/>
+			<label for="legfont">font</label><input type="text" id="legfont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
+			<label for="legcolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legcolor" value="" alt="legend border color"/><br/>
+			<label for="legborder">border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder" value="" alt="legend border color"/><br/>
+			<label for="legborder2">border2</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder2" value="" alt="color box border color"/><br/>
 		</div>
 
 		<h2>MouseOver</h2>
@@ -277,11 +317,11 @@
 			<label for="moaxis">axis</label><select id="moaxis"><option></option><option>xy</option><option>x</option><option>y</option></select>
 		</div>
 		<div class="formcol">
-			<label for="mofont">bullet font</label><input type="text" id="mofont" class="font" value="" /><br/>
+			<label for="mofont">bullet font</label><input type="text" id="mofont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
 			<label for="mocolor">text color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocolor" value="" /><br/>
 			<label for="mobullet">bullet color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mobullet" value="" /><br/>
 			<label for="moborder">border color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="moborder" value="" /><br/>
-			<label for="motext">text</label><input type="text" id="motext" title="%l=label %v=value %n=index" value="%v" />
+			<label for="motext">text</label><input type="text" id="motext" title="%l=label %v=value %n=index" paceholder="%l: %v" value=""/>
 		</div>
 
 		<div class="footer">
