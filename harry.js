@@ -479,7 +479,7 @@ harry.prototype={
 		var nbds=this.dlen;
 		//console.log("[harry] pie ("+nbds+" dataset)");
 		this.overpoints = [];
-		n=n!=undefined && n.length ? parseInt(n,10) : -1;
+		n=n!=undefined && n.length ? parseInt(n,10) : false;
 		if(nbds){
 			//precalc angles
 			var i,nb=0,va=[],vc=[],pi2=Math.PI*2,labs=[],pc=/percent/.test(this.labels.x);
@@ -508,9 +508,9 @@ harry.prototype={
 					}
 			}
 			//draw
-			var cx=this.rx+Math.round(this.rw/2),cy=this.ry+Math.round(this.rh/2);
-			var r=Math.min(this.rh/2,this.rw/2)-1, rl=r+this.labels.fontpx*1,dx,dy;
-			var g,a1=Math.PI*1.5,a2,a;
+			var cx=this.rx+Math.round(this.rw/2),cy=this.ry+Math.round(this.rh/2),
+			    r=Math.min(this.rh/2,this.rw/2)-1, rl=r+this.labels.fontpx*1,dx,dy,
+			    g,a1=Math.PI*1.5,a2,a,nx,ny;
 			this.overpie={r:r,x:cx,y:cy};
 			this.gc.lineWidth=this.linewidth;
 			this.gc.lineJoin="miter";
@@ -536,10 +536,14 @@ harry.prototype={
 				}
 				this.gc.strokeStyle=vc[i];
 				this.gc.stroke();
-				if(i==n) this.drawBullet(dx+rl/2*Math.cos(a),dy+rl/2*Math.sin(a),0,labs[i],i,0,true);
-				else     this.drawXLabel(labs[i],dx+rl*Math.cos(a),dy+rl*Math.sin(a),'center','middle');
+				if(i===n) { 
+					nx=dx+rl/2*Math.cos(a);
+					ny=dy+rl/2*Math.sin(a);
+				} else
+					this.drawXLabel(labs[i],dx+rl*Math.cos(a),dy+rl*Math.sin(a),'center','middle');
 				a1=a2;
 			}
+			if(n!==false) this.drawBullet(nx,ny,0,labs[n],n,0,true);
 			this.overpoints.sort(function(a,b){return a.a-b.a});
 		}
 		return this;
