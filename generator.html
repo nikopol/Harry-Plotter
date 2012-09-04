@@ -156,6 +156,7 @@
 				}
 
 				//get render
+				if((v=val('bg')).length) o.background=v;
 				if((v=val('width')).length) o.width=parseInt(v,10);
 				if((v=val('height')).length) o.height=parseInt(v,10);
 				if((v=val('mode')).length) o.mode=v;
@@ -252,6 +253,7 @@
 
 		<h2>Rendering</h2>
 		<div class="formcol">
+			<label for="bg">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="bg" value="" /><br/>
 			<label for="width">width</label><input type="text" id="width" class="int" value="" />px<br/>
 			<label for="height">height</label><input type="text" id="height" class="int" value="" />px<br/>
 			<label for="mode">mode</label><select id="mode"><option></option><option>line</option><option>line:river</option><option>pie</option><option>chart</option><option>chart:stack</option><option selected="selected">curve</option><option>curve:river</option></select><br/>
