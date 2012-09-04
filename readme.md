@@ -1,4 +1,4 @@
-harry plotter 0.6
+harry plotter 0.7
 -----------------
 ~L~ nikopol 2009-2012
 
@@ -28,9 +28,9 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 		datas: [v1,v2,v3,...],        //simple dataset values
 		datas: [[v1,v2],[w1,w2],...], //multiple dataset values
 		datas: {                      //simple dataset with optionaly labels, color and title
-			values: [v1,v2,...],      //  excepting values, all keys are optionals in this format
-			labels: [l1,l2,...],      //  values can also be an object {label:value,...}
-			title: "my dataset #1",   //  
+			values: [v1,v2,...],      //  excepting values, all keys are
+			labels: [l1,l2,...],      //  optionals in this format
+			title: "my dataset #1",   //  values can also be an hash {label:value,...}
 			color: "#fc0"
 		},
 		datas: [                      //multiple dataset with label,color and title
@@ -63,18 +63,25 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 		                              //  none         without fills
 		                              //  auto         fill or not depending mode (default)
 		                              //  solid        uniform fill
+		                              //  light        lighten color
+		                              //  dark         darken color
 		                              //  vertical     vertical gradient fill
 		                              //  horizontal   horizontal gradient fill
 		                              //  radial       radial gradient fill
 		opacity: 0.8,                 //fill opacity, between 0 and 1, overrided if fill=auto
+		margins:[top,right,bot,left], //margin size (for labels), default=auto
+		autoscale: true,              //auto round up y scale, default=true (unused for pie)
+		pointradius: int,             //radius point in mode line/curve only (default=none)
+
 		title: {                      //title options
-			font:'9px "Trebuchet MS"',//  font size & family, default=normal 9px "Sans Serif"
+			font:'9px "Trebuchet MS"',//  font size & family, default=bold 12px "Sans Serif"
 			color: "rgba(4,4,4,0.3)", //  font color, default=rgba(4,4,4,0.3)
 			text: "title"             //  clear enough
 			x: 5,                     //  title position left position
 			y: 10                     //  title position top position
 			z: "background"           //  behind or on top of the graph, default=top
 		},
+
 		labels: {                     //axis labels options
 			font: "9px Trebuchet MS", //  font size & family, important:use px size,
 			                          //    default=normal 9px "Sans Serif"
@@ -82,14 +89,22 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 			y: [0,50,100,"max|min|avg"]// y axis, numbers are %, default=none
 			x: int                    //  x axis, 1=draw all label, 2=one/two..., default=none
 		},
+
+		legends: {                    //set to false to disable legends box, default=auto
+			x: int,                   //  left corner position, default=5
+			y: int,                   //  top corner position,  default=5
+			background: "rgba(180,180,180,0.5)" //background color, default=rgba(255,255,255,0.5)
+			border: "#fff"            //  legends border color, default=none
+			border2: "#fff"            // color box border color, default=fff
+			color: "#000",            //  text color, default, #666
+			font:'9px "Trebuchet MS"' //  font size & family, default=normal 10px "Sans Serif"
+		},
+
 		grid: {                       //grid options
 			color:"#a0a0a0",          //  grid color, default=#a0a0a0
 			y: [0,50,100]             //  y axis, numbers are %, default=[0,25,50,75,100]
 			x: [0,100]                //  x axis, numbers are %, default=[0,100]
 		},
-		margins:[top,right,bot,left], //margin size (for labels), default=auto
-		autoscale: true,              //auto round up y scale, default=true (unused for pie)
-		pointradius: int,             //radius point in mode line/curve only (default=none)
 
 		//interaction
 

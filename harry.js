@@ -1,4 +1,4 @@
-// harry plotter 0.6
+// harry plotter 0.7
 // ~L~ nikomomo@gmail.com 2009-2012
 // https://github.com/nikopol/Harry-Plotter
 
@@ -50,18 +50,25 @@ var h=new harry({
 	                              //  none         without fills
 	                              //  auto         fill or not depending mode (default)
 	                              //  solid        uniform fill
+	                              //  light        lighten color
+	                              //  dark         darken color
 	                              //  vertical     vertical gradient fill
 	                              //  horizontal   horizontal gradient fill
 	                              //  radial       radial gradient fill
 	opacity: 0.8,                 //fill opacity, between 0 and 1, overrided if fill=auto
+	margins:[top,right,bot,left], //margin size (for labels), default=auto
+	autoscale: true,              //auto round up y scale, default=true (unused for pie)
+	pointradius: int,             //radius point in mode line/curve only (default=none)
+
 	title: {                      //title options
-		font:'9px "Trebuchet MS"',//  font size & family, default=normal 9px "Sans Serif"
+		font:'9px "Trebuchet MS"',//  font size & family, default=bold 12px "Sans Serif"
 		color: "rgba(4,4,4,0.3)", //  font color, default=rgba(4,4,4,0.3)
 		text: "title"             //  clear enough
 		x: 5,                     //  title position left position
 		y: 10                     //  title position top position
 		z: "background"           //  behind or on top of the graph, default=top
 	},
+
 	labels: {                     //axis labels options
 		font: "9px Trebuchet MS", //  font size & family, important:use px size,
 		                          //    default=normal 9px "Sans Serif"
@@ -69,14 +76,22 @@ var h=new harry({
 		y: [0,50,100,"max|min|avg"]// y axis, numbers are %, default=none
 		x: int                    //  x axis, 1=draw all label, 2=one/two..., default=none
 	},
+
+	legends: {                    //set to false to disable legends box, default=auto
+		x: int,                   //  left corner position, default=5
+		y: int,                   //  top corner position,  default=5
+		background: "rgba(180,180,180,0.5)" //background color, default=rgba(255,255,255,0.5)
+		border: "#fff"            //  legends border color, default=none
+		border2: "#fff"            // color box border color, default=fff
+		color: "#000",            //  text color, default, #666
+		font:'9px "Trebuchet MS"' //  font size & family, default=normal 10px "Sans Serif"
+	},
+
 	grid: {                       //grid options
 		color:"#a0a0a0",          //  grid color, default=#a0a0a0
 		y: [0,50,100]             //  y axis, numbers are %, default=[0,25,50,75,100]
 		x: [0,100]                //  x axis, numbers are %, default=[0,100]
 	},
-	margins:[top,right,bot,left], //margin size (for labels), default=auto
-	autoscale: true,              //auto round up y scale, default=true (unused for pie)
-	pointradius: int,             //radius point in mode line/curve only (default=none)
 
 	//interaction
 
@@ -141,6 +156,12 @@ var harryTools={
 		    d=parseInt(s.substr(0,1)),
 		    m=d*parseFloat("1E"+(s.length-1));
 		return m==n ? n : (d+1)*parseFloat("1E"+(s.length-1));
+	},
+	merge: function(a,b) {
+		if(typeof(b)=='object')
+			for(var k in b)
+				a[k]=b[k];
+		return a;
 	}
 };
 
@@ -160,7 +181,7 @@ var harry=function(o) {
 	this.id=o.id || "harry"+(++harryTools.count);
 	this.bg=o.background;
 	this.setMode(o.mode);
-	this.fill=(o.fill || "auto")[0].toLowerCase().replace(/[^nasvhr]/,"a");
+	this.fill=(o.fill || "auto")[0].toLowerCase().replace(/[^nasvhrdl]/,"a");
 	this.opacity=parseFloat(o.opacity,10) || 1;
 	this.linewidth=parseInt(o.linewidth,10) || 1;
 	this.linejoin=o.linejoin || "miter";
@@ -172,21 +193,12 @@ var harry=function(o) {
 	this.labels.stepx=this.labels.stepx || 1;
 	this.margins=o.margins || [0,0,0,0];
 	this.autoscale=o.autoscale===false?false:true;
-	if(o.mouseover===false) this.mouseover=false;
-	else {
-		o.mouseover = o.mouseover || {};
-		this.mouseover={
-			radius: o.mouseover.radius || 5,
-			linewidth: o.mouseover.linewidth!=undefined?o.mouseover.linewidth:this.linewidth,
-			circle: o.mouseover.circle || "#888",
-			font:   o.mouseover.font   || 'normal 10px "Sans Serif"',
-			color:  o.mouseover.color  || "#fff",
-			bullet: o.mouseover.bullet || "#888",
-			border: o.mouseover.border || "#fff",
-			axis:   o.mouseover.axis   || false,
-			text:   o.mouseover.text   || "%v"
-		};
-	}
+	this.mouseover=o.mouseover===false
+		? false
+		: harryTools.merge({radius:5, linewidth:this.linewidth, circle:"#888", font:'normal 10px "Sans Serif"', color:"#fff", bullet:"#888", border: "#fff", axis: false, text: "%v"},o.mouseover);
+	this.legends=o.legends===false
+		? false
+		: harryTools.merge({x:5, y:5, color:"#666", border2:"#fff", background:"rgba(255,255,255,0.5)", font:'10px "Sans Serif"'},o.legends);
 	if(!o.margins) {
 		if(/pie/.test(this.mode)) {
 			var m=this.labels.x?this.labels.fontpx*2:0;
@@ -205,7 +217,7 @@ var harry=function(o) {
 	this.title=o.title || false;
 	if(this.title) {
 		if(typeof this.title=="string") this.title={text:this.title};
-		if(!this.title.font) this.title.font='bold 12px "Sans Serif","Trebuchet MS"';
+		if(!this.title.font) this.title.font='bold 12px "Sans Serif"';
 		if(!this.title.color) this.title.color='rgba(4,4,4,0.3)';
 		if(!this.title.x) this.title.x=this.margins[3]+2;
 		if(!this.title.y) this.title.y=this.margins[0]+2;
@@ -220,6 +232,7 @@ var harry=function(o) {
 	this.rh=Math.max(this.h-this.margins[0]-this.margins[2],0);
 	this.rx2=this.rx+this.rw;
 	this.ry2=this.ry+this.rh;
+	this.overpie={n:false};
 	this.cls().draw();
 }
 
@@ -293,18 +306,20 @@ harry.prototype={
 		this.drawGrid().drawYLabels();
 		if(this.title && this.title.z=='top') this[args[0]](args.length==1?false:args[1]).drawTitle();
 		else                                  this.drawTitle()[args[0]](args.length==1?false:args[1]);
+		this.drawLegends();
 		if(!nover) {
 			this.canvas.onmouseover=
 			this.canvas.onmousemove=
 			this.canvas.onmouseout=undefined;
-			if(this.mouseover && this[args[0]+'Over']){
+			this.overpie.n=false;
+			if(this.mouseover && this[args[0]+'Over']) {
 				var self = this;
 				this.imgdata = this.gc.getImageData(0,0,this.w,this.h);
 				if(this.mousepos != undefined) self[args[0]+'Over'](self.mousepos.x,self.mousepos.y,args[1]);
 				this.canvas.onmouseover=function(){
 					self.canvas.onmousemove=function(e){
 						e=e||window.event;
-						self.gc.putImageData(self.imgdata,0,0);
+						if(args[0]!="pie") self.gc.putImageData(self.imgdata,0,0);
 						self.mousepos={
 							x: e.offsetX!=undefined && e.offsetX || e.layerX!=undefined && e.layerX || e.clientX!=undefined && e.clientX,
 							y: e.offsetY!=undefined && e.offsetY || e.layerY!=undefined && e.layerY || e.clientY!=undefined && e.clientY
@@ -404,6 +419,54 @@ harry.prototype={
 		return this;
 	},
 
+	drawLegends: function() {
+		if(this.legends!==false && this.dlen>1) {
+			this.gc.save();
+			this.gc.font=this.legends.font;
+			var i,w,g,py,
+			  tw=0,
+			  s=3,
+			  lh=harryTools.fontPixSize(this.mouseover.font)+s,
+			  bs=lh-s,
+			  tx=s*2+bs,
+			  nl=this.dlen,
+			  h=s+lh*nl,
+			  x=this.legends.x,
+			  y=this.legends.y;
+			for(i=0;i<nl;++i)
+				if((w=this.gc.measureText(this.dataset[i].tit)).width>tw)
+					tw=w.width;
+			w=s*3+bs+tw;
+			//draw background
+			this.gc.lineWidth=1;
+			if((g=this.legends.background)) {
+				this.gc.fillStyle=g;
+				this.gc.fillRect(x,y,w,h);
+			}
+			if((g=this.legends.border)) {
+				this.gc.strokeStyle=g;
+				this.gc.strokeRect(x,y,w,h);
+			}
+			for(i=0,py=y+s;i<nl;++i,py+=lh) {
+				d=this.dataset[i];
+				//draw color box
+				this.gc.fillStyle=d.col;
+				this.gc.fillRect(x+s,py,bs,bs);
+				if((g=this.legends.border2)) {
+					this.gc.strokeStyle=g;
+					this.gc.strokeRect(x+s,py,bs,bs);
+				}
+				//draw text
+				this.gc.textAlign='left';
+				this.gc.textBaseline='top';
+				this.gc.fillStyle=this.legends.color;
+				this.gc.fillText(d.tit,x+s*2+bs,py);
+			}
+		}
+		this.gc.restore();
+		return this;
+	},
+
 	drawBullet: function(x,y,r,v,n,nds,center) {
 		this.gc.save();
 		this.gc.font=this.mouseover.font;
@@ -417,10 +480,9 @@ harry.prototype={
 		    h=s+lines.length*lh,
 		    h2=Math.floor(h/2);
 		if(text) {
-			for(i in lines) {
-				m=this.gc.measureText(lines[i]).width+s*2;
-				if(m>w) w=m;
-			}
+			for(i in lines)
+				if((m=this.gc.measureText(lines[i]).width+s*2)>w)
+					w=m;
 			if(center) {
 				x1=x+r-(w/2);
 				if(x1<this.rx) x1=this.rx;
@@ -474,12 +536,11 @@ harry.prototype={
 		this.gc.restore();
 		return this;
 	},
-	
-	pie: function(n) {
+
+	pie: function() {
 		var nbds=this.dlen;
 		//console.log("[harry] pie ("+nbds+" dataset)");
 		this.overpoints = [];
-		n=n!=undefined && n.length ? parseInt(n,10) : false;
 		if(nbds){
 			//precalc angles
 			var i,nb=0,va=[],vc=[],pi2=Math.PI*2,labs=[],pc=/percent/.test(this.labels.x);
@@ -510,15 +571,15 @@ harry.prototype={
 			//draw
 			var cx=this.rx+Math.round(this.rw/2),cy=this.ry+Math.round(this.rh/2),
 			    r=Math.min(this.rh/2,this.rw/2)-1, rl=r+this.labels.fontpx*1,dx,dy,
-			    g,a1=Math.PI*1.5,a2,a,nx,ny;
-			this.overpie={r:r,x:cx,y:cy};
+			    g,a1=Math.PI*1.5,a2,a,nx,ny,n=this.overpie.n;
+			this.overpie={r:r,x:cx,y:cy,n:n};
 			this.gc.lineWidth=this.linewidth;
 			this.gc.lineJoin="miter";
 			for(i=0;i<nb;i++) {
 				a2=a1+va[i];
 				a=(a1+a2)/2;
 				this.overpoints.push({a:a1%(2*Math.PI),n:i});
-				if(i==n) {
+				if(i===n) {
 					dx=cx+Math.cos(a)*10;
 					dy=cy+Math.sin(a)*10;
 				} else {
@@ -536,7 +597,7 @@ harry.prototype={
 				}
 				this.gc.strokeStyle=vc[i];
 				this.gc.stroke();
-				if(i===n) { 
+				if(i===n) {
 					nx=dx+rl/2*Math.cos(a);
 					ny=dy+rl/2*Math.sin(a);
 				} else
@@ -556,8 +617,11 @@ harry.prototype={
 			a=(a+3*Math.PI)%(2*Math.PI);
 			while(i<this.overpoints.length && a>this.overpoints[i].a) i++;
 			if(--i<0) i=this.overpoints.length-1;
-			n=this.overpoints[i].n;
-			this.cls().draw('pie:'+n,true);
+			this.overpie.n=this.overpoints[i].n;
+			this.cls().draw('pie',true);
+		} else if(this.overpie.n!==false) {
+			this.overpie.n=false;
+			this.cls().draw('pie',true);
 		}
 		return this;
 	},
@@ -625,7 +689,6 @@ harry.prototype={
 		    d,g,i,j,v,l,
 		    drawPath=function(gc,x,y,v,n1,n2) {
 		    	var n=n1,nx,ny,mx,my,px,py;
-		    	gc.moveTo(x[n1],y[n2]);
 		    	while(n<=n2) {
 					if(v[n]===null)
 						n++;
@@ -678,19 +741,20 @@ harry.prototype={
 				n2=l-1;
 				while(d.val[n2]===null) n2--;
 				//fill
-				if(g=this.getGradient(d.col) && n1<=n2){
-					this.gc.fillStyle=g;
+				if(n1<=n2 && (g=this.getGradient(d.col))) {
 					this.gc.beginPath();
 					this.gc.moveTo(x[n1],this.ry2);
-					this.gc.lineTo(x[n1],y[n2]);
+					this.gc.lineTo(x[n1],y[n1]);
 					drawPath(this.gc,x,y,d.val,n1,n2);
 					this.gc.lineTo(x[n2],this.ry2);
 					this.gc.closePath();
+					this.gc.fillStyle=g;
 					this.gc.fill();
 				}
 				//draw lines
 				this.gc.strokeStyle=d.col;
 				this.gc.beginPath();
+				this.gc.moveTo(x[n1],y[n1]);
 				drawPath(this.gc,x,y,d.val,n1,n2);
 				this.gc.stroke();
 				//draw x labels
@@ -789,7 +853,13 @@ harry.prototype={
 		var g=false;
 		switch(this.getFillMode()) {
 		case "s": //solid
+			g=color; //harryTools.calcColor(color,0x15,this.opacity);
+			break;
+		case "l": //light
 			g=harryTools.calcColor(color,0x15,this.opacity);
+			break;
+		case "d": //dark
+			g=harryTools.calcColor(color,-0x15,this.opacity);
 			break;
 		case "v": //vertical
 			g=this.gc.createLinearGradient(0,this.ry2,0,this.ry);
