@@ -25,11 +25,12 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 		//datas can be provided in these formats :
 		
 		datas: [v1,v2,v3,...],        //simple dataset values
+		datas: [v1,v2,v3,...],        //simple dataset values
 		datas: [[v1,v2],[w1,w2],...], //multiple dataset values
 		datas: {                      //simple dataset with optionaly labels, color and title
-			values: [v1,v2,...],      //  excepting values, all keys are
-			labels: [l1,l2,...],      //  optionals in this format
-			title: "my dataset #1",
+			values: [v1,v2,...],      //  excepting values, all keys are optionals in this format
+			labels: [l1,l2,...],      //  values can also be an object {label:value,...}
+			title: "my dataset #1",   //  
 			color: "#fc0"
 		},
 		datas: [                      //multiple dataset with label,color and title
