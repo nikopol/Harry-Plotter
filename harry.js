@@ -240,7 +240,7 @@ var harry=function(o) {
 			this.labels.y ? f : 0,     //top
 			this.labels.y ? m*4 : 1,   //right
 			this.labels.x ? 2+m+k : 1, //bottom
-			this.labels.x ? f : 0,     //left
+			this.labels.x ? f : 0      //left
 		];
 	}
 	this.grid=o.grid || {};
