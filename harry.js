@@ -102,10 +102,10 @@ var h=new harry({
 		circle: "#888888",        //  spot color, default=#888
 		font: "9px Trebuchet MS", //  bullet text font, default=normal 9px "Sans Serif"
 		color: "#666",            //  bullet text color, default=#fff
-		bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=#888
+		bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=rgba(99,99,99,0.8)
 		border: "#fc0",           //  bullet border color, default=#fff,
 		axis: "xy|x|y",           //  draw spot axis, default=none
-		text: "%l\n%v",           //  text in the bullet %v=value %l=label %n=index
+		text: "%t\n%l: %v",       //  text in the bullet %v=value %l=label %n=index %t=title
 		text: callback(n,v,l,x,y) //  or text can trigger a callback
 		                          //     if it returns a string, it'll be displayed
 	}
@@ -192,30 +192,56 @@ var harry=function(o) {
 	this.id=o.id || "harry"+(++harryTools.count);
 	this.bg=o.background;
 	this.setMode(o.mode);
-	this.fill=(o.fill || "auto")[0].toLowerCase().replace(/[^nasvhrdl]/,"a");
+	this.fill=(o.fill || "a")[0].toLowerCase().replace(/[^nasvhrdl]/,"a");
 	this.opacity=parseFloat(o.opacity,10) || 1;
 	this.linewidth=parseInt(o.linewidth,10) || 1;
 	this.linejoin=o.linejoin || "miter";
 	this.radiuspoint=parseInt(o.radiuspoint,10) || 0;
-	this.labels=o.labels || {};
-	this.labels.color=this.labels.color || "#a0a0a0";
-	this.labels.font=this.labels.font || 'normal 9px "Sans Serif"';
-	this.labels.fontpx=harryTools.fontPixSize(this.labels.font);
 	this.autoscale=o.autoscale===false?false:true;
+	this.labels=harryTools.merge({
+		color: "#a0a0a0",
+		font: 'normal 9px "Sans Serif"',
+		marks: 0
+	},o.labels);
+	this.labels.fontpx=harryTools.fontPixSize(this.labels.font);
 	this.mouseover=o.mouseover===false
 		? false
-		: harryTools.merge({radius:5, linewidth:this.linewidth, circle:"#888", font:'normal 10px "Sans Serif"', color:"#fff", bullet:"#888", border: "#fff", axis: false, text: "%v"},o.mouseover);
+		: harryTools.merge({
+			radius: 5,
+			linewidth: this.linewidth,
+			circle: "#888",
+			font: 'normal 10px "Sans Serif"',
+			color: "#fff",
+			bullet: "rgba(99,99,99,0.8)",
+			border: "#fff",
+			axis: false,
+			text: "%v"
+		},o.mouseover);
 	this.legends=o.legends===false
 		? false
-		: harryTools.merge({x:5, y:5, color:"#666", border2:"#fff", background:"rgba(255,255,255,0.5)", font:'10px "Sans Serif"'},o.legends);
+		: harryTools.merge({
+			x: 5,
+			y: 5,
+			color: "#666",
+			border2: "#fff",
+			background: "rgba(255,255,255,0.5)",
+			font: '10px "Sans Serif"'
+		},o.legends);
 	if(o.margins)
 		this.margins=o.margins;
 	else if(/pie/.test(this.mode)) {
 		var m=this.labels.x?this.labels.fontpx*2:0;
 		this.margins=[m,m,m,m];
 	} else {
-		var m=this.labels.fontpx,sm=Math.floor(this.labels.fontpx/2);
-		this.margins=[this.labels.y?sm:0,this.labels.y?m*4:1,this.labels.x?2+m:1,this.labels.x?sm:0];
+		var m=this.labels.fontpx,
+		    f=Math.floor(this.labels.fontpx/2),
+		    k=this.labels.marks;
+		this.margins=[
+			this.labels.y ? f : 0,     //top
+			this.labels.y ? m*4 : 1,   //right
+			this.labels.x ? 2+m+k : 1, //bottom
+			this.labels.x ? f : 0,     //left
+		];
 	}
 	this.grid=o.grid || {};
 	this.grid.color=this.grid.color || "#a0a0a0";
@@ -225,7 +251,13 @@ var harry=function(o) {
 	if(/none|false/.test(this.grid.y)) this.grid.y=[];
 	if(typeof o.title=="string") o.title={text:o.title};
 	this.title=o.title
-		? harryTools.merge({font:'bold 12px "Sans Serif"', color:'rgba(4,4,4,0.3)', x:this.margins[3]+2, y:this.margins[0]+2, z:'top'},o.title)
+		? harryTools.merge({
+			font: 'bold 12px "Sans Serif"',
+			color: 'rgba(4,4,4,0.3)',
+			x: this.margins[3]+2,
+			y: this.margins[0]+2,
+			z: 'top'
+		},o.title)
 		: false;
 	this.gc=this.canvas.getContext("2d");
 	//console.log("[harry] init("+this.w+","+this.h+")");
@@ -484,9 +516,10 @@ harry.prototype={
 		this.gc.font=this.mouseover.font;
 		var x1,y1,x2,y2,ly,lh,s=3,i,m,w=0,
 		    lab=this.dataset[nds].lab[n],
+		    tit=this.dataset[nds].tit,
 		    text=typeof(this.mouseover.text)=="function"
 		      ? this.mouseover.text(n,v,lab,x,y)
-		      : this.mouseover.text.replace('%v',v).replace('%l',lab).replace('%n',n),
+		      : this.mouseover.text.replace('%v',v).replace('%l',lab).replace('%n',n).replace('%t',tit),
 		    lines=text.split(/\n|\\n/),
 		    lh=harryTools.fontPixSize(this.mouseover.font)+s,
 		    h=s+lines.length*lh,
@@ -582,7 +615,7 @@ harry.prototype={
 			}
 			//draw
 			var cx=this.rx+Math.round(this.rw/2),cy=this.ry+Math.round(this.rh/2),
-			    r=Math.min(this.rh/2,this.rw/2)-1, rl=r+this.labels.fontpx*1,dx,dy,
+			    r=Math.min(this.rh/2,this.rw/2)-1, rl=r+this.labels.fontpx,dx,dy,
 			    g,a1=Math.PI*1.5,a2,a,nx,ny,n=this.overpie.n;
 			this.overpie={r:r,x:cx,y:cy,n:n};
 			this.gc.lineWidth=this.linewidth;
@@ -803,6 +836,18 @@ harry.prototype={
 				for(i=0;i<this.overpoints.length;++i) {
 					o=this.overpoints[i];
 					if(o.v[n]!=undefined) {
+						if(this.mouseover.border) {
+							this.gc.beginPath();
+							this.gc.lineWidth=lw+2;
+							this.gc.arc(o.x[n],o.y[n],this.mouseover.radius,0,2*Math.PI);
+							if(this.mouseover.linewidth==0) {
+								this.gc.fillStyle=this.mouseover.border;
+								this.gc.fill();
+							} else {
+								this.gc.strokeStyle=this.mouseover.border;
+								this.gc.stroke();
+							}
+						}
 						this.gc.beginPath();
 						this.gc.lineWidth=lw;
 						this.gc.arc(o.x[n],o.y[n],this.mouseover.radius,0,2*Math.PI);
