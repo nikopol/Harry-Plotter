@@ -849,11 +849,10 @@ harry.prototype={
 	},
 	
 	getGradient: function(color){
-		//log("[harry] getGradient("+color+") type="+this.fill);
 		var g=false;
 		switch(this.getFillMode()) {
 		case "s": //solid
-			g=color; //harryTools.calcColor(color,0x15,this.opacity);
+			g=harryTools.calcColor(color,0,this.opacity);
 			break;
 		case "l": //light
 			g=harryTools.calcColor(color,0x15,this.opacity);
