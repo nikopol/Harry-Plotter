@@ -125,7 +125,7 @@ h.setMode('river') //change mode
 var harryTools={
 	COLORS: ["#88a4d7","#d685c9","#86d685","#ffc34f","#93c2ea","#f28989","#f9eb8a"],
 	count: 0,
-	getRGB: function(color) {
+	getRGB: function(color){
 		var result;
 		if(color && color.constructor==Array && color.length==3) return color;
 		if(result=/rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\)/.exec(color)) return [parseInt(result[1],10), parseInt(result[2],10), parseInt(result[3],10)];
@@ -142,7 +142,7 @@ var harryTools={
 			"rgba("+rgb.join(',')+","+alpha+")":
 			"rgb("+rgb.join(',')+")";
 	},
-	fontPixSize: function(f) {
+	fontPixSize: function(f){
 		var p=f.match(/\d+px/i);
 		if(p) return parseInt(p,10);
 		p=f.match(/[0-9\.]+em/i);
@@ -157,11 +157,17 @@ var harryTools={
 		    m=d*parseFloat("1E"+(s.length-1));
 		return m==n ? n : (d+1)*parseFloat("1E"+(s.length-1));
 	},
-	merge: function(a,b) {
+	merge: function(a,b){
 		if(typeof(b)=='object')
 			for(var k in b)
 				a[k]=b[k];
 		return a;
+	},
+	mouseXY: function(e){
+		return {
+			x: e.offsetX!=undefined && e.offsetX || e.layerX!=undefined && e.layerX || e.clientX!=undefined && e.clientX,
+			y: e.offsetY!=undefined && e.offsetY || e.layerY!=undefined && e.layerY || e.clientY!=undefined && e.clientY
+		}
 	}
 };
 
@@ -302,7 +308,7 @@ harry.prototype={
 	draw: function(mode,nover) {
 		this.mode=(mode || this.mode).toLowerCase();
 		//console.log("[harry] draw("+this.mode+")");
-		var args=this.mode.split(/:/);
+		var args=this.mode.split(/:/), self=this, fnover=args[0]+'Over';
 		this.drawGrid().drawYLabels();
 		if(this.title && this.title.z=='top') this[args[0]](args.length==1?false:args[1]).drawTitle();
 		else                                  this.drawTitle()[args[0]](args.length==1?false:args[1]);
@@ -313,26 +319,27 @@ harry.prototype={
 			this.canvas.onmouseout=undefined;
 			this.overpie.n=false;
 			if(this.mouseover && this[args[0]+'Over']) {
-				var self = this;
+
 				this.imgdata = this.gc.getImageData(0,0,this.w,this.h);
-				if(this.mousepos != undefined) self[args[0]+'Over'](self.mousepos.x,self.mousepos.y,args[1]);
-				this.canvas.onmouseover=function(){
-					self.canvas.onmousemove=function(e){
-						e=e||window.event;
+				if(this.mousepos) self[fnover](self.mousepos.x,self.mousepos.y,args[1]);
+
+				this.canvas.onmouseover=function(e){
+					self.mousepos=harryTools.mouseXY(e);
+				};
+				this.canvas.onmousemove=function(e){
+					if(self.mousepos) {
 						if(args[0]!="pie") self.gc.putImageData(self.imgdata,0,0);
-						self.mousepos={
-							x: e.offsetX!=undefined && e.offsetX || e.layerX!=undefined && e.layerX || e.clientX!=undefined && e.clientX,
-							y: e.offsetY!=undefined && e.offsetY || e.layerY!=undefined && e.layerY || e.clientY!=undefined && e.clientY
-						};
-						self[args[0]+'Over'](self.mousepos.x,self.mousepos.y,args[1]);
+						self.mousepos=harryTools.mouseXY(e||window.event);
+						self[fnover](self.mousepos.x,self.mousepos.y,args[1]);
 					};
 				};
 				this.canvas.onmouseout=function(){
 					self.mousepos=undefined;
-					self.canvas.onmousemove=null;
 					self.gc.putImageData(self.imgdata,0,0);
 				};
-			}
+
+			} else
+				this.mousepos=undefined;
 		}
 		return this;
 	},
