@@ -147,6 +147,7 @@
 					if(w.length) o.labels.y=values(w);
 					if((v=val('labelfont')).length) o.labels.font=v;
 					if((v=val('labelcolor')).length) o.labels.color=v;
+					if((v=val('labelmarks')).length) o.labels.marks=parseInt(v,10);
 				}
 
 				//get render
@@ -197,7 +198,7 @@
 				plotter(o);
 			};
 			
-			_("generate").onclick=build;
+			//_("generate").onclick=build;
 			for(var i=0, l=document.getElementsByTagName("input"); i<l.length; ++i)
 				if(/checkbox|text/.test(l[i].type))
 					l[i].onclick=l[i].onkeyup=build;
@@ -285,13 +286,14 @@
 		
 		<h2>Labels</h2>
 		<div class="formcol">
-			<label for="margins">margins</label><input type="text" id="margins" placeholder="top,right,bottom,left" value="" /> in px<br/>
+			<label for="margins">margins</label><input type="text" id="margins" placeholder="top,right,bottom,left" value="" /> px<br/>
 			<label for="labelfont">labels.font</label><input type="text" id="labelfont" class="font" value='normal 9px "Sans Serif"' /><br/>
 			<label for="labelcolor">labels.color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="labelcolor" value="" /><br/>
 		</div>
 		<div class="formcol">
 			<label for="labely">labels.y</label><input type="text" id="labely" placeholder="%,%,%..." value="0,50,100" title="show veritcals labels for each labels.y percent"/><br/>
 			<label for="labelx">labels.x</label><input type="text" id="labelx" placeholder="int" value="1" title="show horizontals labels every labels.x"/><br/>
+			<label for="labelmarks">marks</label><select id="labelmarks"><option></option><option>1</option><option>2</option><option>3</option><option>4</option></select>px<br/>
 		</div>
 
 		<h2>Legends</h2>
@@ -326,7 +328,7 @@
 
 		<div class="footer">
 			<input type="reset" value="reset" />
-			<input type="button" id="generate" value="generate" />
+			<!--<input type="button" id="generate" value="generate" />-->
 		</div>
 	</form>
 	<div id="render">
