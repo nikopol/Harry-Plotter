@@ -468,15 +468,15 @@ harry.prototype={
 			this.gc.save();
 			this.gc.font=this.legends.font;
 			var i,w,g,py,
-			  tw=0,
-			  s=3,
-			  lh=harryTools.fontPixSize(this.mouseover.font)+s,
-			  bs=lh-s,
-			  tx=s*2+bs,
-			  nl=this.dlen,
-			  h=s+lh*nl,
-			  x=this.legends.x,
-			  y=this.legends.y;
+			    tw=0,
+			    s=3,
+			    lh=harryTools.fontPixSize(this.legends.font)+s,
+			    bs=lh-s,
+			    tx=s*2+bs,
+			    nl=this.dlen,
+			    h=s+lh*nl,
+			    x=this.legends.x,
+			    y=this.legends.y;
 			for(i=0;i<nl;++i)
 				if((w=this.gc.measureText(this.dataset[i].tit)).width>tw)
 					tw=w.width;
@@ -588,18 +588,16 @@ harry.prototype={
 		this.overpoints = [];
 		if(nbds){
 			//precalc angles
-			var i,nb=0,va=[],vc=[],pi2=Math.PI*2,labs=[],pc=/percent/.test(this.labels.x);
+			var i,nb=0,va=[],vc=[],pi2=Math.PI*2,lab=[],pct=[];
 			if(nbds>1) {
 				var sum=0;
-				for(nb=nbds,i=0;i<nb;i++) sum+=this.dataset[i].avg;
+				for(nb=nbds,i=0;i<nb;i++) sum+=this.dataset[i].sum;
 				if(sum)
 					for(i=0;i<nb;i++) {
-						va[i]=this.dataset[i].avg/sum*pi2;
+						va[i]=this.dataset[i].sum/sum*pi2;
 						vc[i]=this.dataset[i].col;
-						labs.push(pc?
-							Math.round(100*this.dataset[i].avg/sum)+'%':
-							this.dataset[i].avg.toString()
-						);
+						lab.push(this.dataset[i].sum);
+						pct.push(Math.round(100*this.dataset[i].sum/sum));
 					}
 			} else {
 				var d=this.dataset[0];
@@ -607,10 +605,8 @@ harry.prototype={
 					for(nb=d.len,i=0;i<nb;i++) {
 						va[i]=d.val[i]/d.sum*pi2;
 						vc[i]=harryTools.COLORS[i%harryTools.COLORS.length];
-						labs.push(pc?
-							Math.round(100*d.val[i]/d.sum)+'%':
-							d.val[i].toString()
-						);
+						lab.push(d.val[i]);
+						pct.push(Math.round(100*d.val[i]/d.sum));
 					}
 			}
 			//draw
@@ -646,10 +642,10 @@ harry.prototype={
 					nx=dx+rl/2*Math.cos(a);
 					ny=dy+rl/2*Math.sin(a);
 				} else
-					this.drawXLabel(labs[i],dx+rl*Math.cos(a),dy+rl*Math.sin(a),'center','middle');
+					this.drawXLabel(lab[i],dx+rl*Math.cos(a),dy+rl*Math.sin(a),'center','middle');
 				a1=a2;
 			}
-			if(n!==false) this.drawBullet(nx,ny,0,labs[n],n,0,true);
+			if(n!==false) this.drawBullet(nx,ny,0,lab[n]+' ('+pct[n]+'%)',n,0,true);
 			this.overpoints.sort(function(a,b){return a.a-b.a});
 		}
 		return this;
