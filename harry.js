@@ -63,9 +63,9 @@ var h=new harry({
 	title: {                      //title options
 		font:'9px "Trebuchet MS"',//  font size & family, default=bold 12px "Sans Serif"
 		color: "rgba(4,4,4,0.3)", //  font color, default=rgba(4,4,4,0.3)
-		text: "title"             //  clear enough
+		text: "title",            //  clear enough
 		x: 5,                     //  title position left position
-		y: 10                     //  title position top position
+		y: 10,                    //  title position top position
 		z: "background"           //  behind or on top of the graph, default=top
 	},
 
@@ -73,23 +73,24 @@ var h=new harry({
 		font: "9px Trebuchet MS", //  font size & family, important:use px size,
 		                          //    default=normal 9px "Sans Serif"
 		color: "#a0a0a0",         //  font color, default=a0a0a0
-		y: [0,50,100,"max|min|avg"]// y axis, numbers are %, default=none
-		x: int                    //  x axis, 1=draw all label, 2=one/two..., default=none
+		y: [0,50,100,"max|min|avg"],// y axis, numbers are %, default=none
+		x: int,                   //  x axis, 1=draw all label, 2=one/two..., default=none
+		marks: int                //  graduation's marks size, default=0
 	},
 
 	legends: {                    //set to false to disable legends box, default=auto
 		x: int,                   //  left corner position, default=5
 		y: int,                   //  top corner position,  default=5
-		background: "rgba(180,180,180,0.5)" //background color, default=rgba(255,255,255,0.5)
-		border: "#fff"            //  legends border color, default=none
-		border2: "#fff"            // color box border color, default=fff
+		background: "rgba(180,180,180,0.5)",//background color, default=rgba(255,255,255,0.5)
+		border: "#fff",           //  legends border color, default=none
+		border2: "#fff",           // color box border color, default=fff
 		color: "#000",            //  text color, default, #666
 		font:'9px "Trebuchet MS"' //  font size & family, default=normal 10px "Sans Serif"
 	},
 
 	grid: {                       //grid options
 		color:"#a0a0a0",          //  grid color, default=#a0a0a0
-		y: [0,50,100]             //  y axis, numbers are %, default=[0,25,50,75,100]
+		y: [0,50,100],            //  y axis, numbers are %, default=[0,25,50,75,100]
 		x: [0,100]                //  x axis, numbers are %, default=[0,100]
 	},
 
@@ -101,10 +102,10 @@ var h=new harry({
 		circle: "#888888",        //  spot color, default=#888
 		font: "9px Trebuchet MS", //  bullet text font, default=normal 9px "Sans Serif"
 		color: "#666",            //  bullet text color, default=#fff
-		bullet: "rgba(0,0,0,0.5)" //  bullet background color, default=#888
-		border: "#fc0"            //  bullet border color, default=#fff,
-		axis: "xy|x|y"            //  draw spot axis, default=none
-		text: "%l\n%v"            //  text in the bullet %v=value %l=label %n=index
+		bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=#888
+		border: "#fc0",           //  bullet border color, default=#fff,
+		axis: "xy|x|y",           //  draw spot axis, default=none
+		text: "%l\n%v",           //  text in the bullet %v=value %l=label %n=index
 		text: callback(n,v,l,x,y) //  or text can trigger a callback
 		                          //     if it returns a string, it'll be displayed
 	}
@@ -113,12 +114,16 @@ var h=new harry({
 //or (same effect)
 var h=plotter({...});
 
+
 h.clear()          //delete all dataset
  .cls()            //erase canvas
  .addDataSet(data) //add a dataset, see contructor
  .draw();          //draw all dataset
-h.setMode('river') //change mode
- .draw();          //redraw
+h.canvas.onclick=function(){
+	h.setMode('river') //change mode
+	 .cls()            //erase canvas
+	 .draw();          //redraw
+};
 
 */
 
@@ -196,8 +201,6 @@ var harry=function(o) {
 	this.labels.color=this.labels.color || "#a0a0a0";
 	this.labels.font=this.labels.font || 'normal 9px "Sans Serif"';
 	this.labels.fontpx=harryTools.fontPixSize(this.labels.font);
-	this.labels.stepx=this.labels.stepx || 1;
-	this.margins=o.margins || [0,0,0,0];
 	this.autoscale=o.autoscale===false?false:true;
 	this.mouseover=o.mouseover===false
 		? false
@@ -205,14 +208,14 @@ var harry=function(o) {
 	this.legends=o.legends===false
 		? false
 		: harryTools.merge({x:5, y:5, color:"#666", border2:"#fff", background:"rgba(255,255,255,0.5)", font:'10px "Sans Serif"'},o.legends);
-	if(!o.margins) {
-		if(/pie/.test(this.mode)) {
-			var m=this.labels.x?this.labels.fontpx*2:0;
-			this.margins=[m,m,m,m];
-		} else {
-			var m=this.labels.fontpx,sm=Math.floor(this.labels.fontpx/2);
-			this.margins=[this.labels.y?sm:0,this.labels.y?m*4:1,this.labels.x?2+m:1,this.labels.x?sm:0];
-		}
+	if(o.margins)
+		this.margins=o.margins;
+	else if(/pie/.test(this.mode)) {
+		var m=this.labels.x?this.labels.fontpx*2:0;
+		this.margins=[m,m,m,m];
+	} else {
+		var m=this.labels.fontpx,sm=Math.floor(this.labels.fontpx/2);
+		this.margins=[this.labels.y?sm:0,this.labels.y?m*4:1,this.labels.x?2+m:1,this.labels.x?sm:0];
 	}
 	this.grid=o.grid || {};
 	this.grid.color=this.grid.color || "#a0a0a0";
@@ -220,15 +223,10 @@ var harry=function(o) {
 	if(/none|false/.test(this.grid.x)) this.grid.x=[];
 	this.grid.y=this.grid.y || [0,25,50,75,100];
 	if(/none|false/.test(this.grid.y)) this.grid.y=[];
-	this.title=o.title || false;
-	if(this.title) {
-		if(typeof this.title=="string") this.title={text:this.title};
-		if(!this.title.font) this.title.font='bold 12px "Sans Serif"';
-		if(!this.title.color) this.title.color='rgba(4,4,4,0.3)';
-		if(!this.title.x) this.title.x=this.margins[3]+2;
-		if(!this.title.y) this.title.y=this.margins[0]+2;
-		if(!this.title.z) this.title.z='top';
-	}
+	if(typeof o.title=="string") o.title={text:o.title};
+	this.title=o.title
+		? harryTools.merge({font:'bold 12px "Sans Serif"', color:'rgba(4,4,4,0.3)', x:this.margins[3]+2, y:this.margins[0]+2, z:'top'},o.title)
+		: false;
 	this.gc=this.canvas.getContext("2d");
 	//console.log("[harry] init("+this.w+","+this.h+")");
 	if(o.datas) this.addDataSets(o.datas);
@@ -407,8 +405,6 @@ harry.prototype={
 					v=Math.round(dec*max*this.labels.y[i]/100)/dec;
 					this.gc.fillText(v,x,y+fh2);
 				}
-			} else if(/pie/.test(this.mode)) {
-
 			}
 		}
 		return this;
@@ -422,6 +418,15 @@ harry.prototype={
 			this.gc.textAlign=align||'center';
 			this.gc.textBaseline=baseline||'alphabetic';
 			this.gc.fillText(l,x,y);
+		}
+		if(this.labels.marks) {
+			this.gc.save();
+			this.gc.lineWidth=1;
+			this.gc.moveTo(x,this.ry2);
+			this.gc.lineTo(x,this.ry2+this.labels.marks);
+			this.gc.strokeStyle=this.labels.color;
+			this.gc.stroke();
+			this.gc.restore();
 		}
 		return this;
 	},
@@ -469,8 +474,8 @@ harry.prototype={
 				this.gc.fillStyle=this.legends.color;
 				this.gc.fillText(d.tit,x+s*2+bs,py);
 			}
+			this.gc.restore();
 		}
-		this.gc.restore();
 		return this;
 	},
 
