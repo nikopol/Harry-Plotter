@@ -650,11 +650,12 @@ harry.prototype={
 				y=this.ry2;
 				for(nds=0;nds<nbds;nds++) {
 					d=this.dataset[nds];
-					if(d.val[nd]) {
-						y0=stack?y:this.ry2;
-						y=y0-Math.round(cy*d.val[nd]);
-						x1=Math.round(x);
-						x2=Math.round(x+bw);
+					
+					y0=stack?y:this.ry2;
+					y=y0-Math.round(cy*d.val[nd]);
+					x1=Math.round(x);
+					x2=Math.round(x+bw);
+					if(d.val[nd]!==null) {
 						this.gc.beginPath();
 						this.gc.moveTo(x1,y0);
 						this.gc.lineTo(x1,y);
@@ -667,10 +668,10 @@ harry.prototype={
 						}
 						this.gc.strokeStyle=d.col;
 						this.gc.stroke();
-						this.overpoints[nds].x.push(0.5+Math.floor(x+bw/2));
-						this.overpoints[nds].y.push(y);
-						this.overpoints[nds].v.push(d.val[nd]);
 					}
+					this.overpoints[nds].x.push(0.5+Math.floor(x+bw/2));
+					this.overpoints[nds].y.push(y);
+					this.overpoints[nds].v.push(d.val[nd]);
 					if(!stack) x+=bw+1;
 				}
 				x+=stack?bw+1+m:m;
