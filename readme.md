@@ -18,7 +18,7 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
   - standalone
   - fully configurable
 
-**constructors**
+**constructor**
 
 	var h=new harry({
 
@@ -115,10 +115,10 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 			circle: "#888888",        //  spot color, default=#888
 			font: "9px Trebuchet MS", //  bullet text font, default=normal 9px "Sans Serif"
 			color: "#666",            //  bullet text color, default=#fff
-			bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=#888
+			bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=rgba(99,99,99,0.8)
 			border: "#fc0",           //  bullet border color, default=#fff,
 			axis: "xy|x|y",           //  draw spot axis, default=none
-			text: "%l\n%v",           //  text in the bullet %v=value %l=label %n=index
+			text: "%t\n%l: %v",       //  text in the bullet %v=value %l=label %n=index %t=title
 			text: callback(n,v,l,x,y) //  or text can trigger a callback
 			                          //     if it returns a string, it'll be displayed
 		}
@@ -128,7 +128,7 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 var h=plotter({...});
 
 
-**usage**
+**methods**
 
 	h.clear()          //delete all dataset
 	 .cls()            //erase canvas
