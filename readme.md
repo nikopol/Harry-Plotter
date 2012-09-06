@@ -1,4 +1,4 @@
-harry plotter 0.7
+harry plotter 0.8
 -----------------
 ~L~ nikopol 2009-2012
 
@@ -20,7 +20,7 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 
 **constructor**
 
-	var h=new harry({
+	var h=harry({
 
 		//datas can be provided in these formats :
 		
@@ -124,27 +124,25 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 		}
 	});
 
-//or (same effect)
-var h=plotter({...});
+	//or (same effect)
+
+	var h=plotter({...});
 
 
 **methods**
 
-	h.clear()          //delete all dataset
-	 .cls()            //erase canvas
-	 .addDataSet(data) //add a dataset, see contructor
-	 .draw();          //draw all dataset
+	h.clear()             //delete all dataset
+	 .load(data)          //add a dataset, see contructor
+	 .draw();             //draw all dataset
 	h.canvas.onclick=function(){
-		h.setMode('river') //change mode
-		 .cls()            //erase canvas
-		 .draw();          //redraw
+		h.draw('river');  //redraw
 	};
 
 **short sample**
 
 	<canvas id="box" height="50" width="100"></canvas>
 	<script>
-		new harry({
+		harry({
 			canvas:'box',
 			datas:[1,2,4,8,4,2,1],
 			mode:'river',
