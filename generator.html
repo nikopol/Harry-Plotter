@@ -1,6 +1,6 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
+	<meta charset="UTF-8">
 	<meta name="author" content="niko" />
 	<title>Harry Plotter - Generator</title>
 	<style>
@@ -268,7 +268,7 @@
 			<label for="autoscale">autoscale</label><input type="checkbox" id="autoscale" checked="checked" /><br/>
 		</div>
 		<div class="formcol">
-			<label for="fill">fill</label><select id="fill"><option></option><option selected="selected">none</option><option>solid</option><option>light</option><option>dark</option><option>vertical</option><option>horizontal</option><option>radial</option></select><br/>
+			<label for="fill">fill</label><select id="fill"><option></option><option>none</option><option>solid</option><option>light</option><option>dark</option><option>vertical</option><option>horizontal</option><option>radial</option></select><br/>
 			<label for="opacity">opacity</label><select id="opacity"><option></option><option value="0.1">0.1 - transparent</option><option>0.2</option><option>0.3</option><option>0.4</option><option value="0.5">0.5 - semi transparent</option><option>0.6</option><option>0.7</option><option>0.8</option><option>0.9</option><option value="1">1.0 - opaque</option></select><br/>
 			<label for="linewidth">linewidth</label><select id="linewidth"><option></option><option>1</option><option>2</option><option  selected="selected">3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
 			<label for="linejoin">linejoin</label><select id="linejoin"><option></option><option>round</option><option>miter</option><option>bevel</option></select>(line or histogram mode)<br/>
@@ -291,7 +291,7 @@
 			<label for="labelcolor">labels.color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="labelcolor" value="" /><br/>
 		</div>
 		<div class="formcol">
-			<label for="labely">labels.y</label><input type="text" id="labely" placeholder="%,%,%..." value="0,50,100" title="show veritcals labels for each labels.y percent"/><br/>
+			<label for="labely">labels.y</label><input type="text" id="labely" placeholder="%,%,%..." value="" title="show veritcals labels for each labels.y percent"/><br/>
 			<label for="labelx">labels.x</label><select id="labelx"><option value="">none</option><option value="1">all</option><option value="2">1/2</option><option value="3">1/3</option><option value="4">1/4</option><option value="5">1/5</option><option value="10">1/10</option><option value="20">1/20</option></select><br/>
 			<label for="labelmarks">marks</label><select id="labelmarks"><option></option><option>1</option><option>2</option><option>3</option><option>4</option></select>px<br/>
 		</div>
