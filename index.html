@@ -2,6 +2,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="author" content="niko" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 	<title>Harry Plotter - Demo page</title>
 	<style>
 		body { margin:0; padding:0; font:normal 9pt "Sans Serif","Trebuchet MS"; }
@@ -22,25 +23,25 @@
 			}
 			var h=[];
 			
-			new harry({
-				container:"box0",
-				width:100,
-				height:60,
-				datas: [
-					{ values: [12,null,42], labels: ['first','second','third'] },
-					{ values: [100,null,300], labels: ['a','b','c'] },
-				],
-				labels: {
-					x: 1
-				},
-				mode:"line",
-				linewidth:2,
-				fill:"n",
-				grid:{y:[0,50,100]},
-				mouseover:{
-					text: "%l: %v"
-				}
-			});
+			// new harry({
+			// 	container:"box0",
+			// 	width:100,
+			// 	height:60,
+			// 	datas: [
+			// 		{ values: [12,null,42], labels: ['first','second','third'] },
+			// 		{ values: [100,null,300], labels: ['a','b','c'] },
+			// 	],
+			// 	labels: {
+			// 		x: 1
+			// 	},
+			// 	mode:"line",
+			// 	linewidth:2,
+			// 	fill:"n",
+			// 	grid:{y:[0,50,100]},
+			// 	mouseover:{
+			// 		text: "%l: %v"
+			// 	}
+			// });
 
 			//tiny - simple dataset
 			h.push(new harry({ container:"box40", width:40, height:16, datas:d, mode:"line", linewidth:2, fill:"n", grid:{y:[0,50,100]} }));
