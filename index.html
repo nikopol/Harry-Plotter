@@ -72,13 +72,13 @@
 			setInterval(function(){
 				d=d.slice(1);
 				d.push(Math.floor(Math.random()*50));
-				for(var n in h) h[n].clear().cls().addDataSet(d,false,false).draw();
+				for(var n in h) h[n].clear().load(d,false,false).draw();
 			}, 1000);
 		};
 	</script>
 </head>
 <body>
-	<h1>Harry Plotter v0.7 - Demo page [<a href="generator.html">generator</a>] [<a href="https://github.com/nikopol/Harry-Plotter">fork me!</a>]</h1>
+	<h1>Harry Plotter v0.8 - Demo page [<a href="generator.html">generator</a>] [<a href="https://github.com/nikopol/Harry-Plotter">fork me!</a>]</h1>
 	<div class="tinybox" id="box0"></div>
 	<h2>Tiny - Simple dataset</h2>
 	<div class="tinybox" id="box40"></div>
