@@ -196,7 +196,7 @@ harry=(function(o){
 	},
 
 	mouseXY=function(e){
-		e=e||window.event,canvas;
+		e=e||window.event;
 		if('offsetX' in e) return {x:e.offsetX,y:e.offsetY};
 		var o=e.target,p={x:e.pageX,y:e.pageY};
 		while(o.offsetParent){
