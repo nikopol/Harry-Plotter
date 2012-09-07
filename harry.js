@@ -165,7 +165,7 @@ harry=(function(o){
 		var p=f.match(/\d+px/i);
 		if(p) return parseInt(p,10);
 		p=f.match(/[0-9\.]+em/i);
-		if(p) return Math.floor(16.0*parseFloat(p,10));
+		if(p) return Math.floor(16.0*parseFloat(p));
 		p=f.match(/\d+pt/i);
 		if(p) return Math.floor(1.3333*parseInt(p,10));
 		return 10;
@@ -190,7 +190,7 @@ harry=(function(o){
 
 	scaleUp=function(n){
 		var s=Math.floor(n).toString(),
-		    d=parseInt(s.substr(0,1)),
+		    d=parseInt(s.substr(0,1),10),
 		    m=d*parseFloat("1E"+(s.length-1));
 		return m==n ? n : (d+1)*parseFloat("1E"+(s.length-1));
 	},
@@ -214,7 +214,7 @@ harry=(function(o){
 		return p;
 	},
 
-	buildCanvas=function(o,w,h,id){
+	buildCanvas=function(o,w,h){
 		var c=document.createElement('canvas');
 		c.setAttribute('width',w+'px');
 		c.setAttribute('height',h+'px');
@@ -234,7 +234,7 @@ harry=(function(o){
 	bg=o.background,
 	mode=o.mode||'line',
 	fill=(o.fill||"a")[0].toLowerCase().replace(/[^nasvhrdl]/,"a"),
-	opacity=parseFloat(o.opacity,10)||1,
+	opacity=parseFloat(o.opacity)||1,
 	linewidth=parseInt(o.linewidth,10)||1,
 	linejoin=o.linejoin||"miter",
 	radiuspoint=parseInt(o.radiuspoint,10)||0,
@@ -302,7 +302,7 @@ harry=(function(o){
 			col:d.color || COLORS[data.length%COLORS.length]
 		};
 		for(k in vals) {
-			v=parseFloat(vals[k],10);
+			v=parseFloat(vals[k]);
 			ds.val.push(vals[k]==null?null:v);
 			ds.lab.push(labs[k]||k);
 			ds.sum+=v;
@@ -471,12 +471,12 @@ harry=(function(o){
 				for(i=0,l=labels.y.length;i<l;++i) {
 					y=ry2-Math.round(rh*labels.y[i]/100);
 					v=Math.round(dec*max*labels.y[i]/100)/dec;
-					if(/left/i.test(labels.ypos)){
+					if(/right/i.test(labels.ypos)){
 						x=rx2+1;
 						gc.textAlign='left';
 						gc.fillText(v,x,y+fh2);
 					}
-					if(/right/i.test(labels.ypos)){
+					if(/left/i.test(labels.ypos)){
 						x=rx-2;
 						gc.textAlign='right';
 						gc.fillText(v,x,y+fh2);
@@ -569,7 +569,7 @@ harry=(function(o){
 		gc.font=mouseover.font;
 		var i,n,m,l=bs.length,b,lab,tit,txt,bh=0,bw=0,s=3,
 		    pt=fontPixSize(mouseover.font),
-		    pr=pt/2,lh=pt+s,x,y,x1,y1,x2,y2,txt,
+		    pr=pt/2,lh=pt+s,x,y,x1,y1,x2,y2,
 		    xl=w,xr=0,yt=h,yb=0;
 		bs.sort(function(a,b){return parseInt(b.v,10)-parseInt(a.v,10)});
 		//calc texts sizes
@@ -905,17 +905,17 @@ harry=(function(o){
 								gc.stroke();
 							}
 							if(mouseover.axis){
-								var xy,y,s=2;
+								var xy,z,s=2;
 								gc.lineWidth=1;
 								//draw axis
 								if(/x/i.test(mouseover.axis)){
-									y=o.y[n]+mouseover.radius;
-									while(y<ry2){
-										gc.moveTo(o.x[n],y);
-										y+=s;
-										if(y>ry2) y=ry2;
-										gc.lineTo(o.x[n],y);
-										y+=s;
+									z=o.y[n]+mouseover.radius;
+									while(t<ry2){
+										gc.moveTo(o.x[n],z);
+										z+=s;
+										if(z>ry2) z=ry2;
+										gc.lineTo(o.x[n],z);
+										z+=s;
 									}
 									gc.stroke();
 								}
@@ -1065,4 +1065,4 @@ harry=(function(o){
 		}
 	};
 }),
-plotter=function(o){ return harry(o) };
+plotter=harry;
