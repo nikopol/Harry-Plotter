@@ -950,7 +950,6 @@ harry=(function(o){
 						if(m!="pie") gc.putImageData(imgdata,0,0);
 						mousepos=mouseXY(e||window.event,canvas);
 						over[m](mousepos.x,mousepos.y,o);
-console.log(mousepos);
 					};
 				};
 				canvas.onmouseout=function(){
