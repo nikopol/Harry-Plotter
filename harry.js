@@ -195,11 +195,16 @@ harry=(function(o){
 		return a;
 	},
 
-	mouseXY=function(e,c){
-		return {
-			x: e.clientX-c.offsetLeft,
-			y: e.clientY-c.offsetTop
+	mouseXY=function(e){
+		e=e||window.event,canvas;
+		if('offsetX' in e) return {x:e.offsetX,y:e.offsetY};
+		var o=e.target,p={x:e.pageX,y:e.pageY};
+		while(o.offsetParent){
+			p.x-=o.offsetLeft;
+			p.y-=o.offsetTop;
+			o=o.offsetParent;
 		}
+		return p;
 	},
 
 	buildCanvas=function(o,w,h,id){
@@ -321,7 +326,7 @@ harry=(function(o){
 
 	//load datasets
 	loads=function(datas) {
-		if(datas.constructor==Array && typeof(datas[0])=='object')
+		if(datas instanceof Array && typeof(datas[0])=='object')
 			for(var i=0,l=datas.length;i<l;++i)
 				load(datas[i]);
 		else
@@ -942,13 +947,13 @@ harry=(function(o){
 				if(mousepos) over[m](mousepos.x,mousepos.y,o);
 
 				canvas.onmouseover=function(e){
-					mousepos=mouseXY(e||window.event,canvas);
+					mousepos=mouseXY(e);
 
 				};
 				canvas.onmousemove=function(e){
 					if(mousepos) {
 						if(m!="pie") gc.putImageData(imgdata,0,0);
-						mousepos=mouseXY(e||window.event,canvas);
+						mousepos=mouseXY(e);
 						over[m](mousepos.x,mousepos.y,o);
 					};
 				};
