@@ -2,17 +2,20 @@ harry plotter 0.8
 -----------------
 ~L~ nikopol 2009-2012
 
+**what's that**
+
+harry is a lightweight standalone javascript library to plot data as charts, pies, lines or curves.
+
 samples can be viewed [here](http://nikopol.github.com/Harry-Plotter/)  
 generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.html)
 
 **prerequisite**
 
-  - browser supporting canvas required
+  - browser supporting canvas required (Chrome,Firefox,Opera,Safari,IE9)
 
 **key features**
 
   - mono or multi dataset
-  - pie chart line curve support
   - mouseover support
   - lightweight
   - standalone
