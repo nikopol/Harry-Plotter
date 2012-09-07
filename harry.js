@@ -348,7 +348,7 @@ harry=(function(o){
 	},
 	
 	//set and return a fillstyle
-	getGradient=function(color){
+	setGradient=function(color){
 		var g;
 		switch(getFillMode()) {
 		case "s": //solid
@@ -379,6 +379,29 @@ harry=(function(o){
 		return g ? gc.fillStyle=g : false;
 	},
 
+	//set shadow
+	setShadow=function(s){
+		if(s && gc.hasOwnProperty('shadowBlur')) {
+			var p=s.split(/[ ,;:-]/);
+			gc.shadowOffsetX = parseInt(p[0]||1,10);
+			gc.shadowOffsetY = parseInt(p[1]||1,10);
+			gc.shadowBlur    = parseInt(p[2]||1,10);
+			gc.shadowColor   = p[3]||'#000';
+		}
+	},
+
+	//unset shadow
+	unsetShadow=function(){
+		if(gc.hasOwnProperty('clearShadow')) gc.clearShadow();
+		else if(gc.hasOwnProperty('shadowBlur')) {
+			gc.shadowOffsetX = 0;
+			gc.shadowOffsetY = 0;
+			gc.shadowBlur    = 0;
+			gc.shadowColor   = 'rgba(0,0,0,0)';
+		}
+	},
+
+	//erase canvas
 	cls=function() {
 		gc.clearRect(0,0,w,h);
 		if(bg) {
@@ -388,15 +411,18 @@ harry=(function(o){
 	},
 
 	drawTitle=function() {
-		if(title && gc.font) {
+		if(title) {
+			setShadow(title.shadow);
 			gc.font=title.font;
 			gc.textAlign='left';
 			gc.textBaseline='top';
 			gc.fillStyle=title.color;
 			gc.fillText(title.text,title.x,title.y);
+			unsetShadow();
 		}
 	},
 	
+	//draw the background grid
 	drawGrid=function() {
 		if(/chart|line|curve/.test(mode)) {
 			var i,l,x,y;
@@ -422,14 +448,16 @@ harry=(function(o){
 		}
 	},
 
+	//draw labels on Y axis
 	drawYLabels=function() {
-		if(dlen && labels.y && gc.font) {
+		if(dlen && labels.y) {
 			//console.log("[harry] labels y("+labels.y.join(",")+") "+labels.font);
 			if(/chart|line|curve/.test(mode)) {
 				var max=/\:[r|s]/.test(mode)?dsum:dmax;
 				var i,l,x,y,w,v,dec=max<10?100:(max<100?10:1);
 				var fh=labels.fontpx;
 				var fh2=Math.floor(fh/2.5);
+				setShadow(labels.shadow);
 				gc.font=labels.font;
 				gc.fillStyle=labels.color;
 				gc.textAlign='left';
@@ -439,18 +467,22 @@ harry=(function(o){
 					v=Math.round(dec*max*labels.y[i]/100)/dec;
 					gc.fillText(v,x,y+fh2);
 				}
+				unsetShadow();
 			}
 		}
 	},
 
+	//draw labels on X axis
 	drawXLabel=function(n,x,y,align,baseline) {
-		if(gc.font && labels.x && (n%labels.x)==0) {
+		if(labels.x && (n%labels.x)==0) {
 			var l=data[0].lab[n]||n;
+			setShadow(labels.shadow);
 			gc.font=labels.font;
 			gc.fillStyle=labels.color;
 			gc.textAlign=align||'center';
 			gc.textBaseline=baseline||'alphabetic';
 			gc.fillText(l,x,y);
+			gc.unsetShadow();
 		}
 		if(labels.marks) {
 			gc.save();
@@ -484,6 +516,7 @@ harry=(function(o){
 			//draw background
 			gc.lineWidth=1;
 			if((g=legends.background)) {
+				gc.save();
 				gc.fillStyle=g;
 				gc.fillRect(x,y,w,h);
 			}
@@ -491,20 +524,25 @@ harry=(function(o){
 				gc.strokeStyle=g;
 				gc.strokeRect(x,y,w,h);
 			}
+
 			for(i=0,py=y+s;i<nl;++i,py+=lh) {
 				d=data[i];
 				//draw color box
+				setShadow(legends.shadowbox);
 				gc.fillStyle=d.col;
 				gc.fillRect(x+s,py,bs,bs);
+				unsetShadow();
 				if((g=legends.border2)) {
 					gc.strokeStyle=g;
 					gc.strokeRect(x+s,py,bs,bs);
 				}
 				//draw text
+				setShadow(legends.shadow);
 				gc.textAlign='left';
 				gc.textBaseline='top';
 				gc.fillStyle=legends.color;
 				gc.fillText(d.tit,x+s*2+bs,py);
+				unsetShadow();
 			}
 			gc.restore();
 		}
@@ -571,8 +609,10 @@ harry=(function(o){
 			gc.lineTo(x2,y2);
 			gc.lineTo(x1,y2);
 			gc.closePath();
+			setShadow(mouseover.shadowbox);
 			gc.fillStyle=mouseover.bullet;
 			gc.fill();
+			unsetShadow();
 			gc.lineWidth=1;
 			gc.lineJoin='round';
 			gc.strokeStyle=mouseover.border;
@@ -580,10 +620,10 @@ harry=(function(o){
 			//draw texts
 			gc.textAlign='left';
 			gc.textBaseline='top';
-			y=y2+s;
+			y=y2+s-1;
 			for(n=0;n<l;n++) {
 				b=bs[n];
-				x=x1+s;
+				x=x1+s-1;
 				if(l>1) {
 					gc.beginPath();
 					gc.arc(x+pr,y+pr,pr,0,2*Math.PI);
@@ -591,9 +631,11 @@ harry=(function(o){
 					gc.fill();
 					x+=pt+s;
 				}
+				setShadow(mouseover.shadow);
 				gc.fillStyle=mouseover.color;
 				for(i=0;i<b.lines.length;++i,y+=lh)
 					gc.fillText(b.lines[i],x,y);
+				unsetShadow();
 			}
 		}
 		gc.restore();
@@ -657,7 +699,7 @@ harry=(function(o){
 					n2=l-1;
 					while(d.val[n2]===null) n2--;
 					//fill
-					if(n1<=n2 && getGradient(d.col)) {
+					if(n1<=n2 && setGradient(d.col)) {
 						gc.beginPath();
 						gc.moveTo(x[n1],ry2);
 						gc.lineTo(x[n1],y[n1]);
@@ -723,7 +765,7 @@ harry=(function(o){
 							gc.lineTo(x2,y);
 							gc.lineTo(x2,y0);
 							gc.closePath();
-							if(getGradient(d.col)) gc.fill();
+							if(setGradient(d.col)) gc.fill();
 							gc.strokeStyle=d.col;
 							gc.stroke();
 						}
@@ -786,7 +828,7 @@ harry=(function(o){
 					gc.moveTo(dx,dy);
 					gc.arc(dx,dy,r,a1,a2,false);
 					gc.closePath();
-					if(getGradient(vc[i])) gc.fill();
+					if(setGradient(vc[i])) gc.fill();
 					gc.strokeStyle=vc[i];
 					gc.stroke();
 					if(i===n) {
