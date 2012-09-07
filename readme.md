@@ -77,9 +77,10 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 		pointradius: int,             //radius point in mode line/curve only (default=none)
 
 		title: {                      //title options
+			text: "title",            //  clear enough
 			font:'9px "Trebuchet MS"',//  font size & family, default=bold 12px "Sans Serif"
 			color: "rgba(4,4,4,0.3)", //  font color, default=rgba(4,4,4,0.3)
-			text: "title",            //  clear enough
+			shadow: "x,y,blur,#col",  //  text shadow, default=none
 			x: 5,                     //  title position left position
 			y: 10,                    //  title position top position
 			z: "background"           //  behind or on top of the graph, default=top
@@ -89,7 +90,9 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 			font: "9px Trebuchet MS", //  font size & family, important:use px size,
 			                          //    default=normal 9px "Sans Serif"
 			color: "#a0a0a0",         //  font color, default=a0a0a0
-			y: [0,50,100,"max|min|avg"],// y axis, numbers are %, default=none
+			shadow: "x,y,blur,#col",  //  label text shadow, default=none
+			y: [0,50,100],            //  y axis, numbers are %, default=none
+			ypos: "left+right",       //  y labels position, default=right
 			x: int,                   //  x axis, 1=draw all label, 2=one/two..., default=none
 			marks: int                //  graduation's marks size, default=0
 		},
@@ -99,8 +102,10 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 			y: int,                   //  top corner position,  default=5
 			background: "rgba(180,180,180,0.5)",//background color, default=rgba(255,255,255,0.5)
 			border: "#fff",           //  legends border color, default=none
-			border2: "#fff",           // color box border color, default=fff
+			shadowbox: "x,y,b,#col",  //  legends box shadow, default=none
+			border2: "#fff",          //  color box border color, default=fff
 			color: "#000",            //  text color, default, #666
+			shadow: "x,y,blur,#col",  //  legends text shadow, default=none
 			font:'9px "Trebuchet MS"' //  font size & family, default=normal 10px "Sans Serif"
 		},
 
@@ -118,7 +123,9 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 			circle: "#888888",        //  spot color, default=#888
 			font: "9px Trebuchet MS", //  bullet text font, default=normal 9px "Sans Serif"
 			color: "#666",            //  bullet text color, default=#fff
+			shadow: "x,y,blur,#col",  //  bullet text shadow, default=none
 			bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=rgba(99,99,99,0.8)
+			shadowbox: "x,y,b,#col",  //  bullet box shadow, default=none
 			border: "#fc0",           //  bullet border color, default=#fff,
 			axis: "xy|x|y",           //  draw spot axis, default=none
 			text: "%t\n%l: %v",       //  text in the bullet %v=value %l=label %n=index %t=title

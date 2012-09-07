@@ -61,9 +61,10 @@ var h=harry({
 	pointradius: int,             //radius point in mode line/curve only (default=none)
 
 	title: {                      //title options
+		text: "title",            //  clear enough
 		font:'9px "Trebuchet MS"',//  font size & family, default=bold 12px "Sans Serif"
 		color: "rgba(4,4,4,0.3)", //  font color, default=rgba(4,4,4,0.3)
-		text: "title",            //  clear enough
+		shadow: "x,y,blur,#col",  //  text shadow, default=none
 		x: 5,                     //  title position left position
 		y: 10,                    //  title position top position
 		z: "background"           //  behind or on top of the graph, default=top
@@ -73,7 +74,9 @@ var h=harry({
 		font: "9px Trebuchet MS", //  font size & family, important:use px size,
 		                          //    default=normal 9px "Sans Serif"
 		color: "#a0a0a0",         //  font color, default=a0a0a0
-		y: [0,50,100,"max|min|avg"],// y axis, numbers are %, default=none
+		shadow: "x,y,blur,#col",  //  label text shadow, default=none
+		y: [0,50,100],            //  y axis, numbers are %, default=none
+		ypos: "left+right",       //  y labels position, default=right
 		x: int,                   //  x axis, 1=draw all label, 2=one/two..., default=none
 		marks: int                //  graduation's marks size, default=0
 	},
@@ -83,8 +86,10 @@ var h=harry({
 		y: int,                   //  top corner position,  default=5
 		background: "rgba(180,180,180,0.5)",//background color, default=rgba(255,255,255,0.5)
 		border: "#fff",           //  legends border color, default=none
-		border2: "#fff",           // color box border color, default=fff
+		shadowbox: "x,y,b,#col",  //  legends box shadow, default=none
+		border2: "#fff",          //  color box border color, default=fff
 		color: "#000",            //  text color, default, #666
+		shadow: "x,y,blur,#col",  //  legends text shadow, default=none
 		font:'9px "Trebuchet MS"' //  font size & family, default=normal 10px "Sans Serif"
 	},
 
@@ -102,7 +107,9 @@ var h=harry({
 		circle: "#888888",        //  spot color, default=#888
 		font: "9px Trebuchet MS", //  bullet text font, default=normal 9px "Sans Serif"
 		color: "#666",            //  bullet text color, default=#fff
+		shadow: "x,y,blur,#col",  //  bullet text shadow, default=none
 		bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=rgba(99,99,99,0.8)
+		shadowbox: "x,y,b,#col",  //  bullet box shadow, default=none
 		border: "#fc0",           //  bullet border color, default=#fff,
 		axis: "xy|x|y",           //  draw spot axis, default=none
 		text: "%t\n%l: %v",       //  text in the bullet %v=value %l=label %n=index %t=title
@@ -165,19 +172,19 @@ harry=(function(o){
 	},
 
 	calcMargins=function(mode,l,mo){
+		var m=fontPixSize(l.font);
 		if(/pie/.test(h.mode)) {
-			var m=l.x ? fontPixSize(l.font)*2 : (mo===false ? 0 : 10);
+			m=l.x ? m*2 : (mo===false ? 0 : 15);
 			return [m,m,m,m];
 		}
 		var
-		m=fontPixSize(l.font),
 		f=Math.floor(m/2),
 		k=labels.marks;
 		return [
-			l.y ? f : 0,     //top
-			l.y ? m*4 : 1,   //right
-			l.x ? 2+m+k : 1, //bottom
-			l.x ? f : 0      //left
+		/*top*/    l.y ? f : 0,
+		/*right*/  l.y && /right/i.test(l.ypos) ? m*4 : (l.x?m:1),
+		/*bottom*/ l.x ? 3+m+k : (l.y?m:1),
+		/*left*/   l.y && /left/i.test(l.ypos) ? m*4 : (l.x?f:0)
 		];
 	},
 
@@ -235,7 +242,8 @@ harry=(function(o){
 	labels=merge({
 		color: "#a0a0a0",
 		font: 'normal 9px "Sans Serif"',
-		marks: 0
+		marks: 0,
+		ypos: 'right'
 	},o.labels),
 	mouseover=o.mouseover===false
 		? false
@@ -253,16 +261,6 @@ harry=(function(o){
 	mousepos,
 	overpoints=[],
 	overpie={n:false},
-	legends=o.legends===false
-		? false
-		: merge({
-			x: 5,
-			y: 5,
-			color: "#666",
-			border2: "#fff",
-			background: "rgba(255,255,255,0.5)",
-			font: '10px "Sans Serif"'
-		},o.legends),
 	automargins=o.margins ? false : true,
 	margins=automargins ? calcMargins(mode,labels,mouseover) : o.margins,
 	grid=merge({
@@ -274,11 +272,20 @@ harry=(function(o){
 		? merge({
 			font: 'bold 12px "Sans Serif"',
 			color: 'rgba(4,4,4,0.3)',
-			x: margins[3]+2,
-			y: margins[0]+2,
+			x: margins[3]+2.5,
+			y: margins[0]+2.5,
 			z: 'top'
-		},	typeof o.title=="string"?{text:o.title}:o.title)
+		},	o.title)
 		: false,
+	legends=o.legends===false
+		? false
+		: merge({
+			x: margins[3]+2.5,
+			y: margins[0]+2.5+(o.title && !o.title.x ? 2+fontPixSize(title.font) : 0),
+			color: "#666",
+			border2: "#fff",
+			font: '10px "Sans Serif"'
+		},o.legends),
 	data=[], dmin, dmax, dlen=0, dsum,
 	rx, ry, rw, rh, rx2, ry2,
 
@@ -460,12 +467,20 @@ harry=(function(o){
 				setShadow(labels.shadow);
 				gc.font=labels.font;
 				gc.fillStyle=labels.color;
-				gc.textAlign='left';
+				
 				for(i=0,l=labels.y.length;i<l;++i) {
-					x=rx2+1;
 					y=ry2-Math.round(rh*labels.y[i]/100);
 					v=Math.round(dec*max*labels.y[i]/100)/dec;
-					gc.fillText(v,x,y+fh2);
+					if(/left/i.test(labels.ypos)){
+						x=rx2+1;
+						gc.textAlign='left';
+						gc.fillText(v,x,y+fh2);
+					}
+					if(/right/i.test(labels.ypos)){
+						x=rx-2;
+						gc.textAlign='right';
+						gc.fillText(v,x,y+fh2);
+					}
 				}
 				unsetShadow();
 			}
@@ -482,7 +497,7 @@ harry=(function(o){
 			gc.textAlign=align||'center';
 			gc.textBaseline=baseline||'alphabetic';
 			gc.fillText(l,x,y);
-			gc.unsetShadow();
+			unsetShadow();
 		}
 		if(labels.marks) {
 			gc.save();
@@ -516,9 +531,10 @@ harry=(function(o){
 			//draw background
 			gc.lineWidth=1;
 			if((g=legends.background)) {
-				gc.save();
+				setShadow(legends.shadowbox);
 				gc.fillStyle=g;
 				gc.fillRect(x,y,w,h);
+				unsetShadow();
 			}
 			if((g=legends.border)) {
 				gc.strokeStyle=g;
@@ -528,7 +544,7 @@ harry=(function(o){
 			for(i=0,py=y+s;i<nl;++i,py+=lh) {
 				d=data[i];
 				//draw color box
-				setShadow(legends.shadowbox);
+				setShadow(legends.shadow);
 				gc.fillStyle=d.col;
 				gc.fillRect(x+s,py,bs,bs);
 				unsetShadow();
@@ -620,10 +636,10 @@ harry=(function(o){
 			//draw texts
 			gc.textAlign='left';
 			gc.textBaseline='top';
-			y=y2+s-1;
+			y=y2+s;
 			for(n=0;n<l;n++) {
 				b=bs[n];
-				x=x1+s-1;
+				x=x1+s;
 				if(l>1) {
 					gc.beginPath();
 					gc.arc(x+pr,y+pr,pr,0,2*Math.PI);
@@ -717,7 +733,7 @@ harry=(function(o){
 					//draw x labels
 					if(nds==0)
 						for(i=0;i<l;++i)
-							drawXLabel(i,x[i],h);
+							drawXLabel(i,x[i],h-1);
 					//draw points
 					if(radiuspoint) {
 						gc.fillStyle=d.col;
