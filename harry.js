@@ -471,12 +471,12 @@ harry=(function(o){
 				for(i=0,l=labels.y.length;i<l;++i) {
 					y=ry2-Math.round(rh*labels.y[i]/100);
 					v=Math.round(dec*max*labels.y[i]/100)/dec;
-					if(/left/i.test(labels.ypos)){
+					if(/right/i.test(labels.ypos)){
 						x=rx2+1;
 						gc.textAlign='left';
 						gc.fillText(v,x,y+fh2);
 					}
-					if(/right/i.test(labels.ypos)){
+					if(/left/i.test(labels.ypos)){
 						x=rx-2;
 						gc.textAlign='right';
 						gc.fillText(v,x,y+fh2);
