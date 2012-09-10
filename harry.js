@@ -173,7 +173,7 @@ harry=(function(o){
 
 	calcMargins=function(mode,l,mo){
 		var m=fontPixSize(l.font);
-		if(/pie/.test(h.mode)) {
+		if(/pie/.test(mode)) {
 			m=l.x ? m*2 : (mo===false ? 0 : 15);
 			return [m,m,m,m];
 		}
@@ -460,26 +460,25 @@ harry=(function(o){
 		if(dlen && labels.y) {
 			//console.log("[harry] labels y("+labels.y.join(",")+") "+labels.font);
 			if(/chart|line|curve/.test(mode)) {
-				var max=/\:[r|s]/.test(mode)?dsum:dmax;
-				var i,l,x,y,w,v,dec=max<10?100:(max<100?10:1);
-				var fh=labels.fontpx;
-				var fh2=Math.floor(fh/2.5);
+				var
+				max=/\:[r|s]/.test(mode)?dsum:dmax,
+				i,l,x,y,w,v,dec=max<10?100:(max<100?10:1);
 				setShadow(labels.shadow);
 				gc.font=labels.font;
 				gc.fillStyle=labels.color;
-				
+				gc.textBaseline='middle';				
 				for(i=0,l=labels.y.length;i<l;++i) {
 					y=ry2-Math.round(rh*labels.y[i]/100);
 					v=Math.round(dec*max*labels.y[i]/100)/dec;
 					if(/right/i.test(labels.ypos)){
 						x=rx2+1;
 						gc.textAlign='left';
-						gc.fillText(v,x,y+fh2);
+						gc.fillText(v,x,y);
 					}
 					if(/left/i.test(labels.ypos)){
 						x=rx-2;
 						gc.textAlign='right';
-						gc.fillText(v,x,y+fh2);
+						gc.fillText(v,x,y);
 					}
 				}
 				unsetShadow();
