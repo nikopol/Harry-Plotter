@@ -30,172 +30,204 @@
 	</style>
 	<script src="harry.js"></script>
 	<script>
-		var MAXDATA=16;
-		
-		var _=function(id){ return document.getElementById(id); };
-		var val=function(id){ return document.getElementById(id).value; };
-
-		var values=function(str){
-			var n,s=str.split(/\s*,\s*/),i,v,k;
-			if(/:/.test(str)){
-				n={};
-				for(i=0;i<s.length;i++){
-					if(s[i].match(/^(.+)\:(.+)$/)){
-						k=RegExp.$1;
-						v=RegExp.$2;
-					} else {
-						k=i;
-						v=s[i];
-					}
-					v=v==""||v=="null"?null:parseFloat(v,10);
-					n[k]=v;
-				} 
-			} else {
-				n=[];
-				for(i=0;i<s.length;i++){
-					v=s[i]==""||s[i]=="null"?null:parseFloat(s[i],10);
-					n.push(v);
-				} 
+		var TPL= {
+			"Dark River": {
+				datas:[{values:[51,52,47,6,5,86,95,93,96,22,55,49,21,21,6,49],color:"#fc0"},{values:[59,21,30,86,5,75,24,92,80,11,22,83,19,91,99,74],color:"#0cf"},{values:[58,0,5,40,82,37,37,77,92,76,38,47,98,43,38,42]}],
+				title:{text:"DARK RIVER",font:"bold 24px \"Sans Serif\"",color:"#fff",shadow:"0,0,8,#fff"},
+				labels:{x:1,y:[25,50,100],color:"#ddd",ypos:"right"},
+				background:"#000",
+				mode:"curve:river",
+				fill:"solid",
+				opacity:0.8,
+				linewidth:3,
+				legends:{background:"#666",color:"#fff",shadowbox:"1,1,1,#fff"}
 			}
-			return n;
 		};
-		
-		var json={
-			encode: function(o,jsquote) { /*ignore functions*/
-				if(o==undefined) return 'null';
-				jsquote=jsquote||false;
-				var lines=[], isarray=(o.constructor==Array),k,v,s;
-				for(k in o) {
-					v=o[k];
-					if(typeof v=="object") {
-						if(isarray) lines.push(json.encode(v,jsquote));
-						else lines.push((jsquote?k:'"'+k+'"')+':'+json.encode(v,jsquote));
-					} else if(typeof v!="function") {
-						s=(isarray)?"":(jsquote?k+':':'"'+k+'":');
-						if(typeof v=="number") s+=v.toString(10);
-						else if(v===false) s+='false';
-						else if(v===true) s+='true';
-						else s+='"'+(v || "").replace(/"/g,"\\\"").replace(/\n|\r/g,' ')+'"';
-						lines.push(s);
-					}
-				}
-				return (isarray) ? "["+lines.join(",")+"]" : "{"+lines.join(",")+"}";
-			},
-			tidy: function(txt) {
-				txt=txt.replace(/\n|\r|\t/gi,"").replace(/^\s+/g,'');
-				var l=txt.length,n=0,c,nc,i=0,fmt="",iq=false,ip=0,newline=function(i){ return "\n"+("                                   ".substr(0,i*3)); };
-				while(n<l) {
-					c=txt[n++];
-					nc=(n<l) ? txt[n] : '';
-					if(c=='"') { fmt+=c; iq=!iq; } 
-					else if(iq) fmt+=c;
-					else if(c=='[') {ip++; fmt+=c;}
-					else if(c==']') {ip--; fmt+=c;}
-					else if(ip)     fmt+=c;
-					else if(c=='{') fmt+=c+newline(++i);
-					else if(c==',') fmt+=c+newline(i);
-					else if(c=='}') fmt+=newline(--i)+c;
-					else fmt+=c;
-				}
-				return fmt;
-			}
-		}
-		
-		window.onload=function(){
+		window.onload=function(){			
+			var
+			MAXDATA=16,
 			
-			var isEmpty=function(o){
+			_=function(id){
+				return document.getElementById(id);
+			},
+			
+			val=function(id,val){
+				var o=_(id);
+				if(val!==undefined) o.value=val;
+				return o.value;
+			},
+			
+			json={
+
+				encode: function(o,jsquote) { /*ignore functions*/
+					if(o==undefined) return 'null';
+					jsquote=jsquote||false;
+					var lines=[], isarray=(o.constructor==Array),k,v,s;
+					for(k in o) {
+						v=o[k];
+						if(typeof v=="object") {
+							if(isarray) lines.push(json.encode(v,jsquote));
+							else lines.push((jsquote?k:'"'+k+'"')+':'+json.encode(v,jsquote));
+						} else if(typeof v!="function") {
+							s=(isarray)?"":(jsquote?k+':':'"'+k+'":');
+							if(typeof v=="number") s+=v.toString(10);
+							else if(v===false) s+='false';
+							else if(v===true) s+='true';
+							else s+='"'+(v || "").replace(/"/g,"\\\"").replace(/\n|\r/g,' ')+'"';
+							lines.push(s);
+						}
+					}
+					return (isarray) ? "["+lines.join(",")+"]" : "{"+lines.join(",")+"}";
+				},
+
+				tidy: function(txt) {
+					txt=txt.replace(/\n|\r|\t/gi,"").replace(/^\s+/g,'');
+					var l=txt.length,n=0,c,nc,i=0,fmt="",iq=false,ip=0,newline=function(i){ return "\n"+("                                   ".substr(0,i*3)); };
+					while(n<l) {
+						c=txt[n++];
+						nc=(n<l) ? txt[n] : '';
+						if(c=='"') { fmt+=c; iq=!iq; } 
+						else if(iq) fmt+=c;
+						else if(c=='[') {ip++; fmt+=c;}
+						else if(c==']') {ip--; fmt+=c;}
+						else if(ip)     fmt+=c;
+						else if(c=='{') fmt+=c+newline(++i);
+						else if(c==',') fmt+=c+newline(i);
+						else if(c=='}') fmt+=newline(--i)+c;
+						else fmt+=c;
+					}
+					return fmt;
+				}
+			},
+
+			isEmpty=function(o){
   				for(var i in o) return false;
   				return true;
-			};
-			
-			var build=function(){
-				var o={container:'container'},v,w;
+			}
 
+			values=function(str){
+				var n,s=str.split(/\s*,\s*/),i,v,k;
+				if(/:/.test(str)){
+					n={};
+					for(i=0;i<s.length;i++){
+						if(s[i].match(/^(.+)\:(.+)$/)){
+							k=RegExp.$1;
+							v=RegExp.$2;
+						} else {
+							k=i;
+							v=s[i];
+						}
+						v=v==""||v=="null"?null:parseFloat(v);
+						n[k]=v;
+					} 
+				} else {
+					n=[];
+					for(i=0;i<s.length;i++){
+						v=s[i]==""||s[i]=="null"?null:parseFloat(s[i]);
+						n.push(v);
+					} 
+				}
+				return n;
+			},
+
+			getlst=function(lst,pfx,h){
+				var v;
+				if(!h) h={};
+				if(typeof(lst)=="string") lst=lst.split(' ');
+				lst.forEach(function(l){
+					if((v=val((pfx||'')+l)).length)
+						if(/^(x|y|radius|radiuspoint|marks|linewidth|width|height)$/.test(l))
+							h[l]=parseInt(v,10);
+						else if(/^(opacity)$/.test(l))
+							h[l]=parseFloat(v);
+						else if(/^(margins)$/.test(l))
+							h[l]=values(v);
+						else
+							h[l]=v;
+				});
+				return h;
+			},
+
+			error=function(txt){
+				console.log(txt);
+
+			},
+
+			loadjs=function(js){
+				if(typeof(js)=="string") {
+					js=js
+						.replace(/[\n\r]+/g,'')
+						.replace(/(^\s+|\s+$)/g,'')
+						.replace(/^(plotter|harry)\s*\(/,'')
+						.replace(/\s*\)$/,'')
+					try{ js=JSON.parse(js) }
+					catch(e){ error((e.name||'')+' '+(e.message||'unknown error')) }
+				}
+				if(c!==undefined) {
+					var v,n,d,s,l;
+					if(js.datas) {
+						//set datas
+						for(n in js.datas) {
+							d=js.datas[n];
+							s='';
+							if(d.values instanceof Array){
+								s=d.values.join(',');
+							} else if (typeof(d.values)=='object') {
+								l=[];
+								for(k in d.values) l.push(k+':'+d.values[k]);
+								s=l.join(',');
+							}
+							val('data'+n,s);
+							val('title'+n,d.title||'');
+							val('color'+n,d.color||'');
+						}
+
+
+					}
+
+				}
+			},
+
+			savejs=function(){
+				var o={container:'container'},v,w,i,d=[],ds;
 				//get datas
-				var i,d=[];
-				for(i=1;i<4;i++)
+				for(i=1;_('data'+i);i++)
 					if((w=val('data'+i)).length) {
-						ds={values:values(w)};
-						if((v=val('title'+i)).length) ds.title=v;
-						if((v=val('color'+i)).length) ds.color=v;
+						ds=getlst(['title'+i,'color'+i]);
+						ds.values=values(w);
 						d.push(ds);
 					}
 				if(d.length) o.datas=d;
-
 				//get title
-				if((v=val('titletext')).length){
-					o.title={text:v};
-					if((v=val('titlefont')).length) o.title.font=v;
-					if((v=val('titlecolor')).length) o.title.color=v;
-					if((v=val('titlex')).length) o.title.x=v;
-					if((v=val('titley')).length) o.title.y=v;
-					if((v=val('titlez')).length) o.title.z=v;
-					if((v=val('titleshadow')).length) o.title.shadow=v;
+				if((v=val('titletext')).length) {
+					o.title=getlst('font color x y z shadow','title');
+					o.title.text=v;
 				}
-
 				//get grid
-				if((v=val('gridx')).length+(w=val('gridy')).length){
+				if((v=val('gridx')).length+(w=val('gridy')).length) {
 					o.grid={};
 					if(v.length) o.grid.x=/none|false/.test(v)?v:values(v);
 					if(w.length) o.grid.y=/none|false/.test(w)?w:values(w);
 					if((v=val('gridcolor')).length) o.grid.color=v;
 				}
-
 				//get labels
-				if((v=val('margins')).length) o.margins=values(v);
-				if((v=val('labelx')).length+(w=val('labely')).length){
-					o.labels={};
+				if((v=val('labelx')).length+(w=val('labely')).length) {
+					o.labels=getlst('font color marks shadow ypos','label');
 					if(v.length) o.labels.x=parseInt(v,10);
 					if(w.length) o.labels.y=values(w);
-					if((v=val('labelfont')).length) o.labels.font=v;
-					if((v=val('labelcolor')).length) o.labels.color=v;
-					if((v=val('labelmarks')).length) o.labels.marks=parseInt(v,10);
-					if((v=val('labelshadow')).length) o.labels.shadow=v;
-					if((v=val('labelypos')).length) o.labels.ypos=v;
 				}
-
 				//get render
-				if((v=val('bg')).length) o.background=v;
-				if((v=val('width')).length) o.width=parseInt(v,10);
-				if((v=val('height')).length) o.height=parseInt(v,10);
-				if((v=val('mode')).length) o.mode=v;
-				if((v=val('fill')).length) o.fill=v;
-				if((v=val('opacity')).length) o.opacity=parseFloat(v,10);
-				if((v=val('linewidth')).length) o.linewidth=parseInt(v,10);
-				if((v=val('linejoin')).length) o.linejoin=v;
-				if((v=val('radiuspoint')).length) o.radiuspoint=parseInt(v,10);
+				getlst('width height mode fill opacity margins background linewidth linejoin radiuspoint','',o);
 				if(!_('autoscale').checked) o.autoscale=false;
-				
-				//get mousevore
-				if(_('mouseover').checked){
-					var m={};
-					if((v=val('moradius')).length) m.radius=parseInt(v,10);
-					if((v=val('molinewidth')).length) m.linewidth=parseInt(v,10);
-					if((v=val('mocircle')).length) m.circle=v;
-					if((v=val('mofont')).length) m.font=v;
-					if((v=val('mocolor')).length) m.color=v;
-					if((v=val('moborder')).length) m.border=v;
-					if((v=val('mobullet')).length) m.bullet=v;
-					if((v=val('moaxis')).length) m.axis=v;
-					if((v=val('motext')).length) m.text=v;
-					if((v=val('moshadow')).length) m.shadow=v;
-					if((v=val('moshadowbox')).length) m.shadowbox=v;
+				//get mouseover
+				if(_('mouseover').checked) {
+					var m=getlst('radius linewidth circle font color border bullet axis text shadow shadowbox','mo');
 					if(!isEmpty(m)) o.mouseover=m;
 				} else
 					o.mouseover=false;
-
 				//get legends
-				if(_('legends').checked){
-					var m={};
-					if((v=val('legx')).length) m.x=parseInt(v,10);
-					if((v=val('legy')).length) m.y=parseInt(v,10);
-					if((v=val('legfont')).length) m.font=v;
-					if((v=val('legbg')).length) m.background=v;
-					if((v=val('legcolor')).length) m.color=v;
-					if((v=val('legborder')).length) m.border=v;
-					if((v=val('legborder2')).length) m.border2=v;
-					if((v=val('legshadow')).length) m.shadow=v;
-					if((v=val('legshadowbox')).length) m.shadowbox=v;
+				if(_('legends').checked) {
+					var m=getlst('x y font background color border border2 shadow shadowbox','leg');
 					if(!isEmpty(m)) o.legends=m;
 				} else
 					o.legends=false;
@@ -206,12 +238,12 @@
 				plotter(o);
 			};
 			
-			//_("generate").onclick=build;
+			//_("generate").onclick=savejs;
 			for(var i=0, l=document.getElementsByTagName("input"); i<l.length; ++i)
 				if(/checkbox|text/.test(l[i].type))
-					l[i].onclick=l[i].onkeyup=build;
+					l[i].onclick=l[i].onkeyup=savejs;
 			for(var i=0, l=document.getElementsByTagName("select"); i<l.length; ++i)
-				l[i].onclick=l[i].onkeyup=build;
+				l[i].onclick=l[i].onkeyup=savejs;
 
 			_("butrnd1").onclick=
 			_("butrnd2").onclick=
@@ -219,12 +251,10 @@
 				var i,t=this.getAttribute('target'), d=[];
 				for(i=0;i<MAXDATA;++i) d.push(Math.floor(Math.random()*100));
 				_(t).value=d.join(',');
-				build();
+				savejs();
 			};
 
-
-			build();
-			
+			savejs();			
 		};
 	</script>
 </head>
@@ -242,7 +272,7 @@
 		<div class="formcol">
 			<label for="titlex">x</label><input type="text" id="titlex" class="int" />px<br/>
 			<label for="titley">y</label><input type="text" id="titley" class="int" />px<br/>
-			<label for="titlez">z</label><select id="titlez"><option value="">top</option><option value="bg">background</option></select><br/>
+			<label for="titlez">z</label><select id="titlez"><option value="">top</option><option value="background">background</option></select><br/>
 		</div>
 		
 		<h2>Datasets</h2>
@@ -270,7 +300,7 @@
 
 		<h2>Rendering</h2>
 		<div class="formcol">
-			<label for="bg">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="bg" value="" /><br/>
+			<label for="background">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="background" value="" /><br/>
 			<label for="width">width</label><input type="text" id="width" class="int" value="" />px<br/>
 			<label for="height">height</label><input type="text" id="height" class="int" value="" />px<br/>
 			<label for="mode">mode</label><select id="mode"><option></option><option>line</option><option>line:river</option><option>pie</option><option>chart</option><option>chart:stack</option><option selected="selected">curve</option><option>curve:river</option></select><br/>
@@ -279,7 +309,7 @@
 		<div class="formcol">
 			<label for="fill">fill</label><select id="fill"><option></option><option>none</option><option>solid</option><option>light</option><option>dark</option><option>vertical</option><option>horizontal</option><option>radial</option></select><br/>
 			<label for="opacity">opacity</label><select id="opacity"><option></option><option value="0.1">0.1 - transparent</option><option>0.2</option><option>0.3</option><option>0.4</option><option value="0.5">0.5 - semi transparent</option><option>0.6</option><option>0.7</option><option>0.8</option><option>0.9</option><option value="1">1.0 - opaque</option></select><br/>
-			<label for="linewidth">linewidth</label><select id="linewidth"><option></option><option>1</option><option>2</option><option  selected="selected">3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
+			<label for="linewidth">linewidth</label><select id="linewidth"><option></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
 			<label for="linejoin">linejoin</label><select id="linejoin"><option></option><option>round</option><option>miter</option><option>bevel</option></select>(line or histogram mode)<br/>
 			<label for="radiuspoint">radiuspoint</label><select id="radiuspoint"><option></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>10</option><option>15</option><option>20</option><option>40</option></select> (line or curve mode)<br/>
 		</div>
@@ -312,7 +342,7 @@
 			<label for="legends">enabled</label><input type="checkbox" id="legends" checked="checked" /><br/>
 			<label for="legx">x</label><input type="text" id="legx" placeholder="int" value="" /><br/>
 			<label for="legy">y</label><input type="text" id="legy" placeholder="int" value="" /><br/>
-			<label for="legbg">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legbg" value="" /><br/>
+			<label for="legbackground">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legbackground" value="" /><br/>
 			<label for="legshadowbox">box shadow</label><input type="text" placeholder="x,y,blur,color" id="legshadowbox" value="" /><br/>
 		</div>
 		<div class="formcol">
@@ -329,16 +359,17 @@
 			<label for="moradius">spot radius</label><input type="text" id="moradius" class="int" value="" />px<br/>
 			<label for="molinewidth">spot linewidth</label><select id="molinewidth"><option></option><option value="0">filled</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
 			<label for="mocircle">spot color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocircle" value="" /><br/>
-			<label for="mobullet">bullet color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mobullet" value="" /><br/>
-			<label for="moshadowbox">bullet shadow</label><input type="text" placeholder="x,y,blur,color" id="moshadowbox" value="" /><br/>
-			<label for="moborder">border color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="moborder" value="" /><br/>
+			<label for="moborder2">spot border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocircle" value="" /><br/>
+			<label for="moaxis">axis</label><select id="moaxis"><option></option><option>xy</option><option>x</option><option>y</option></select><br/>
 		</div>
 		<div class="formcol">
 			<label for="motext">text</label><input type="text" id="motext" title="%l=label %v=value %n=index" paceholder="%l: %v" value=""/><br/>
 			<label for="mofont">text font</label><input type="text" id="mofont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
 			<label for="mocolor">text color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocolor" value="" /><br/>
 			<label for="moshadow">text shadow</label><input type="text" placeholder="x,y,blur,color" id="moshadow" value="" /><br/>
-			<label for="moaxis">axis</label><select id="moaxis"><option></option><option>xy</option><option>x</option><option>y</option></select><br/>
+			<label for="mobullet">bullet color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mobullet" value="" /><br/>
+			<label for="moshadowbox">bullet shadow</label><input type="text" placeholder="x,y,blur,color" id="moshadowbox" value="" /><br/>
+			<label for="moborder">bullet border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="moborder" value="" /><br/>
 		</div>
 
 		<div class="footer">
