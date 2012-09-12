@@ -87,7 +87,7 @@ var h=harry({
 		background: "rgba(180,180,180,0.5)",//background color, default=rgba(255,255,255,0.5)
 		border: "#fff",           //  legends border color, default=none
 		shadowbox: "x,y,b,#col",  //  legends box shadow, default=none
-		border2: "#fff",          //  color box border color, default=fff
+		border2: "#fff",          //  color box border color, default=none
 		color: "#000",            //  text color, default, #666
 		shadow: "x,y,blur,#col",  //  legends text shadow, default=none
 		font:'9px "Trebuchet MS"' //  font size & family, default=normal 10px "Sans Serif"
@@ -102,15 +102,16 @@ var h=harry({
 	//interaction
 
 	mouseover: {,                 //set to false to disable mouseover, default=enabled
-		radius: int,              //  spot radius, default=5
-		linewidth: int,           //  spot linewidth, default=linewidth below,0=fill
-		circle: "#888888",        //  spot color, default=#888
+		bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=rgba(99,99,99,0.8)
+		border: "#fc0",           //  bullet border color, default=none,
+		shadowbox: "x,y,b,#col",  //  bullet box shadow, default=none
 		font: "9px Trebuchet MS", //  bullet text font, default=normal 9px "Sans Serif"
 		color: "#666",            //  bullet text color, default=#fff
 		shadow: "x,y,blur,#col",  //  bullet text shadow, default=none
-		bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=rgba(99,99,99,0.8)
-		shadowbox: "x,y,b,#col",  //  bullet box shadow, default=none
-		border: "#fc0",           //  bullet border color, default=#fff,
+		radius: int,              //  spot radius, default=5
+		linewidth: int,           //  spot linewidth, default=linewidth below,0=fill
+		circle: "#888888",        //  spot color, default=#888
+		border2: "#fff",          //  spot color, default=none
 		axis: "xy|x|y",           //  draw spot axis, default=none
 		text: "%t\n%l: %v",       //  text in the bullet %v=value %l=label %n=index %t=title
 		text: callback(n,v,l,x,y) //  or text can trigger a callback
@@ -215,10 +216,12 @@ harry=(function(o){
 	},
 
 	buildCanvas=function(o,w,h){
-		var c=document.createElement('canvas');
+		var c=document.createElement('canvas'),p;
 		c.setAttribute('width',w+'px');
 		c.setAttribute('height',h+'px');
-		(o?document.getElementById(o):document.body).appendChild(c);
+		if(o) p=typeof(o)=='string'?document.getElementById(o):o;
+		if(!p) p=document.body;
+		p.appendChild(c);
 		return c;
 	},
 
@@ -254,7 +257,6 @@ harry=(function(o){
 			font: 'normal 10px "Sans Serif"',
 			color: "#fff",
 			bullet: "rgba(99,99,99,0.8)",
-			border: "#fff",
 			axis: false,
 			text: "%v"
 		},o.mouseover),
@@ -283,7 +285,6 @@ harry=(function(o){
 			x: margins[3]+2.5,
 			y: margins[0]+2.5+(o.title && !o.title.x ? 2+fontPixSize(title.font) : 0),
 			color: "#666",
-			border2: "#fff",
 			font: '10px "Sans Serif"'
 		},o.legends),
 	data=[], dmin, dmax, dlen=0, dsum,
@@ -624,14 +625,19 @@ harry=(function(o){
 			gc.lineTo(x2,y2);
 			gc.lineTo(x1,y2);
 			gc.closePath();
-			setShadow(mouseover.shadowbox);
-			gc.fillStyle=mouseover.bullet;
-			gc.fill();
-			unsetShadow();
-			gc.lineWidth=1;
-			gc.lineJoin='round';
-			gc.strokeStyle=mouseover.border;
-			gc.stroke();
+			if(mouseover.bullet){
+				setShadow(mouseover.shadowbox);
+				gc.strokStyle='';
+				gc.fillStyle=mouseover.bullet;
+				gc.fill();
+				unsetShadow();
+			}
+			if(mouseover.border) {
+				gc.lineWidth=1;
+				gc.lineJoin='round';
+				gc.strokeStyle=mouseover.border;
+				gc.stroke();
+			}
 			//draw texts
 			gc.textAlign='left';
 			gc.textBaseline='top';
@@ -881,15 +887,15 @@ harry=(function(o){
 					for(i=0;i<overpoints.length;++i) {
 						o=overpoints[i];
 						if(o.v[n]!=undefined) {
-							if(mouseover.border) {
+							if(mouseover.border2) {
 								gc.beginPath();
 								gc.lineWidth=lw+2;
 								gc.arc(o.x[n],o.y[n],mouseover.radius,0,2*Math.PI);
 								if(mouseover.linewidth==0) {
-									gc.fillStyle=mouseover.border;
+									gc.fillStyle=mouseover.border2;
 									gc.fill();
 								} else {
-									gc.strokeStyle=mouseover.border;
+									gc.strokeStyle=mouseover.border2;
 									gc.stroke();
 								}
 							}
@@ -909,7 +915,7 @@ harry=(function(o){
 								//draw axis
 								if(/x/i.test(mouseover.axis)){
 									z=o.y[n]+mouseover.radius;
-									while(t<ry2){
+									while(z<ry2){
 										gc.moveTo(o.x[n],z);
 										z+=s;
 										if(z>ry2) z=ry2;
