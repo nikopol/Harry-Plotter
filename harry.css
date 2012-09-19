@@ -1,0 +1,349 @@
+/*HARRY PAGE CSS*/
+/*niko 2012*/
+
+@import url(http://fonts.googleapis.com/css?family=Ubuntu);
+@import url(http://fonts.googleapis.com/css?family=McLaren);
+
+* {
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	font: normal 9pt "Ubuntu","Sans Serif";
+	background: #999;
+}
+
+::-webkit-input-placeholder {
+	color: #777;
+}
+
+input:-moz-placeholder { 
+	color: #777 !important;
+}
+
+:focus {
+	outline: none;
+}
+
+::-webkit-scrollbar {
+	background-color: transparent;
+	width: 8px;
+	height: 8px;
+	border: none;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #666;
+	border: none;
+	border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+	background: -webkit-linear-gradient(left,#999,#444);
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+	background: -webkit-linear-gradient(top,#999,#444);
+}
+
+::-webkit-scrollbar-button {
+	display: none;
+}
+
+::-webkit-scrollbar-corner {
+	background: transparent;
+}
+
+menu {
+	z-index: 3;
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	height: 28px;
+	margin: 0;
+	padding: 0 0 0 350px;
+	display: block;
+	background: #6d6f65;
+	box-shadow: 0 1px 6px #000;
+	overflow: hidden;
+}
+
+menu button {
+	position: relative;
+	display: inline;
+	margin: 2px 3px 0 0;
+	padding: 0 10px;
+	font: bold 16px "Ubuntu","Sans Serif";
+	line-height: 24px;
+	text-shadow: 1px 1px 0 #000;
+	border: none;
+	background: #6d6f65;
+	color: #eee;
+	height: 24px;
+	-webkit-transition: all 0.4s linear;
+	-moz-transition: all 0.4s linear;
+	transition: all 0.4s linear;
+}
+
+menu button:active {
+	color: #8bf;
+}
+
+menu button.on {
+	box-shadow: rgba(255,255,255,0.1) 0 1px 0, rgba(0,0,0,0.8) 0 1px 7px 0 inset;
+	background: #888;
+	-webkit-transition: all 0.4s linear;
+	-moz-transition: all 0.4s linear;
+	transition: all 0.4s linear;
+}
+
+h1 {
+	position: absolute;
+	z-index: 4;
+	left: 5px;
+	line-height: 32px !important;
+	width: 300px;
+	top: 0;
+	right: 0;
+	color: #fff;
+	font: bold 32px "McLaren","Sans Serif";
+	text-shadow: 0 1px 0 #CCC, 0 2px 0 #C9C9C9,0 3px 0 #BBB, 0 4px 0 #B9B9B9,0 5px 0 #AAA, 0 6px 1px rgba(0, 0, 0, 0.1),0 0 5px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3),0 3px 5px rgba(0, 0, 0, 0.2), 0 5px 10px rgba(0, 0, 0, 0.25),0 10px 10px rgba(0, 0, 0, 0.2), 0 20px 20px rgba(0, 0, 0, 0.15);
+}
+
+content {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 28px;
+	bottom: 0;
+	background: #888;
+	overflow: auto;
+	padding: 10px;
+	z-index: 0;
+	opacity: 0;
+	-webkit-transition: all 0.4s linear;
+	-moz-transition: all 0.4s linear;
+	transition: all 0.4s linear;
+}
+
+content.on {
+	opacity: 1;
+	z-index: 1;
+	-webkit-transition: all 0.4s linear;
+	-moz-transition: all 0.4s linear;
+	transition: all 0.4s linear;
+}
+
+form {
+	width: 640px;
+}
+
+hr {
+	margin: 5px 0;
+	border-top: 1px solid #383c41;
+	border-bottom: 1px solid #989ca1;
+	border-left: 1px solid #383c41;
+	height: 0;
+	display: block;
+	clear: both;
+}
+
+h2 {
+	margin: 0 10px 3px 0;
+	font:bold 12pt "Ubuntu","Sans Serif";
+	color: #b1d9e8;
+	text-shadow: 0 2px 0 #000;
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+table,th,td {
+	font: normal 9pt "Ubuntu","Sans Serif";
+	color: #cdd;
+}
+
+label {
+	display: block;
+	width: 105px;
+	float: left;
+	text-align: right;
+	margin-right: 5px;
+	text-shadow: 0 1px #000;
+	padding-top: 2px;
+}
+
+input[type="button"],
+input[type="reset"] {
+	padding: 2px 4px;
+	margin: 0 3px;
+	font: normal 9pt "Ubuntu","Sans Serif";
+	border: none;
+	border-radius: 5px;
+	background: #161616;
+	background: -webkit-linear-gradient(top,#292929,#131313);
+	background: -moz-linear-gradient(top,#292929,#131313);
+	background: linear-gradient(top,#191919,#131313);
+	box-shadow: 0 0 5px #444;
+	color: #9ab;
+}
+
+input[type="checkbox"] {
+	margin: 2px 3px 4px 4px;
+}
+
+select,
+input[type="text"] {
+	padding: 2px;
+	-webkit-appearance: button;
+	-moz-appearance: button;
+	appearance: button;
+	box-sizing: border-box;
+	color: #fff;
+	background: #383C41;
+	margin: 0 3px 1px 0;
+	border: 1px solid transparent;
+	box-shadow: rgba(255,255,255,0.1) 0 1px 0, rgba(0,0,0,0.8) 0 1px 7px 0 inset;
+	border-radius: 4px;
+	font: normal 9pt "Ubuntu","Sans Serif";
+	width: 180px;
+	margin: 1px;
+}
+
+select {
+	box-shadow: rgba(255,255,255,0.1) 0 -1px 0, rgba(0,0,0,0.8) 0 -1px 7px 0 inset;
+}
+
+select:after {
+	content: "&#x25be;"
+	border: 1px solid blue;
+}
+
+select:focus,
+input[type="text"]:focus {
+	background: #484C51;
+}
+
+select option {
+	color: #fff;
+	background: #383C41;
+}
+
+input[type=color] {
+	height:16px;
+	background-color:#ccc;
+	border:none;
+}
+
+td input[type="text"] {
+	width: 100px;
+}
+
+td input[type="text"].data {
+	width: 328px;
+}
+
+pre {
+	font-size: 9pt;
+	margin: 0;
+	padding: 2px;
+	overflow: auto;
+	width: 300px;
+	color: #fff;
+	background: #383C41;
+	margin: 0 3px 1px 0;
+	border: 1px solid transparent;
+	box-shadow: rgba(255,255,255,0.1) 0 1px 0, rgba(0,0,0,0.8) 0 1px 7px 0 inset;
+}
+
+.block {
+	display: block;
+	position: relative;
+	float: left;
+	background: #4b5056;
+	color: #cdd;
+	margin: 0 5px 5px 0;
+	border-radius: 10px;
+	padding: 5px;
+	border: 1px outset #;
+	box-shadow: 1px 1px 0 #000;
+}
+
+div.formcol {
+	float: left;
+	width: 49%;
+	margin: 4px 0 4px 0;
+}
+
+div.footer {
+	clear: both;
+	margin-top: 10px;
+	text-align: right;
+}
+
+#plot {
+	/*border: 1px #ddd dotted;*/
+	margin-bottom: 10px;
+}
+
+#js {
+}
+
+#jsout {
+	padding: 3px;
+}
+
+#forkme {
+	position: fixed;
+	width: 149px;
+	height: 149px;
+	top: 0;
+	right: 0;
+	background: url("forkme.png") no-repeat center center;
+	z-index: 99;
+}
+
+#readme,
+#readme a {
+	font: normal 11pt "Ubuntu","Sans Serif";
+	color: #fff;
+	text-shadow: 0 1px #000;
+}
+
+#readme pre {
+	width: 100%;
+}
+
+#readme h2 {
+	margin: 20px 0;
+}
+
+#readme ul {
+	margin-left: 30px;
+}
+
+span.comment { color: #999; }
+
+#presets pre {
+	font-size: 10px;
+	height: 200px;
+	width: 291px;
+}
+
+#presets div.src {
+	display: block;
+	-webkit-transition: all 0.4s linear;
+	-moz-transition: all 0.4s linear;
+	transition: all 0.4s linear;
+}
+
+#presets div.src.hide {
+	display: none;
+	-webkit-transition: all 0.4s linear;
+	-moz-transition: all 0.4s linear;
+	transition: all 0.4s linear;
+}

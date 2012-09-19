@@ -3,112 +3,571 @@
 	<meta charset="UTF-8">
 	<meta name="author" content="niko" />
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
-	<title>Harry Plotter - Demo page</title>
-	<style>
-		body { margin:0; padding:0; font:normal 9pt "Sans Serif","Trebuchet MS"; }
-		.tinybox,.smallbox,.mediumbox { float:left; margin:3px; }
-		.clear { clear:both; }
-		h1,h2 { margin:2px 0 3px 0; }
-		h1 { font-size:12pt; }
-		h2 { font-size:10pt; }
-	</style>
-	<script src="harry.js"></script>
+	<title>Harry Plotter</title>
+	<link href='harry.css' rel='stylesheet' type='text/css'>
+	<script src="harry.min.js"></script>
+	<script src="miniko.min.js"></script>
 	<script>
-		window.onload=function(){
-			var maxds=3, maxdata=14,ds=[],d;
-			for(var i=0;i<maxds;i++) {
-				for(var j=0, d=[];j<maxdata;j++)
-					d.push(Math.floor(Math.random()*50));
-				ds.push(d);
+		"use strict;"
+		var
+		PRESETS,
+		MAXDATA=16,
+		TABS=['readme','generator','presets'],
+
+		//HASH
+
+		hash = (function(){
+			var h, p,
+				serialize = function(){
+					var a = [], k;
+					for (k in h) a.push(k+"="+h[k]);
+					p = a.join("|");
+					document.location.hash = "#"+p.replace(/ /g,'%20');
+					return true;
+				},
+				unserialize = function(){
+					h = {};
+					p = document.location.hash.substr(1).replace(/%20/g,' ');
+					if(p.length) {
+						var lst = p.split("|");
+						lst.forEach(function(l){
+							var kv = l.split('=');
+							if(kv.length > 1) h[kv.shift()] = kv.join('=');
+						});
+					}
+				};
+			unserialize();
+			return {
+				del: function(key){ return h[key] == undefined ? false : serialize(delete h[key]); },
+				set: function(key,val){ return serialize(typeof(key) == 'object' ? h = key : h[key] = val); },
+				get: function(key){ return key == undefined ? h : (h[key]||'').replace(/%20/g,' '); },
+				onchange: function(cb){
+					window.onhashchange=function(){
+						var q = document.location.hash.substr(1).replace(/%20/g,' ');
+						if(q!=p){
+							unserialize();
+							if(cb) cb();
+						}
+					}
+				}
 			}
-			var h=[];
-			
-			// new harry({
-			// 	container:"box0",
-			// 	width:100,
-			// 	height:60,
-			// 	datas: [
-			// 		{ values: [12,null,42], labels: ['first','second','third'] },
-			// 		{ values: [100,null,300], labels: ['a','b','c'] },
-			// 	],
-			// 	labels: {
-			// 		x: 1
-			// 	},
-			// 	mode:"line",
-			// 	linewidth:2,
-			// 	fill:"n",
-			// 	grid:{y:[0,50,100]},
-			// 	mouseover:{
-			// 		text: "%l: %v"
-			// 	}
-			// });
+		})(),
 
-			//tiny - simple dataset
-			h.push(new harry({ container:"box40", width:40, height:16, datas:d, mode:"line", linewidth:2, fill:"n", grid:{y:[0,50,100]} }));
-			h.push(new harry({ container:"box41", width:40, height:16, datas:d, mode:"curve", grid:{y:[0,50,100]} }));
+		//MARKDOWN
 
-			//small - simple dataset
-			h.push(new harry({ canvas:"box00", legends:false, title:{text:"line"}, datas:d, labels:{y:[25,50,75,100]} }));
-			h.push(new harry({ canvas:"box01", legends:false, title:{text:"curve"}, datas:d, mode:"curve:river" }));
-			h.push(new harry({ canvas:"box02", legends:false, title:{text:"chart"}, datas:d, mode:"chart:stack" }));
-			h.push(new harry({ canvas:"box03", legends:false, title:{text:"pie"}, datas:d, mode:"pie" }));
-			
-			//small - multi dataset
-			plotter({ canvas:"box10", datas:ds, title:{text:"line"}, mode:"line", labels:{x:["x1","x2","x3","x4","x5","x6","x7"],stepx:2,y:[25,50,75,100]} });
-			plotter({ canvas:"box11", datas:ds, title:{text:"line:river"}, mode:"line:river", labels:{x:["x1","x2","x3","x4","x5","x6","x7"],stepx:2,y:[25,50,75,100]} });
-			plotter({ canvas:"box12", datas:ds, title:{text:"curve"}, mode:"curve", labels:{x:["x1","x2","x3","x4"],y:[25,50,75,100]} });
-			plotter({ canvas:"box13", datas:ds, title:{text:"curve:river"}, mode:"curve:river", labels:{x:["x1","x2","x3","x4"],y:[25,50,75,100]} });
-			plotter({ canvas:"box14", datas:ds, mode:"chart:stack" });
-			plotter({ canvas:"box15", datas:ds, mode:"pie", labels:{x:"percent"} });
+		md=(function(){
+			var
+			conv=function(s){
+				return s
+					.replace('<','&lt;')
+					.replace('>','&gt;')
+					.replace(/\[([^\]]+)\]\((http[^\)]+)\)/,'<a href="$2">$1</a>')
+					.replace(/\s\s+$/,"<br/>")
+					.replace('\t','  ')
+				;
+			},
+			colorize=function(s){
+				return s
+					.replace(/(\/\/.+$)/,'<span class="comment">$1</span>')
+				;
+			};
+			return {
+				html: function(md,start){
+					var l=md.split(/[\n\r]/),b='',i=(start||0),s;
+					while(i<l.length) {
+						//list
+						if(/^\s+\-\s/.test(l[i])) {
+							b+="<ul>";
+							while(i<l.length && /^\s+\-\s(.+)/.test(l[i])) {
+								b+="<li>"+conv(RegExp.$1)+"</li>";
+								i++;
+							}
+							b+="</ul>";
+						//code
+						} else if(/^[\s\s|\t]/.test(l[i])) {
+							b+="<pre>";
+							while(i<l.length && (l[i]=="" || /^[\s\s|\t](.*)$/.test(l[i])))
+								b+= l[i++]=="" ? "\n" : colorize(conv(RegExp.$1))+"\n";
+							b+="</pre>";
+						//subtitle
+						} else if(/^\*\*(.+)\*\*$/.test(l[i])) {
+							b+="<h2>"+conv(RegExp.$1)+"</h2>";
+							i++;
+						} else {
+							b+=conv(l[i++]);
+						}
+					}
+					return b;
+				}
+			};
+		})(),
 
-			//medium - multi dataset
-			plotter({ container:"box20", width:300, height:200,datas:ds, linewidth:3 });
-			plotter({ canvas:"box21", datas:ds, linewidth:3, mode:"curve:river" });
-			plotter({ canvas:"box22", datas:ds, mode:"chart" });
-			plotter({ canvas:"box23", datas:ds, mode:"pie" });
+		//JSON
 
-			//big - multi dataset
-			plotter({ canvas:"box30", datas:ds, mode:"curve:river" });
+		json={
 
-			setInterval(function(){
-				d=d.slice(1);
-				d.push(Math.floor(Math.random()*50));
-				for(var n in h) h[n].clear().load(d,false,false).draw();
-			}, 1000);
+			encode: function(o,jsquote) { /*ignore functions*/
+				if(o==undefined) return 'null';
+				jsquote=jsquote||false;
+				var lines=[], isarray=(o.constructor==Array),k,v,s;
+				for(k in o) {
+					v=o[k];
+					if(typeof v=="object") {
+						if(isarray) lines.push(json.encode(v,jsquote));
+						else lines.push((jsquote?k:'"'+k+'"')+':'+json.encode(v,jsquote));
+					} else if(typeof v!="function") {
+						s=(isarray)?"":(jsquote?k+':':'"'+k+'":');
+						if(typeof v=="number") s+=v.toString(10);
+						else if(v===false) s+='false';
+						else if(v===true) s+='true';
+						else s+='"'+(v || "").replace(/"/g,"\\\"").replace(/\n|\r/g,' ')+'"';
+						lines.push(s);
+					}
+				}
+				return (isarray) ? "["+lines.join(",")+"]" : "{"+lines.join(",")+"}";
+			},
+
+			tidy: function(txt) {
+				txt=txt.replace(/\n|\r|\t/gi,"").replace(/^\s+/g,'');
+				var l=txt.length,n=0,c,nc,i=0,fmt="",iq=false,ip=0,newline=function(i){ return "\n"+("                                   ".substr(0,i*3)); };
+				while(n<l) {
+					c=txt[n++];
+					nc=(n<l) ? txt[n] : '';
+					if(c=='"') { fmt+=c; iq=!iq; } 
+					else if(iq) fmt+=c;
+					else if(c=='[') {ip++; fmt+=c;}
+					else if(c==']') {ip--; fmt+=c;}
+					else if(ip)     fmt+=c;
+					else if(c=='{') fmt+=c+newline(++i);
+					else if(c==',') fmt+=c+newline(i);
+					else if(c=='}') fmt+=newline(--i)+c;
+					else fmt+=c;
+				}
+				return fmt;
+			}
+		},
+
+		error=function(){
+			console.log(arguments.join(' '));
+		},
+
+		//PAGE STUFFS
+
+		builder=(function(){
+			var
+			val=function(id,val){
+				var o=_(id);
+				if(val!==undefined) o.value=val;
+				return o.value;
+			},
+			isEmpty=function(o){
+				for(var i in o) return false;
+				return true;
+			}
+			values=function(str){
+				var n,s=str.split(/\s*,\s*/),i,v,k;
+				if(/:/.test(str)){
+					n={};
+					for(i=0;i<s.length;i++){
+						if(s[i].match(/^(.+)\:(.+)$/)){
+							k=RegExp.$1;
+							v=RegExp.$2;
+						} else {
+							k=i;
+							v=s[i];
+						}
+						v=v==""||v=="null"?null:parseFloat(v);
+						n[k]=v;
+					} 
+				} else {
+					n=[];
+					for(i=0;i<s.length;i++){
+						v=s[i]==""||s[i]=="null"?null:parseFloat(s[i]);
+						n.push(v);
+					} 
+				}
+				return n;
+			},
+			getlst=function(lst,pfx,h){
+				var v;
+				if(!h) h={};
+				if(typeof(lst)=="string") lst=lst.split(' ');
+				lst.forEach(function(l){
+					if((v=val((pfx||'')+l)).length)
+						if(/^(x|y|radius|radiuspoint|marks|linewidth|width|height)$/.test(l))
+							h[l]=parseInt(v,10);
+						else if(/^(opacity)$/.test(l))
+							h[l]=parseFloat(v);
+						else if(/^(margins)$/.test(l))
+							h[l]=values(v);
+						else
+							h[l]=v;
+				});
+				return h;
+			},
+			setlst=function(lst,pfx,h){
+				var v;
+				if(h){
+					if(typeof(lst)=="string") lst=lst.split(' ');
+					lst.forEach(function(l){
+						if(l in h)
+							val(
+								(pfx||'')+l,
+								(l[h] instanceof Array) ? h[l].join(',') : h[l]
+							);
+					});
+				}
+				return h;
+			},
+			save=function(){
+				var o={container:'plot'},v,w,i,d=[],ds;
+				//get datas
+				for(i=0;_('data'+i);i++)
+					if((w=val('data'+i)).length) {
+						ds=getlst(['title'+i,'color'+i]);
+						ds.values=values(w);
+						d.push(ds);
+					}
+				if(d.length) o.datas=d;
+				//get title
+				if((v=val('titletext')).length) {
+					o.title=getlst('font color x y z shadow','title');
+					o.title.text=v;
+				}
+				//get grid
+				if((v=val('gridx')).length+(w=val('gridy')).length) {
+					o.grid={};
+					if(v.length) o.grid.x=/none|false/.test(v)?v:values(v);
+					if(w.length) o.grid.y=/none|false/.test(w)?w:values(w);
+					if((v=val('gridcolor')).length) o.grid.color=v;
+				}
+				//get labels
+				if((v=val('labelx')).length+(w=val('labely')).length) {
+					o.labels=getlst('font color marks shadow ypos','label');
+					if(v.length) o.labels.x=parseInt(v,10);
+					if(w.length) o.labels.y=values(w);
+				}
+				//get render
+				getlst('width height mode fill opacity margins background linewidth linejoin radiuspoint autoscale','',o);
+				//get mouseover
+				if(_('mouseover').checked) {
+					var m=getlst('radius linewidth circle font color border bullet axis text shadow shadowbox','mo');
+					if(!isEmpty(m)) o.mouseover=m;
+				} else
+					o.mouseover=false;
+				//get legends
+				if(_('legends').checked) {
+					var m=getlst('x y font background color border border2 shadow shadowbox','leg');
+					if(!isEmpty(m)) o.legends=m;
+				} else
+					o.legends=false;
+
+				//let's show
+				_('jsout').innerText="plotter("+json.tidy(json.encode(o,true))+")";
+				_('plot').innerHTML='';
+				plotter(o);
+			},
+			load=function(js){
+				_('formgen').reset();
+				if(typeof(js)=="string") {
+					js=js
+						.replace(/[\n\r]+/g,'')
+						.replace(/(^\s+|\s+$)/g,'')
+						.replace(/^(plotter|harry)\s*\(/,'')
+						.replace(/\s*\)$/,'');
+					try{ js=JSON.parse(js) }
+					catch(e){ error((e.name||'')+' '+(e.message||'unknown error')) }
+				}
+				if(js!==undefined) {
+					var v,n,d,s,l;
+					if(js.datas) {
+						for(n in js.datas) {
+							d=js.datas[n];
+							s='';
+							if(d.values instanceof Array){
+								s=d.values.join(',');
+							} else if (typeof(d.values)=='object') {
+								l=[];
+								for(k in d.values) l.push(k+':'+d.values[k]);
+								s=l.join(',');
+							}
+							val('data'+n,s);
+							val('title'+n,d.title||'');
+							val('color'+n,d.color||'');
+						}
+						setlst('text font color x y z shadow','title',js.title);
+						setlst('x y color','grid',js.grid);
+						setlst('x y color font color marks shadow ypos','label',js.labels);
+						setlst('width height mode fill opacity margins background linewidth linejoin radiuspoint autoscale','',js);
+						setlst('radius linewidth circle font color border bullet axis text shadow shadowbox','mo',js.mouseover);
+						setlst('x y font background color border border2 shadow shadowbox','leg',js.legends);
+					}
+				}
+				save();
+			};
+			return {
+				load: load,
+				save: save,
+				loadpreset: function(n){
+					load(PRESETS[n]);
+					hash.set('preset',n);
+					settab('generator');
+				}
+			};
+		})(),
+
+		settab=function(id,ps){
+			if(ps && ps in PRESETS) builder.load(PRESETS[n]);
+			id=id||TABS[0];
+			TABS.forEach(function(n){
+				_(n).className=id==n?'on':'';
+				_('but'+n).className=id==n?'on':'';
+			});
+			hash.set('tab',id);
 		};
+
+		//INIT
+
+		ready(function(){
+
+			if(![].forEach) alert('this page requires a decent browser');
+
+			console.log('load readme.md');
+			ajax({
+				url: "readme.md",
+				datatype: 'text/plain',
+				ok: function(d){
+					console.log('readme.md loaded');
+					_('readme',md.html(d,2));
+				}
+			});
+
+			console.log('load presets.js');
+			ajax('presets.js',function(d){
+				console.log('presets.js loaded');
+				PRESETS=d;
+				var p=_('presets'),n=0,t;
+				for(t in d) {
+					var j=PRESETS[t],h=
+					'<div class="block">'+
+						'<h2>'+t+'</h2>'+
+						'<div id="box'+n+'"></div>'+
+						'<hr/>'+
+						'<div class="src hide" id="src'+n+'">'+
+							'<pre>plotter('+json.tidy(json.encode(j,true))+');</pre>'+
+							'<hr/>'+
+						'</div>'+
+						'<div class="footer">'+
+							'<input type="button" value="edit" onclick="builder.loadpreset(\''+t+'\')"/>'+
+							'<input type="button" value="source" onclick="css(\'src'+n+'\',\'*hide\')"/>'+
+						'</div>'+
+					'</div>';
+					append(p,h);
+					PRESETS[t].container="box"+n;
+					plotter(PRESETS[t]);
+					n++;
+				}
+				append(p,
+					'<div class="block">'+
+						'<h2>more to come ...</h2>'+
+						'<div>Do not hesitate to submit your setup by forking<br/>'+
+						'and send me a pull request on my gh-pages.<br/>'+
+						'presets are in the file presets.js</div>'+
+					'</div>'
+				);
+				if((t=hash.get('preset')) && t in PRESETS) builder.load(PRESETS[t]);
+			});
+						
+			for(var i=0, l=document.getElementsByTagName("input"); i<l.length; ++i)
+				if(/checkbox|text/.test(l[i].type))
+					l[i].onclick=l[i].onkeyup=builder.save;
+			for(var i=0, l=document.getElementsByTagName("select"); i<l.length; ++i)
+				l[i].onclick=l[i].onkeyup=builder.save;
+
+			_("butrnd0").onclick=
+			_("butrnd1").onclick=
+			_("butrnd2").onclick=function(){
+				var i,t=this.getAttribute('target'), d=[];
+				for(i=0;i<MAXDATA;++i) d.push(Math.floor(Math.random()*100));
+				_(t).value=d.join(',');
+				builder.save();
+			};
+			_("butreset").onclick=function(){
+				_('formgen').reset();
+				hash.del('preset');
+				builder.save();
+			};
+
+			TABS.forEach(function(n){
+				var id=n;
+				_('but'+n).onclick=function(){
+					settab(id);
+				};
+			});
+			settab(hash.get("tab"));
+			hash.onchange(function(){
+				settab(hash.get("tab"),hash.get("preset"))
+			});
+
+			builder.save();
+		});
 	</script>
 </head>
 <body>
-	<h1>Harry Plotter v0.8 - Demo [<a href="generator.html">generator</a>] [<a href="https://github.com/nikopol/Harry-Plotter">fork me!</a>]</h1>
-	<div class="tinybox" id="box0"></div>
-	<h2>Tiny - Simple dataset</h2>
-	<div class="tinybox" id="box40"></div>
-	<div class="tinybox" id="box41"></div>
-	<div class="tinybox" id="box42"></div>
-	<div class="tinybox" id="box43"></div>
-	<div class="tinybox" id="box44"></div>
-	<div class="clear"></div>
-	<h2>Small - Simple dataset</h2>
-	<div class="smallbox"><canvas id="box00" width="200" height="100"></canvas></div>
-	<div class="smallbox"><canvas id="box01" width="200" height="100"></canvas></div>
-	<div class="smallbox"><canvas id="box02" width="200" height="100"></canvas></div>
-	<div class="smallbox"><canvas id="box03" width="200" height="100"></canvas></div>
-	<div class="clear"></div>
-	<h2>Small - Multiple dataset</h2>
-	<div class="smallbox"><canvas id="box10" width="200" height="100"></canvas></div>
-	<div class="smallbox"><canvas id="box11" width="200" height="100"></canvas></div>
-	<div class="smallbox"><canvas id="box12" width="200" height="100"></canvas></div>
-	<div class="smallbox"><canvas id="box13" width="200" height="100"></canvas></div>
-	<div class="smallbox"><canvas id="box14" width="200" height="100"></canvas></div>
-	<div class="smallbox"><canvas id="box15" width="200" height="100"></canvas></div>
-	<div class="clear"></div>
-	<h2>Medium - Multiple dataset</h2>
-	<div class="mediumbox" id="box20"></canvas></div>
-	<div class="mediumbox"><canvas id="box21" width="300" height="200"></canvas></div>
-	<div class="mediumbox"><canvas id="box22" width="300" height="200"></canvas></div>
-	<div class="mediumbox"><canvas id="box23" width="300" height="200"></canvas></div>
-	<div class="clear"></div>
-	<h2>Big - Multiple dataset</h2>
-	<div class="bigbox"><canvas id="box30" width="1000" height="400"></div>
+
+	<h1>Harry Plotter v0.8</h1>
+	<menu>
+		<button id="butreadme">Read me</button><button id="butgenerator">Generator</button><button id="butpresets">Presets</button>
+	</menu>
+	<a id="forkme" href="https://github.com/nikopol/Harry-Plotter" title="fork me !"/></a>
+
+	<content id="readme">
+		<pre id="md"></pre>
+	</content>
+
+	<content id="generator">
+		<form id="formgen" class="block">
+			<h2>Title</h2>
+			<div class="formcol">
+				<label for="titletext">text</label><input type="text" id="titletext" /><br/>
+				<label for="titlefont">font</label><input type="text" id="titlefont" class="font" value='bold 24px "Sans Serif"' /><br/>
+				<label for="titlecolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="titlecolor" value="" /><br/>
+				<label for="titleshadow">shadow</label><input type="text" placeholder="x,y,blur,color" id="titleshadow" value="" /><br/>
+			</div>
+			<div class="formcol">
+				<label for="titlex">x</label><input type="text" id="titlex" class="int" />px<br/>
+				<label for="titley">y</label><input type="text" id="titley" class="int" />px<br/>
+				<label for="titlez">z</label><select id="titlez"><option value="">top</option><option value="background">background</option></select><br/>
+			</div>
+
+			<hr/>
+
+			<h2>Datasets</h2>
+			<table>
+				<tr><th></th><th>values</th><th>title</th><th>color</th></tr>
+				<tr>
+					<td>#1</td>
+					<td><input type="text" id="data0" placeholder="y1,y2,y3... or L1:y1,L2:y2,..." value="1,2,4,8,16,32,64,32,16,8,4,2,1" class="data" /><input id="butrnd0" type="button" class="rnd" value="random" target="data0" /></td>
+					<td><input type="text" id="title0" value="" /></td>
+					<td><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="color0" value="" /></td>
+				</tr>
+				<tr>
+					<td>#2</td>
+					<td><input type="text" id="data1" placeholder="y1,y2,y3... or L1:y1,L2:y2,..." value="" class="data" /><input id="butrnd1" type="button" class="rnd" value="random" target="data1" /></td>
+					<td><input type="text" id="title1" value="" /></td>
+					<td><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="color1" value="" /></td>
+				</tr>
+				<tr>
+					<td>#3</td>
+					<td><input type="text" id="data2" placeholder="y1,y2,y3... or L1:y1,L2:y2,..." value="" class="data" /><input id="butrnd2" type="button" class="rnd" value="random" target="data2" /></td>
+					<td><input type="text" id="title2" value="" /></td>
+					<td><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="color2" value="" /></td>
+				</tr>
+			</table>
+
+			<hr/>
+
+			<h2>Rendering</h2>
+			<div class="formcol">
+				<label for="mode">mode</label><select id="mode"><option></option><option>line</option><option>line:river</option><option>pie</option><option>chart</option><option>chart:stack</option><option selected="selected">curve</option><option>curve:river</option></select><br/>
+				<label for="background">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="background" value="" /><br/>
+				<label for="width">width</label><input type="text" id="width" class="int" value="" />px<br/>
+				<label for="height">height</label><input type="text" id="height" class="int" value="" />px<br/>
+				<label for="autoscale">autoscale</label><select id="autoscale"><option></option><option>top</option><option>bottom</option><option>top+bottom</option></select><br/>
+			</div>
+			<div class="formcol">
+				<label for="fill">fill</label><select id="fill"><option></option><option>none</option><option>solid</option><option>light</option><option>dark</option><option>vertical</option><option>horizontal</option><option>radial</option></select><br/>
+				<label for="opacity">opacity</label><select id="opacity"><option></option><option value="0.1">0.1 - transparent</option><option>0.2</option><option>0.3</option><option>0.4</option><option value="0.5">0.5 - semi transparent</option><option>0.6</option><option>0.7</option><option>0.8</option><option>0.9</option><option value="1">1.0 - opaque</option></select><br/>
+				<label for="linewidth">linewidth</label><select id="linewidth"><option></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
+				<label for="linejoin">linejoin</label><select title="line or histogram mode" id="linejoin"><option></option><option>round</option><option>miter</option><option>bevel</option></select><br/>
+				<label for="radiuspoint">radiuspoint</label><select title="line or curve mode" id="radiuspoint"><option></option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>10</option><option>15</option><option>20</option><option>40</option></select><br/>
+			</div>
+
+			<hr/>
+
+			<h2>Grid</h2>
+			<div class="formcol">
+				<label for="gridx">x</label><input type="text" id="gridx" placeholder="none or %,%,%..." value="" /><br/>
+				<label for="gridy">y</label><input type="text" id="gridy" placeholder="none or %,%,%..." value="" /><br/>
+			</div>
+			<div class="formcol">
+				<label for="gridcolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="gridcolor" value="" /><br/>
+			</div>
+
+			<hr/>
+			
+			<h2>Labels</h2>
+			<div class="formcol">
+				<label for="margins">margins</label><input type="text" id="margins" placeholder="top,right,bottom,left" value="" /> px<br/>
+				<label for="labelfont">font</label><input type="text" id="labelfont" class="font" value='' /><br/>
+				<label for="labelcolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="labelcolor" value="" /><br/>
+				<label for="labelshadow">shadow</label><input type="text" placeholder="x,y,blur,color" id="labelshadow" value="" /><br/>
+			</div>
+			<div class="formcol">
+				<label for="labely">y axis labels</label><input type="text" id="labely" placeholder="%,%,%..." value="" title="show veritcals labels for each labels.y percent"/><br/>
+				<label for="labelypos">y axis position</label><select id="labelypos"><option value=""></option><option>left</option><option>right</option><option>left+right</option></select><br/>
+				<label for="labelx">x axis labels</label><select id="labelx"><option value="">none</option><option value="1">all</option><option value="2">1/2</option><option value="3">1/3</option><option value="4">1/4</option><option value="5">1/5</option><option value="10">1/10</option><option value="20">1/20</option></select><br/>
+				<label for="labelmarks">marks</label><select id="labelmarks"><option></option><option>1</option><option>2</option><option>3</option><option>4</option></select>px<br/>
+			</div>
+
+			<hr/>
+
+			<h2>Legends</h2>
+			<div class="formcol">
+				<label for="legends">enabled</label><input type="checkbox" id="legends" checked="checked" /><br/>
+				<label for="legx">x</label><input type="text" id="legx" placeholder="int" value="" /><br/>
+				<label for="legy">y</label><input type="text" id="legy" placeholder="int" value="" /><br/>
+				<label for="legbackground">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legbackground" value="" /><br/>
+				<label for="legshadowbox">box shadow</label><input type="text" placeholder="x,y,blur,color" id="legshadowbox" value="" /><br/>
+			</div>
+			<div class="formcol">
+				<label for="legfont">font</label><input type="text" id="legfont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
+				<label for="legcolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legcolor" value="" alt="legend border color"/><br/>
+				<label for="legshadow">text shadow</label><input type="text" placeholder="x,y,blur,color" id="legshadow" value="" /><br/>
+				<label for="legborder">border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder" value="" alt="legend border color"/><br/>
+				<label for="legborder2">color box border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder2" value="" alt="color box border color"/><br/>
+			</div>
+
+			<hr/>
+
+			<h2>MouseOver</h2>
+			<div class="formcol">
+				<label for="mouseover">enabled</label><input type="checkbox" id="mouseover" checked="checked" /><br/>
+				<label for="moradius">spot radius</label><input type="text" id="moradius" class="int" value="" />px<br/>
+				<label for="molinewidth">spot linewidth</label><select id="molinewidth"><option></option><option value="0">filled</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
+				<label for="mocircle">spot color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocircle" value="" /><br/>
+				<label for="moborder2">spot border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocircle" value="" /><br/>
+				<label for="moaxis">axis</label><select id="moaxis"><option></option><option>xy</option><option>x</option><option>y</option></select><br/>
+			</div>
+			<div class="formcol">
+				<label for="motext">text</label><input type="text" id="motext" title="%l=label %v=value %n=index" paceholder="%l: %v" value=""/><br/>
+				<label for="mofont">text font</label><input type="text" id="mofont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
+				<label for="mocolor">text color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocolor" value="" /><br/>
+				<label for="moshadow">text shadow</label><input type="text" placeholder="x,y,blur,color" id="moshadow" value="" /><br/>
+				<label for="mobullet">bullet color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mobullet" value="" /><br/>
+				<label for="moshadowbox">bullet shadow</label><input type="text" placeholder="x,y,blur,color" id="moshadowbox" value="" /><br/>
+				<label for="moborder">bullet border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="moborder" value="" /><br/>
+			</div>
+
+			<hr/>
+
+			<div class="footer">
+				<input id="butreset" type="button" value="reset" />
+			</div>
+		</form>
+		<div class="block">
+			<h2>Canvas</h2>
+			<div id="plot"></div>
+		</div>
+		<div class="block">
+			<h2>Javascript</h2>
+			<div id="js"><pre id="jsout"></pre></div>
+		</div>
+	</content>
+
+	<content id="presets">
+	</content>
+
 </body>
 </html>
+
