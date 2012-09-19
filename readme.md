@@ -6,8 +6,8 @@ harry plotter 0.8
 
 harry is a lightweight standalone javascript library to plot data as charts, pies, lines or curves.
 
-samples can be viewed [here](http://nikopol.github.com/Harry-Plotter/)  
-generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.html)
+samples can be viewed [here](http://nikopol.github.com/Harry-Plotter/#tab=presets)  
+a generator, that let's you play with all parameters can be used [here](http://nikopol.github.com/Harry-Plotter/#tab=presets)
 
 **prerequisite**
 
@@ -44,7 +44,7 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 		//context
 
 		id: "str",                    //canvas's id, by default harry$n
-		container: "str/elem",	      //container where create canvas, default=body
+		container: "str/elem",        //container where create canvas, default=body
 		canvas: "str/elem",           //canvas element, default=create it into container
 		width: int,                   //canvas's width, default=container.width or 300
 		height: int,                  //canvas's height, default=container.height or 80
@@ -117,7 +117,7 @@ generator can be used [here](http://nikopol.github.com/Harry-Plotter/generator.h
 
 		//interaction
 
-		mouseover: {,                 //set to false to disable mouseover, default=enabled
+		mouseover: {                  //set to false to disable mouseover, default=enabled
 			radius: int,              //  spot radius, default=5
 			linewidth: int,           //  spot linewidth, default=linewidth below,0=fill
 			circle: "#888888",        //  spot color, default=#888

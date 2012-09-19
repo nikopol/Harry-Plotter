@@ -57,8 +57,8 @@ var h=harry({
 	                              //  radial       radial gradient fill
 	opacity: 0.8,                 //fill opacity, between 0 and 1, overrided if fill=auto
 	margins:[top,right,bot,left], //margin size (for labels), default=auto
-	autoscale: true,              //auto round up y scale, default=true (unused for pie)
-	pointradius: int,             //radius point in mode line/curve only (default=none)
+	autoscale: "top+bottom",      //auto round top and/or bottom y scale, default=none
+	pointradius: int,             //radius point size in mode line/curve only, default=none
 
 	title: {                      //title options
 		text: "title",            //  clear enough
@@ -183,9 +183,9 @@ harry=(function(o){
 		k=labels.marks;
 		return [
 		/*top*/    l.y ? f : 0,
-		/*right*/  l.y && /right/i.test(l.ypos) ? m*4 : (l.x?m:1),
+		/*right*/  l.y && /r/i.test(l.ypos) ? m*4 : (l.x?m:1),
 		/*bottom*/ l.x ? 3+m+k : (l.y?m:1),
-		/*left*/   l.y && /left/i.test(l.ypos) ? m*4 : (l.x?f:0)
+		/*left*/   l.y && /l/i.test(l.ypos) ? m*4 : (l.x?f:0)
 		];
 	},
 
@@ -236,12 +236,13 @@ harry=(function(o){
 	imgdata,
 	bg=o.background,
 	mode=o.mode||'line',
-	fill=(o.fill||"a")[0].toLowerCase().replace(/[^nasvhrdl]/,"a"),
+	fill=(o.fill||"a")[0].toLowerCase().replace(/[^nasvhrdl]+/g,"a"),
 	opacity=parseFloat(o.opacity)||1,
 	linewidth=parseInt(o.linewidth,10)||1,
 	linejoin=o.linejoin||"miter",
 	radiuspoint=parseInt(o.radiuspoint,10)||0,
-	autoscale=o.autoscale===false ? false : true,
+	scaletop=o.autoscale && /top/i.test(o.autoscale),
+	scalebot=o.autoscale && /bot/i.test(o.autoscale),
 	labels=merge({
 		color: "#a0a0a0",
 		font: 'normal 9px "Sans Serif"',
@@ -287,7 +288,7 @@ harry=(function(o){
 			color: "#666",
 			font: '10px "Sans Serif"'
 		},o.legends),
-	data=[], dmin, dmax, dlen=0, dsum,
+	data=[], dmin, dmax, dlen=0, dsum, drng,
 	rx, ry, rw, rh, rx2, ry2,
 
 //PRIVATE METHODS =============================================================
@@ -315,20 +316,22 @@ harry=(function(o){
 		data.push(ds);
 		dlen=data.length;
 		if(dlen==1) {
-			dmin=ds.min;
-			dmax=autoscale ? scaleUp(ds.max) : ds.max;
+			dmin=scalebot ? ds.min : 0;
+			dmax=scaletop ? scaleUp(ds.max) : ds.max;
 			dsum=dmax;
 			t=ds.tit;
 		} else {
-			dmin=Math.min(ds.min,dmin);
+			dmin=scalebot ? Math.min(ds.min,dmin) : 0;
 			dmax=Math.max(ds.max,dmax);
 			dsum=0;
 			for(var i=0,l=data[0].val.length;i<l;++i){
 				var sum=0;
 				for(var j=0;j<data.length;++j) sum+=(data[j].val[i]||0);
-				if(sum>dsum) dsum=autoscale?scaleUp(sum):sum;
+				if(sum>dsum) dsum=scaletop ? scaleUp(sum) : sum;
 			}
+			drng=scalebot ? dmin-dsum : dsum;
 		}
+		drng=scalebot ? dmin-dmax : dmax;
 		//console.log("[harry] load "+ds.tit+" len="+dlen+" sum="+dsum+" max="+dmax);
 	},
 
@@ -471,12 +474,12 @@ harry=(function(o){
 				for(i=0,l=labels.y.length;i<l;++i) {
 					y=ry2-Math.round(rh*labels.y[i]/100);
 					v=Math.round(dec*max*labels.y[i]/100)/dec;
-					if(/right/i.test(labels.ypos)){
+					if(/r/i.test(labels.ypos)){
 						x=rx2+1;
 						gc.textAlign='left';
 						gc.fillText(v,x,y);
 					}
-					if(/left/i.test(labels.ypos)){
+					if(/l/i.test(labels.ypos)){
 						x=rx-2;
 						gc.textAlign='right';
 						gc.fillText(v,x,y);
