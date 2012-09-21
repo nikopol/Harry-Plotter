@@ -224,7 +224,9 @@
 				//get datas
 				for(i=0;_('data'+i);i++)
 					if((w=val('data'+i)).length) {
-						ds=getlst(['title'+i,'color'+i]);
+						ds={};
+						if((v=val('title'+i)).length) ds.title=v;
+						if((v=val('color'+i)).length) ds.color=v;
 						ds.values=values(w);
 						d.push(ds);
 					}
