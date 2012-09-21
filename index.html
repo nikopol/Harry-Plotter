@@ -5,7 +5,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 	<title>Harry Plotter</title>
 	<link href='harry.css' rel='stylesheet' type='text/css'>
-	<script src="harry.min.js"></script>
+	<script src="harry.js"></script>
 	<script src="miniko.min.js"></script>
 	<script>
 		"use strict;"
@@ -347,36 +347,33 @@
 			console.log('load presets.js');
 			ajax('presets.js',function(d){
 				console.log('presets.js loaded');
-				PRESETS=d;
-				var p=_('presets'),n=0,t;
-				for(t in d) {
-					var j=PRESETS[t],h=
-					'<div class="block">'+
-						'<h2>'+t+'</h2>'+
-						'<div id="box'+n+'"></div>'+
-						'<hr/>'+
-						'<div class="src hide" id="src'+n+'">'+
-							'<pre>plotter('+json.tidy(json.encode(j,true))+');</pre>'+
+				PRESETS={};
+				var p=_('samples'),n=0,s,t;
+				p.innerHTML='';
+				for(s in d) {
+					append(p,'<header>'+s+'</header>');
+					for(t in d[s]) {
+						var j=d[s][t],h=
+						'<div class="block">'+
+							'<h2>'+t+'</h2>'+
+							'<div id="box'+n+'" class="center"></div>'+
 							'<hr/>'+
-						'</div>'+
-						'<div class="footer">'+
-							'<input type="button" value="edit" onclick="builder.loadpreset(\''+t+'\')"/>'+
-							'<input type="button" value="source" onclick="css(\'src'+n+'\',\'*hide\')"/>'+
-						'</div>'+
-					'</div>';
-					append(p,h);
-					PRESETS[t].container="box"+n;
-					plotter(PRESETS[t]);
-					n++;
+							'<div class="src hide" id="src'+n+'">'+
+								'<pre>plotter('+json.tidy(json.encode(j,true))+');</pre>'+
+								'<hr/>'+
+							'</div>'+
+							'<div class="footer">'+
+								'<input type="button" value="edit" onclick="builder.loadpreset(\''+t+'\',\''+t+'\')"/>'+
+								'<input type="button" value="source" onclick="css(\'src'+n+'\',\'*hide\')"/>'+
+							'</div>'+
+						'</div>';
+						append(p,h);
+						PRESETS[t]=j;
+						PRESETS[t].container="box"+n;
+						plotter(PRESETS[t]);
+						n++;
+					}
 				}
-				append(p,
-					'<div class="block">'+
-						'<h2>more to come ...</h2>'+
-						'<div>Do not hesitate to submit your setup by forking<br/>'+
-						'and send me a pull request on my gh-pages.<br/>'+
-						'presets are in the file presets.js</div>'+
-					'</div>'
-				);
 				if((t=hash.get('preset')) && t in PRESETS) builder.load(PRESETS[t]);
 			});
 						
@@ -432,14 +429,14 @@
 			<h2>Title</h2>
 			<div class="formcol">
 				<label for="titletext">text</label><input type="text" id="titletext" /><br/>
-				<label for="titlefont">font</label><input type="text" id="titlefont" class="font" value='bold 24px "Sans Serif"' /><br/>
+				<label for="titlefont">font</label><input type="text" id="titlefont" class="font" placeholder='bold 12px "Sans Serif"' /><br/>
 				<label for="titlecolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="titlecolor" value="" /><br/>
 				<label for="titleshadow">shadow</label><input type="text" placeholder="x,y,blur,color" id="titleshadow" value="" /><br/>
 			</div>
 			<div class="formcol">
 				<label for="titlex">x</label><input type="text" id="titlex" class="int" />px<br/>
 				<label for="titley">y</label><input type="text" id="titley" class="int" />px<br/>
-				<label for="titlez">z</label><select id="titlez"><option value="">top</option><option value="background">background</option></select><br/>
+				<label for="titlez">z</label><select id="titlez"><option value=""></option><option value="top">top</option><option value="background">background</option></select><br/>
 			</div>
 
 			<hr/>
@@ -472,10 +469,11 @@
 			<h2>Rendering</h2>
 			<div class="formcol">
 				<label for="mode">mode</label><select id="mode"><option></option><option>line</option><option>line:river</option><option>pie</option><option>chart</option><option>chart:stack</option><option selected="selected">curve</option><option>curve:river</option></select><br/>
-				<label for="background">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="background" value="" /><br/>
-				<label for="width">width</label><input type="text" id="width" class="int" value="" />px<br/>
-				<label for="height">height</label><input type="text" id="height" class="int" value="" />px<br/>
+				<label for="width">width</label><input type="text" id="width" class="int" value="" placeholder="300"/>px<br/>
+				<label for="height">height</label><input type="text" id="height" class="int" value="" placeholder="80"/>px<br/>
+				<label for="margins">margins</label><input type="text" id="margins" placeholder="top,right,bottom,left" value="" /> px<br/>
 				<label for="autoscale">autoscale</label><select id="autoscale"><option></option><option>top</option><option>bottom</option><option>top+bottom</option></select><br/>
+				<label for="background">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="background" value="" /><br/>
 			</div>
 			<div class="formcol">
 				<label for="fill">fill</label><select id="fill"><option></option><option>none</option><option>solid</option><option>light</option><option>dark</option><option>vertical</option><option>horizontal</option><option>radial</option></select><br/>
@@ -500,15 +498,14 @@
 			
 			<h2>Labels</h2>
 			<div class="formcol">
-				<label for="margins">margins</label><input type="text" id="margins" placeholder="top,right,bottom,left" value="" /> px<br/>
-				<label for="labelfont">font</label><input type="text" id="labelfont" class="font" value='' /><br/>
+				<label for="labelfont">font</label><input type="text" id="labelfont" class="font" value='' placeholder='normal 9px "Sans Serif"'/><br/>
 				<label for="labelcolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="labelcolor" value="" /><br/>
 				<label for="labelshadow">shadow</label><input type="text" placeholder="x,y,blur,color" id="labelshadow" value="" /><br/>
 			</div>
 			<div class="formcol">
 				<label for="labely">y axis labels</label><input type="text" id="labely" placeholder="%,%,%..." value="" title="show veritcals labels for each labels.y percent"/><br/>
 				<label for="labelypos">y axis position</label><select id="labelypos"><option value=""></option><option>left</option><option>right</option><option>left+right</option></select><br/>
-				<label for="labelx">x axis labels</label><select id="labelx"><option value="">none</option><option value="1">all</option><option value="2">1/2</option><option value="3">1/3</option><option value="4">1/4</option><option value="5">1/5</option><option value="10">1/10</option><option value="20">1/20</option></select><br/>
+				<label for="labelx">x axis labels</label><select id="labelx"><option value=""></option><option value="1">all</option><option value="2">1/2</option><option value="3">1/3</option><option value="4">1/4</option><option value="5">1/5</option><option value="10">1/10</option><option value="20">1/20</option></select><br/>
 				<label for="labelmarks">marks</label><select id="labelmarks"><option></option><option>1</option><option>2</option><option>3</option><option>4</option></select>px<br/>
 			</div>
 
@@ -535,14 +532,14 @@
 			<h2>MouseOver</h2>
 			<div class="formcol">
 				<label for="mouseover">enabled</label><input type="checkbox" id="mouseover" checked="checked" /><br/>
-				<label for="moradius">spot radius</label><input type="text" id="moradius" class="int" value="" />px<br/>
+				<label for="moradius">spot radius</label><input type="text" id="moradius" class="int" value="" placeholder="5"/>px<br/>
 				<label for="molinewidth">spot linewidth</label><select id="molinewidth"><option></option><option value="0">filled</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select><br/>
 				<label for="mocircle">spot color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocircle" value="" /><br/>
 				<label for="moborder2">spot border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocircle" value="" /><br/>
 				<label for="moaxis">axis</label><select id="moaxis"><option></option><option>xy</option><option>x</option><option>y</option></select><br/>
 			</div>
 			<div class="formcol">
-				<label for="motext">text</label><input type="text" id="motext" title="%l=label %v=value %n=index" paceholder="%l: %v" value=""/><br/>
+				<label for="motext">text</label><input type="text" id="motext" title="%l=label %v=value %n=index %p=pct(pie only)" placeholder="%v" value=""/><br/>
 				<label for="mofont">text font</label><input type="text" id="mofont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
 				<label for="mocolor">text color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocolor" value="" /><br/>
 				<label for="moshadow">text shadow</label><input type="text" placeholder="x,y,blur,color" id="moshadow" value="" /><br/>
@@ -568,6 +565,11 @@
 	</content>
 
 	<content id="presets">
+		<div id="samples">
+		</div>
+		<header>more to come ...</header>
+		Do not hesitate to submit your setup by forking and send me a pull request on my gh-pages.
+		Presets are in the file presets.js
 	</content>
 
 </body>

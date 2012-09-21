@@ -260,6 +260,10 @@ pre {
 	box-shadow: rgba(255,255,255,0.1) 0 1px 0, rgba(0,0,0,0.8) 0 1px 7px 0 inset;
 }
 
+.center {
+	text-align: center;
+}
+
 .block {
 	display: block;
 	position: relative;
@@ -307,6 +311,7 @@ div.footer {
 	z-index: 99;
 }
 
+#presets,
 #readme,
 #readme a {
 	font: normal 11pt "Ubuntu","Sans Serif";
@@ -346,4 +351,13 @@ span.comment { color: #999; }
 	-webkit-transition: all 0.4s linear;
 	-moz-transition: all 0.4s linear;
 	transition: all 0.4s linear;
+}
+
+#presets header {
+	clear: both;
+	display: block;
+	font:bold 18pt "McLaren","Sans Serif";
+	color: #ddd;
+	padding: 15px 0 5px 0;
+
 }
