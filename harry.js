@@ -288,12 +288,42 @@ harry=(function(o){
 			color: "#666",
 			font: '10px "Sans Serif"'
 		},o.legends),
-	data=[], dmin, dmax, dlen=0, dsum, drng,
+	river,
+	data=[], dmin, dmax, dlen=0, dsum, drng, dinc,
 	rx, ry, rw, rh, rx2, ry2,
 
 //PRIVATE METHODS =============================================================
 
 	draw,
+
+	//setup precalc vars
+	setup=function(){
+		var i,j,l,d,s;
+		dlen=data.length;
+		river=/\:[rs]/.test(mode),
+		dmin=dmax=false;
+		drng=dsum=dinc=0;
+		if(dlen) {
+			for(i=0;i<dlen;i++) {
+				d=data[i];
+				dmin=dmin===false?d.min:Math.min(d.min,dmin);
+				dmax=dmax===false?d.max:Math.max(d.max,dmax);
+			}
+			if(scaletop) dmax=scaleUp(dmax);
+			if(river) {
+				for(i=0,l=data[0].len;i<l;++i){
+					s=0;
+					for(j=0;j<dlen;++j) s+=(data[j].val[i]||0);
+					if(s>dsum) dsum=scaletop ? scaleUp(s) : s;
+				}
+				drng=scalebot ? dsum-dmin : dsum;
+			} else {
+				dsum=dmax;
+				drng=scalebot ? dmax-dmin : dmax;
+			}
+			dinc=scalebot ? dmin : 0;
+		}
+	},
 
 	//load a dataset
 	load=function(d) { 
@@ -314,25 +344,6 @@ harry=(function(o){
 		ds.len=ds.val.length;
 		ds.avg=ds.len ? ds.sum/ds.len : 0;
 		data.push(ds);
-		dlen=data.length;
-		if(dlen==1) {
-			dmin=scalebot ? ds.min : 0;
-			dmax=scaletop ? scaleUp(ds.max) : ds.max;
-			dsum=dmax;
-			t=ds.tit;
-		} else {
-			dmin=scalebot ? Math.min(ds.min,dmin) : 0;
-			dmax=Math.max(ds.max,dmax);
-			dsum=0;
-			for(var i=0,l=data[0].val.length;i<l;++i){
-				var sum=0;
-				for(var j=0;j<data.length;++j) sum+=(data[j].val[i]||0);
-				if(sum>dsum) dsum=scaletop ? scaleUp(sum) : sum;
-			}
-			drng=scalebot ? dmin-dsum : dsum;
-		}
-		drng=scalebot ? dmin-dmax : dmax;
-		//console.log("[harry] load "+ds.tit+" len="+dlen+" sum="+dsum+" max="+dmax);
 	},
 
 	//load datasets
@@ -342,6 +353,7 @@ harry=(function(o){
 				load(datas[i]);
 		else
 			load(datas);
+		setup();
 	},
 
 	//return auto fillmode
@@ -465,15 +477,15 @@ harry=(function(o){
 			//console.log("[harry] labels y("+labels.y.join(",")+") "+labels.font);
 			if(/chart|line|curve/.test(mode)) {
 				var
-				max=/\:[r|s]/.test(mode)?dsum:dmax,
-				i,l,x,y,w,v,dec=max<10?100:(max<100?10:1);
+				i,l,x,y,w,v,dec=drng<10?100:(drng<100?10:1);
 				setShadow(labels.shadow);
 				gc.font=labels.font;
 				gc.fillStyle=labels.color;
 				gc.textBaseline='middle';				
 				for(i=0,l=labels.y.length;i<l;++i) {
 					y=ry2-Math.round(rh*labels.y[i]/100);
-					v=Math.round(dec*max*labels.y[i]/100)/dec;
+					v=dinc+drng*labels.y[i]/100;
+					v=Math.round(dec*v)/dec;
 					if(/r/i.test(labels.ypos)){
 						x=rx2+1;
 						gc.textAlign='left';
@@ -492,6 +504,7 @@ harry=(function(o){
 
 	//draw labels on X axis
 	drawXLabel=function(n,x,y,align,baseline) {
+		gc.save();
 		if(labels.x && (n%labels.x)==0) {
 			var l=data[0].lab[n]||n;
 			setShadow(labels.shadow);
@@ -503,14 +516,14 @@ harry=(function(o){
 			unsetShadow();
 		}
 		if(labels.marks) {
-			gc.save();
 			gc.lineWidth=1;
+			gc.beginPath();
 			gc.moveTo(x,ry2);
 			gc.lineTo(x,ry2+labels.marks);
 			gc.strokeStyle=labels.color;
 			gc.stroke();
-			gc.restore();
 		}
+		gc.restore();
 	},
 
 	drawLegends=function() {
@@ -582,7 +595,7 @@ harry=(function(o){
 			tit=data[b.nds].tit;
 			txt=typeof(mouseover.text)=="function"
 				? mouseover.text(b.n,b.v,lab,b.x,b.y)
-				: mouseover.text.replace('%v',b.v).replace('%l',lab).replace('%n',b.n).replace('%t',tit);
+				: mouseover.text.replace('%v',b.v).replace('%l',lab).replace('%n',b.n).replace('%t',tit).replace('%p',b.pct);
 			if(txt) {
 				b.lines=txt.split(/\n|\\n/);
 				b.h=b.lines.length*lh;
@@ -668,7 +681,7 @@ harry=(function(o){
 	plot={
 
 		line: function(river,curve) {
-			var nds=dlen,cy=river?(dsum?rh/dsum:0):(dmax?rh/dmax:0),d,g,i,j,v,l,
+			var nds=dlen,cy=drng?rh/drng:0,d,g,i,j,v,l,
 			drawPath=function(gc,x,y,v,n1,n2) {
 				var n=n1,nx,ny,mx,my,px,py;
 				while(n<=n2) {
@@ -702,14 +715,14 @@ harry=(function(o){
 			overpoints=[];
 
 			while(d=data[--nds])
-				if((l=d.val.length)>1) {
+				if((l=d.len)>1) {
 					//console.log("[harry] curve("+d.tit+")"+(river?" river":""));
 					//calc
 					var x=[],y=[],n1,n2;
 					for(i=0;i<l;++i) {
 						v=0;
-						if(river) for(j=0;j<=nds;j++) v+=data[j].val[i];
-						else v=d.val[i];
+						if(river) for(j=0;j<=nds;j++) v+=data[j].val[i]-dinc;
+						else v=d.val[i]-dinc;
 						x.push(rx+Math.round(i*(rw/(l-1))));
 						y.push(ry2-Math.round(cy*v));
 					}
@@ -745,14 +758,13 @@ harry=(function(o){
 					//draw points
 					if(radiuspoint) {
 						gc.fillStyle=d.col;
-						for(i=0;i<l;++i) {
+						for(i=0;i<l;++i)
 							if(d.val[i]!=undefined){
 								gc.beginPath();
 								gc.arc(x[i],y[i],radiuspoint,0,2*Math.PI);
 								gc.closePath();
 								gc.fill();
 							}
-						}
 					}
 				}
 		},
@@ -762,21 +774,20 @@ harry=(function(o){
 		},
 
 		chart: function(stack) {
-			var nbds=dlen;
-			//console.log("[harry] chart ("+nbds+" dataset)");
+			//console.log("[harry] chart ("+dlen+" dataset)");
 			overpoints = [];
-			if(nbds){
-				var nd,nds,nbd=data[0].len,m=nbds>1?4:0,nbdsv=stack?1:nbds,
-				    bw=(nbd && nbds)?(((rw-(m*(nbd-1)))/nbd)/nbdsv)-1:0,d,g,y,y0,
+			if(dlen){
+				var nd,nds,nbd=data[0].len,m=dlen>1?4:0,nbdsv=stack?1:dlen,
+				    bw=(nbd && dlen)?(((rw-(m*(nbd-1)))/nbd)/nbdsv)-1:0,d,g,y,y0,
 				    x=rx,x1,x2,cy=stack?(dsum?rh/dsum:0):(dmax?rh/dmax:0);
 				if(bw<0) bw=0;
 				gc.lineWidth=linewidth;
 				gc.lineJoin="miter";
-				for(nds=0;nds<nbds;nds++) overpoints.push({x:[],y:[],v:[],nds:nds});
+				for(nds=0;nds<dlen;nds++) overpoints.push({x:[],y:[],v:[],nds:nds});
 				for(nd=0;nd<nbd;nd++) {
 					drawXLabel(nd,x+(((bw+1)*nbdsv)/2),h-1);
 					y=ry2;
-					for(nds=0;nds<nbds;nds++) {
+					for(nds=0;nds<dlen;nds++) {
 						d=data[nds];
 						y0=stack?y:ry2;
 						y=y0-Math.round(cy*d.val[nd]);
@@ -804,17 +815,16 @@ harry=(function(o){
 		},
 
 		pie: function() {
-			var nbds=dlen;
-			//console.log("[harry] pie ("+nbds+" dataset)");
+			//console.log("[harry] pie ("+dlen+" dataset)");
 			overpoints = [];
-			if(nbds){
+			if(dlen){
 				//precalc angles
 				var i,nb=0,va=[],vc=[],pi2=Math.PI*2,lab=[],pct=[];
-				if(nbds>1) {
+				if(dlen>1) {
 					var sum=0;
-					for(nb=nbds,i=0;i<nb;i++) sum+=data[i].sum;
+					for(i=0;i<dlen;i++) sum+=data[i].sum;
 					if(sum)
-						for(i=0;i<nb;i++) {
+						for(i=0,nb=dlen;i<dlen;i++) {
 							va[i]=data[i].sum/sum*pi2;
 							vc[i]=data[i].col;
 							lab.push(data[i].sum);
@@ -866,9 +876,10 @@ harry=(function(o){
 					x: nx,
 					y: ny,
 					r: 0,
-					v: lab[n]+' ('+pct[n]+'%)',
+					v: lab[n],
+					pct: pct[n]+'%',
 					n: n,
-					nds: 0
+					nds: dlen>1?n:0
 				}], true);
 				overpoints.sort(function(a,b){return a.a-b.a});
 			}
@@ -1067,7 +1078,10 @@ harry=(function(o){
 			return this;
 		},
 		draw: function(m) {
-			if(m) mode=m.toLowerCase();
+			if(m) {
+				mode=m.toLowerCase();
+				setup();
+			}
 			draw();
 			return this;
 		}
