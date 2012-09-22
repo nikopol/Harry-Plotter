@@ -275,16 +275,16 @@ harry=(function(o){
 		? merge({
 			font: 'bold 12px "Sans Serif"',
 			color: 'rgba(4,4,4,0.3)',
-			x: margins[3]+2.5,
-			y: margins[0]+2.5,
+			x: margins[3]+2,
+			y: margins[0]+2,
 			z: 'top'
 		},	o.title)
 		: false,
 	legends=o.legends===false
 		? false
 		: merge({
-			x: margins[3]+2.5,
-			y: margins[0]+2.5+(o.title && !o.title.x ? 2+fontPixSize(title.font) : 0),
+			x: margins[3]+2,
+			y: margins[0]+2+(o.title && !o.title.x ? 2+fontPixSize(title.font) : 0),
 			color: "#666",
 			font: '10px "Sans Serif"'
 		},o.legends),
@@ -299,6 +299,7 @@ harry=(function(o){
 	//setup precalc vars
 	setup=function(){
 		var i,j,l,d,s;
+		//datasets vars
 		dlen=data.length;
 		river=/\:[rs]/.test(mode),
 		dmin=dmax=false;
@@ -323,6 +324,17 @@ harry=(function(o){
 			}
 			dinc=scalebot ? dmin : 0;
 		}
+		//misc
+		labels.fontpx=fontPixSize(labels.font);
+		if(/none|false/.test(grid.x)) grid.x=[];
+		if(/none|false/.test(grid.y)) grid.y=[];
+		//plot zone
+		rx=margins[3];
+		ry=margins[0];
+		rw=Math.max(w-margins[1]-margins[3],0);
+		rh=Math.max(h-margins[0]-margins[2],0);
+		rx2=rx+rw;
+		ry2=ry+rh;
 	},
 
 	//load a dataset
@@ -420,7 +432,6 @@ harry=(function(o){
 			gc.shadowOffsetX = 0;
 			gc.shadowOffsetY = 0;
 			gc.shadowBlur    = 0;
-			gc.shadowColor   = 'rgba(0,0,0,0)';
 		}
 	},
 
@@ -585,7 +596,7 @@ harry=(function(o){
 		gc.font=mouseover.font;
 		var i,n,m,l=bs.length,b,lab,tit,txt,bh=0,bw=0,s=3,
 		    pt=fontPixSize(mouseover.font),
-		    pr=pt/2,lh=pt+s,x,y,x1,y1,x2,y2,
+		    pr=Math.floor(pt/2),lh=pt+s,x,y,x1,y1,x2,y2,
 		    xl=w,xr=0,yt=h,yb=0;
 		bs.sort(function(a,b){return parseInt(b.v,10)-parseInt(a.v,10)});
 		//calc texts sizes
@@ -627,12 +638,12 @@ harry=(function(o){
 				if(x1+bw>=w) x1=xl-bw;
 				if(x1<1) x1=1;
 			}
-			x1=Math.floor(x1)+.5;
+			x1=Math.floor(x1);
 			x2=x1+bw;
-			y=yt+bh/2;//+(yb-yt)/2;
+			y=yt+bh/2;
 			y1=y+(bh/2);
 			if(y1>ry2) y1=ry2-1;
-			y1=Math.floor(y1)+.5;
+			y1=Math.floor(y1);
 			y2=y1-bh;
 			//draw bullet
 			gc.beginPath();
@@ -804,7 +815,7 @@ harry=(function(o){
 							gc.strokeStyle=d.col;
 							gc.stroke();
 						}
-						overpoints[nds].x.push(0.5+Math.floor(x+bw/2));
+						overpoints[nds].x.push(Math.floor(x+bw/2));
 						overpoints[nds].y.push(y);
 						overpoints[nds].v.push(d.val[nd]);
 						if(!stack) x+=bw+1;
@@ -1048,8 +1059,9 @@ harry=(function(o){
 //INIT ========================================================================
 
 	//console.log("[harry] init("+w+","+h+")");
-	setup();
+	gc.translate(0.5,0.5);
 	if(o.datas) loads(o.datas);
+	else setup();
 	draw();
 
 //PUBLIC METHODS ==============================================================
