@@ -994,6 +994,7 @@ harry=(function(o){
 	clear=function() {
 		data=[];
 		dlen=0;
+		setup();
 	};
 
 	draw=function(nover) {
@@ -1047,16 +1048,7 @@ harry=(function(o){
 //INIT ========================================================================
 
 	//console.log("[harry] init("+w+","+h+")");
-	labels.fontpx=fontPixSize(labels.font);
-	if(/none|false/.test(grid.x)) grid.x=[];
-	if(/none|false/.test(grid.y)) grid.y=[];
-	rx=margins[3]+0.5;
-	ry=margins[0]+0.5;
-	rw=Math.max(w-margins[1]-margins[3],0);
-	rh=Math.max(h-margins[0]-margins[2],0);
-	rx2=rx+rw;
-	ry2=ry+rh;
-
+	setup();
 	if(o.datas) loads(o.datas);
 	draw();
 
