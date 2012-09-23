@@ -437,10 +437,10 @@ harry=(function(o){
 
 	//erase canvas
 	cls=function() {
-		gc.clearRect(0,0,w,h);
+		gc.clearRect(-1,-1,w+1,h+1);
 		if(bg) {
 			gc.fillStyle=bg;
-			gc.fillRect(0,0,w,h);
+			gc.fillRect(-1,-1,w+1,h+1);
 		}
 	},
 
