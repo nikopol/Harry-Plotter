@@ -22,9 +22,9 @@ input:-moz-placeholder {
 	color: #777 !important;
 }
 
-:focus {
-	outline: none;
-}
+:focus { outline: 0; }
+input::-moz-focus-inner { border: 0; }
+button::-moz-focus-inner { border: 0; }
 
 ::-webkit-scrollbar {
 	background-color: transparent;
@@ -104,7 +104,7 @@ h1 {
 	z-index: 4;
 	left: 5px;
 	line-height: 32px !important;
-	width: 300px;
+	width: 320px;
 	top: 0;
 	right: 0;
 	color: #fff;
@@ -260,10 +260,6 @@ pre {
 	box-shadow: rgba(255,255,255,0.1) 0 1px 0, rgba(0,0,0,0.8) 0 1px 7px 0 inset;
 }
 
-.center {
-	text-align: center;
-}
-
 .block {
 	display: block;
 	position: relative;
@@ -275,6 +271,14 @@ pre {
 	padding: 5px;
 	border: 1px outset #;
 	box-shadow: 1px 1px 0 #000;
+}
+
+.plotbox {
+	display: table-cell;
+	width: 300px;
+	height: 150px;
+	text-align: center;
+	vertical-align: middle;
 }
 
 div.formcol {
@@ -376,13 +380,84 @@ span.comment { color: #999; }
 	transform: rotate(45deg);
 	text-shadow: 0 0 3px #000;
 	box-shadow: 2px 2px 2px #000;
-	cursor: default;
-}
-
-#forkme a,
-#forkme a:visited {
+	cursor: pointer;
 	font: bold 18px "Sans Serif";
 	color: #fff;
-	text-decoration: none;
-	vertical-align: top;
+}
+
+#forkme img {
+	vertical-align: middle;
+}
+
+#forkme:hover img {
+	-webkit-animation: rotate 1s linear 0s infinite normal;
+	-moz-animation: rotate 1s linear 0s infinite normal;
+	animation: rotate 1s linear 0s infinite normal;
+}
+
+@-webkit-keyframes rotate { 
+	100% { -webkit-transform: rotate(360deg); }
+}
+
+@-moz-keyframes rotate { 
+	0% { -moz-transform: rotate(0deg); }
+	100% { -moz-transform: rotate(360deg); }
+}
+@keyframes rotate { 
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+.bgswitch {
+	position: absolute;
+	top: 6px;
+	right: 10px;
+	vertical-align: middle;
+}
+
+.bgswitch input {
+	-webkit-appearance: button;
+	-moz-appearance: button;
+	width: 12px;
+	height: 12px;
+	margin: 0 5px;
+	border-radius: 5px;
+}
+
+.bgswitch input:checked {
+	border: 2px solid #91b9c8;
+}
+
+input.white,
+.bgwhite {
+	background: #fff;
+}
+
+input.black,
+.bgblack  {
+	background: #000;
+}
+
+input.none {
+	background-color: #eee;
+	background-image: -webkit-linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), 
+	-webkit-linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa);
+	background-image: -moz-linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), 
+	-moz-linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa);
+	background-image: linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), 
+	linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa);
+	background-size: 8px 8px;
+	background-position: 0 0, 4px 4px
+}
+
+.bgnone {
+	background-color: #eee;
+	background-image: -webkit-linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), 
+	-webkit-linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa);
+	background-image: -moz-linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), 
+	-moz-linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa);
+	background-image: linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), 
+	linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa)bl;
+	background-size: 30px 30px;
+	background-position: 0 0, 15px 15px
 }
