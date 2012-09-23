@@ -418,14 +418,16 @@ span.comment { color: #999; }
 .bgswitch input {
 	-webkit-appearance: button;
 	-moz-appearance: button;
-	width: 12px;
-	height: 12px;
-	margin: 0 5px;
-	border-radius: 5px;
+	width: 10px;
+	height: 10px;
+	border: 1px solid #666;
+	margin: 0 3px 0 3px;
+	box-shadow: 1px 1px 3px #000;
 }
 
 .bgswitch input:checked {
-	border: 2px solid #91b9c8;
+	margin: 1px 2px 0 4px;
+	box-shadow: none;
 }
 
 input.white,
