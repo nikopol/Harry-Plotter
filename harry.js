@@ -765,7 +765,7 @@ harry=(function(o){
 					//draw x labels
 					if(nds==0)
 						for(i=0;i<l;++i)
-							drawXLabel(i,x[i],h-1);
+							drawXLabel(i,x[i],h-3);
 					//draw points
 					if(radiuspoint) {
 						gc.fillStyle=d.col;
@@ -796,7 +796,7 @@ harry=(function(o){
 				gc.lineJoin="miter";
 				for(nds=0;nds<dlen;nds++) overpoints.push({x:[],y:[],v:[],nds:nds});
 				for(nd=0;nd<nbd;nd++) {
-					drawXLabel(nd,x+(((bw+1)*nbdsv)/2),h-1);
+					drawXLabel(nd,x+(((bw+1)*nbdsv)/2),h-3);
 					y=ry2;
 					for(nds=0;nds<dlen;nds++) {
 						d=data[nds];
