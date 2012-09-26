@@ -61,7 +61,7 @@ menu {
 	left: 0;
 	top: 0;
 	right: 0;
-	height: 28px;
+	height: 34px;
 	margin: 0;
 	padding: 0 0 0 350px;
 	display: block;
@@ -73,7 +73,7 @@ menu {
 menu button {
 	position: relative;
 	display: inline;
-	margin: 2px 3px 0 0;
+	margin: 4px 4px 0 0;
 	padding: 0 10px;
 	font: bold 16px "Ubuntu","Sans Serif";
 	line-height: 24px;
@@ -82,21 +82,16 @@ menu button {
 	background: #6d6f65;
 	color: #eee;
 	height: 24px;
-	-webkit-transition: all 0.4s linear;
-	-moz-transition: all 0.4s linear;
-	transition: all 0.4s linear;
-}
-
-menu button:active {
-	color: #8bf;
+	-webkit-transition: 0.4s;
+	-moz-transition: 0.4s;
+	transition: 0.4s;
 }
 
 menu button.on {
-	box-shadow: rgba(255,255,255,0.1) 0 1px 0, rgba(0,0,0,0.8) 0 1px 7px 0 inset;
-	background: #888;
-	-webkit-transition: all 0.4s linear;
-	-moz-transition: all 0.4s linear;
-	transition: all 0.4s linear;
+	text-shadow: 0 0 13px #B1D9E8;
+	-webkit-transition: 0.4s;
+	-moz-transition: 0.4s;
+	transition: 0.4s;
 }
 
 h1 {
@@ -109,14 +104,15 @@ h1 {
 	right: 0;
 	color: #fff;
 	font: bold 32px "McLaren","Sans Serif";
-	text-shadow: 0 1px 0 #CCC, 0 2px 0 #C9C9C9,0 3px 0 #BBB, 0 4px 0 #B9B9B9,0 5px 0 #AAA, 0 6px 1px rgba(0, 0, 0, 0.1),0 0 5px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3),0 3px 5px rgba(0, 0, 0, 0.2), 0 5px 10px rgba(0, 0, 0, 0.25),0 10px 10px rgba(0, 0, 0, 0.2), 0 20px 20px rgba(0, 0, 0, 0.15);
+	/*text-shadow: 0 1px 0 #CCC, 0 2px 0 #C9C9C9,0 3px 0 #BBB, 0 4px 0 #B9B9B9,0 5px 0 #AAA, 0 6px 1px rgba(0, 0, 0, 0.1),0 0 5px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3),0 3px 5px rgba(0, 0, 0, 0.2), 0 5px 10px rgba(0, 0, 0, 0.25),0 10px 10px rgba(0, 0, 0, 0.2), 0 20px 20px rgba(0, 0, 0, 0.15);*/
+	text-shadow: 1px 1px 1px #000;
 }
 
 content {
 	position: absolute;
 	left: 0;
 	right: 0;
-	top: 28px;
+	top: 34px;
 	bottom: 0;
 	background: #888;
 	overflow: auto;
