@@ -268,7 +268,7 @@
 								s=d.values.join(',');
 							} else if (typeof(d.values)=='object') {
 								l=[];
-								for(k in d.values) l.push(k+':'+d.values[k]);
+								for(var k in d.values) l.push(k+':'+d.values[k]);
 								s=l.join(',');
 							}
 							val('data'+n,s);
