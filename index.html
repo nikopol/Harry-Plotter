@@ -7,51 +7,13 @@
 	<link href='harry.css' rel='stylesheet' type='text/css'>
 	<script src="harry.min.js"></script>
 	<script src="miniko.min.js"></script>
+	<script src="minitools.min.js"></script>
 	<script>
-		"use strict;"
+		"use strict";
 		var
 		PRESETS,
 		MAXDATA=16,
 		TABS=['readme','generator','presets'],
-
-		//HASH
-
-		hash = (function(){
-			var h, p,
-				serialize = function(){
-					var a = [], k;
-					for (k in h) a.push(k+"="+h[k]);
-					p = a.join("|");
-					document.location.hash = "#"+p.replace(/ /g,'%20');
-					return true;
-				},
-				unserialize = function(){
-					h = {};
-					p = document.location.hash.substr(1).replace(/%20/g,' ');
-					if(p.length) {
-						var lst = p.split("|");
-						lst.forEach(function(l){
-							var kv = l.split('=');
-							if(kv.length > 1) h[kv.shift()] = kv.join('=');
-						});
-					}
-				};
-			unserialize();
-			return {
-				del: function(key){ return h[key] == undefined ? false : serialize(delete h[key]); },
-				set: function(key,val){ return serialize(typeof(key) == 'object' ? h = key : h[key] = val); },
-				get: function(key){ return key == undefined ? h : (h[key]||'').replace(/%20/g,' '); },
-				onchange: function(cb){
-					window.onhashchange=function(){
-						var q = document.location.hash.substr(1).replace(/%20/g,' ');
-						if(q!=p){
-							unserialize();
-							if(cb) cb();
-						}
-					}
-				}
-			}
-		})(),
 
 		//MARKDOWN
 
@@ -104,7 +66,7 @@
 
 		//JSON
 
-		json={
+		js={
 
 			encode: function(o,jsquote) { /*ignore functions*/
 				if(o==undefined) return 'null';
@@ -113,8 +75,8 @@
 				for(k in o) {
 					v=o[k];
 					if(typeof v=="object") {
-						if(isarray) lines.push(json.encode(v,jsquote));
-						else lines.push((jsquote?k:'"'+k+'"')+':'+json.encode(v,jsquote));
+						if(isarray) lines.push(js.encode(v,jsquote));
+						else lines.push((jsquote?k:'"'+k+'"')+':'+js.encode(v,jsquote));
 					} else if(typeof v!="function") {
 						s=(isarray)?"":(jsquote?k+':':'"'+k+'":');
 						if(typeof v=="number") s+=v.toString(10);
@@ -163,7 +125,7 @@
 			isEmpty=function(o){
 				for(var i in o) return false;
 				return true;
-			}
+			},
 			values=function(str){
 				var n,s=str.split(/\s*,\s*/),i,v,k;
 				if(/:/.test(str)){
@@ -281,26 +243,26 @@
 					o.legends=false;
 
 				//let's show
-				_('#jsout',"plotter("+json.tidy(json.encode(o,true))+")");
+				_('#jsout',"plotter("+js.tidy(js.encode(o,true))+")");
 				_('#plot','');
 				plotter(o);
 			},
-			load=function(js){
+			load=function(o){
 				_('#formgen').reset();
-				if(typeof(js)=="string") {
-					js=js
+				if(typeof(o)=="string") {
+					o=o
 						.replace(/[\n\r]+/g,'')
 						.replace(/(^\s+|\s+$)/g,'')
 						.replace(/^(plotter|harry)\s*\(/,'')
 						.replace(/\s*\)$/,'');
-					try{ js=JSON.parse(js) }
+					try{ o=JSON.parse(o) }
 					catch(e){ error((e.name||'')+' '+(e.message||'unknown error')) }
 				}
-				if(js!==undefined) {
+				if(o!==undefined) {
 					var v,n,d,s,l;
-					if(js.datas) {
-						for(n in js.datas) {
-							d=js.datas[n];
+					if(o.datas) {
+						for(n in o.datas) {
+							d=o.datas[n];
 							s='';
 							if(d.values instanceof Array){
 								s=d.values.join(',');
@@ -313,12 +275,12 @@
 							val('title'+n,d.title||'');
 							val('color'+n,d.color||'');
 						}
-						setlst('text font color x y z shadow','title',js.title);
-						setlst('x y color','grid',js.grid);
-						setlst('x y color font color marks shadow ypos','label',js.labels);
-						setlst('width height mode fill opacity margins background linewidth linejoin radiuspoint autoscale','',js);
-						setlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo',js.mouseover);
-						setlst('x y font background color border border2 shadow shadowbox','leg',js.legends);
+						setlst('text font color x y z shadow','title',o.title);
+						setlst('x y color','grid',o.grid);
+						setlst('x y color font color marks shadow ypos','label',o.labels);
+						setlst('width height mode fill opacity margins background linewidth linejoin radiuspoint autoscale','',o);
+						setlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo',o.mouseover);
+						setlst('x y font background color border border2 shadow shadowbox','leg',o.legends);
 					}
 				}
 				_('input.color').forEach(function(e){ setcolor(e.value,'#i'+e.id) });
@@ -337,7 +299,7 @@
 		})(),
 
 		settab=function(id,ps){
-			if(ps && ps in PRESETS) builder.load(PRESETS[n]);
+			if(ps && ps in PRESETS) builder.load(PRESETS[ps]);
 			id=id||TABS[0];
 			TABS.forEach(function(n){
 				_('#'+n).className=id==n?'on':'';
@@ -389,7 +351,7 @@
 							'<div id="box'+n+'" class="plotbox"></div>'+
 							'<hr/>'+
 							'<div class="src hide" id="src'+n+'">'+
-								'<pre>plotter('+json.tidy(json.encode(j,true))+');</pre>'+
+								'<pre>plotter('+js.tidy(js.encode(j,true))+');</pre>'+
 								'<hr/>'+
 							'</div>'+
 							'<div class="footer">'+
@@ -458,6 +420,11 @@
 			});
 			builder.bgswitch('plot');
 			builder.save();
+
+			hotkeys
+				.add("alt+r",function(){ settab("readme") }, true)
+				.add("alt+g",function(){ settab("generator") }, true)
+				.add("alt+p",function(){ settab("presets") }, true);
 		});
 	</script>
 </head>
