@@ -52,14 +52,16 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		//rendering
 
 		background: "rgba(0,0,0,0.5)" //background color, default=transparent
-		mode: "curve:river",          //draw mode, can be:
+			mode: "curve:river",      //draw mode, can be:
 		                              //  pie          cheesecake
 		                              //  chart        histogram, side by side
 		                              //  chart:stack  stacked histograms
+		                              //  chart:vertical vert. histograms
+		                              //  chart:stack:vertical vert. stacked histograms
 		                              //  line         lines (default)
-		                              //  line:river   stacked lines
+		                              //  line:stack   stacked lines
 		                              //  curve        curved lines
-		                              //  curve:river  stacked curved lines
+		                              //  curve:stack  stacked curved lines
 		linewidth: int,               //line width, default=1
 		linejoin: "round",            //line join, can be round|bevel|miter default=miter
 		fill: "vertical",             //fill style (only first letter matter), can be:

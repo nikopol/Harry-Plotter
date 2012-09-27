@@ -36,14 +36,16 @@ var h=harry({
 	//rendering
 
 	background: "rgba(0,0,0,0.5)" //background color, default=transparent
-	mode: "curve:river",          //draw mode, can be:
+	mode: "curve:stack",          //draw mode, can be:
 	                              //  pie          cheesecake
 	                              //  chart        histogram, side by side
 	                              //  chart:stack  stacked histograms
+	                              //  chart:vertical  vert. histograms
+	                              //  chart:stack:vertical  vert. stacked histograms
 	                              //  line         lines (default)
-	                              //  line:river   stacked lines
+	                              //  line:stack   stacked lines
 	                              //  curve        curved lines
-	                              //  curve:river  stacked curved lines
+	                              //  curve:stack  stacked curved lines
 	linewidth: int,               //line width, default=1
 	linejoin: "round",            //line join, can be round|bevel|miter default=miter
 	fill: "vertical",             //fill style (only first letter matter), can be:
@@ -127,7 +129,7 @@ h.clear()             //delete all dataset
  .load(data)          //add a dataset, see contructor
  .draw();             //draw all dataset
 h.canvas.onclick=function(){
-	 h.draw('river'); //redraw
+	 h.draw('chart'); //redraw
 };
 
 */
@@ -172,23 +174,6 @@ harry=(function(o){
 		return 10;
 	},
 
-	calcMargins=function(mode,l,mo){
-		var m=fontPixSize(l.font);
-		if(/pie/.test(mode)) {
-			m=l.x ? m*2 : (mo===false ? 0 : 15);
-			return [m,m,m,m];
-		}
-		var
-		f=Math.floor(m/2),
-		k=labels.marks;
-		return [
-		/*top*/    l.y ? f : 0,
-		/*right*/  l.y && /r/i.test(l.ypos) ? m*4 : (l.x?m:1),
-		/*bottom*/ l.x ? 3+m+k : (l.y?m:1),
-		/*left*/   l.y && /l/i.test(l.ypos) ? m*4 : (l.x?f:0)
-		];
-	},
-
 	scaleUp=function(n){
 		var s=Math.floor(n).toString(),
 		    d=parseInt(s.substr(0,1),10),
@@ -225,6 +210,38 @@ harry=(function(o){
 		return c;
 	},
 
+	calcMargins=function(flag,l,mo){
+		var m=fontPixSize(l.font);
+		if(flag.pie) {
+			m=l.x ? m*2 : (mo===false ? 0 : 15);
+			return [m,m,m,m];
+		}
+		var
+		f=Math.floor(m/2),
+		k=labels.marks;
+		return flag.vertical ? [
+		/*top*/    l.y && /l/i.test(l.ypos) ? m+4 : (l.x?m:0),
+		/*right*/  l.y ? m : 0,
+		/*bottom*/ l.y && /r/i.test(l.ypos) ? m+4 : (l.x?m:1),
+		/*left*/   l.x ? 60 : (l.y?m:1)
+		] : [
+		/*top*/    l.y ? f : 0,
+		/*right*/  l.y && /r/i.test(l.ypos) ? m*4 : (l.x?m:1),
+		/*bottom*/ l.x ? 3+m+k : (l.y?m:1),
+		/*left*/   l.y && /l/i.test(l.ypos) ? m*4 : (l.x?f:0)
+		];
+	},
+
+	getMode=function(m){
+		return (m||'line').split(':')[0];
+	},
+
+	getFlag=function(m){
+		var o={},l=(m||'line').split(':');
+		while(l.length) o[l.pop()]=true;
+		return o;
+	},
+
 //PRIVATE VARS ================================================================
 
 	canvas=o.canvas
@@ -235,7 +252,8 @@ harry=(function(o){
 	gc=canvas.getContext("2d"),
 	imgdata,
 	bg=o.background,
-	mode=o.mode||'line',
+	flag=getFlag(o.mode),
+	mode=getMode(o.mode),
 	fill=(o.fill||"a")[0].toLowerCase().replace(/[^nasvhrdl]+/g,"a"),
 	opacity=parseFloat(o.opacity)||1,
 	linewidth=parseInt(o.linewidth,10)||1,
@@ -265,7 +283,7 @@ harry=(function(o){
 	overpoints=[],
 	overpie={n:false},
 	automargins=o.margins ? false : true,
-	margins=automargins ? calcMargins(mode,labels,mouseover) : o.margins,
+	margins=automargins ? calcMargins(flag,labels,mouseover) : o.margins,
 	grid=merge({
 		color: "#a0a0a0",
 		x: [0,100],
@@ -274,7 +292,7 @@ harry=(function(o){
 	title=o.title
 		? merge({
 			font: 'bold 12px "Sans Serif"',
-			color: 'rgba(4,4,4,0.3)',
+			color: 'rgba(4,4,4,0.5)',
 			x: margins[3]+2,
 			y: margins[0]+2,
 			z: 'top'
@@ -288,7 +306,6 @@ harry=(function(o){
 			color: "#666",
 			font: '10px "Sans Serif"'
 		},o.legends),
-	river,
 	data=[], dmin, dmax, dlen=0, dsum, drng, dinc,
 	rx, ry, rw, rh, rx2, ry2,
 
@@ -301,7 +318,6 @@ harry=(function(o){
 		var i,j,l,d,s;
 		//datasets vars
 		dlen=data.length;
-		river=/\:[rs]/.test(mode),
 		dmin=dmax=false;
 		drng=dsum=dinc=0;
 		if(dlen) {
@@ -311,7 +327,7 @@ harry=(function(o){
 				dmax=dmax===false?d.max:Math.max(d.max,dmax);
 			}
 			if(scaletop) dmax=scaleUp(dmax);
-			if(river) {
+			if(flag.stack) {
 				for(i=0,l=data[0].len;i<l;++i){
 					s=0;
 					for(j=0;j<dlen;++j) s+=(data[j].val[i]||0);
@@ -329,6 +345,7 @@ harry=(function(o){
 		if(/none|false/.test(grid.x)) grid.x=[];
 		if(/none|false/.test(grid.y)) grid.y=[];
 		//plot zone
+		if(automargins) margins=calcMargins(flag,labels,mouseover);
 		rx=margins[3];
 		ry=margins[0];
 		rw=Math.max(w-margins[1]-margins[3],0);
@@ -372,43 +389,43 @@ harry=(function(o){
 	getFillMode=function() {
 		if(fill=="a") {
 			opacity=1;
-			if(/\:river/.test(mode))  return "v";
-			if(/line/.test(mode))     return dlen>1?"n":"v";
-			if(/curve/.test(mode))    return dlen>1?"n":"v";
-			if(/chart/.test(mode))    return dlen>1?"s":"v";
-			if(/pie/.test(mode.test)) return "r";
+			if(flag.stack) return "v";
+			if(flag.line)  return dlen>1?"n":"v";
+			if(flag.curve) return dlen>1?"n":"v";
+			if(flag.chart) return dlen>1?"s":flag.vertical?"h":"v";
+			if(flag.pie)   return "r";
 			return "s";
 		}
 		return fill;
 	},
 	
 	//set and return a fillstyle
-	setGradient=function(color){
+	setGradient=function(c){
 		var g;
 		switch(getFillMode()) {
 		case "s": //solid
-			g=calcColor(color,0,opacity);
+			g=calcColor(c,0,opacity);
 			break;
 		case "l": //light
-			g=calcColor(color,0x15,opacity);
+			g=calcColor(c,0x15,opacity);
 			break;
 		case "d": //dark
-			g=calcColor(color,-0x15,opacity);
+			g=calcColor(c,-0x15,opacity);
 			break;
 		case "v": //vertical
 			g=gc.createLinearGradient(0,ry2,0,ry);
-			g.addColorStop(0,calcColor(color,-0x30,opacity));
-			g.addColorStop(1,calcColor(color,0x30,opacity));
+			g.addColorStop(0,calcColor(c,-0x30,opacity));
+			g.addColorStop(1,calcColor(c,0x30,opacity));
 			break;
 		case "h": //horizontal
 			g=gc.createLinearGradient(rx,0,rx2,0);
-			g.addColorStop(0,calcColor(color,-0x30,opacity));
-			g.addColorStop(1,calcColor(color,0x30,opacity));
+			g.addColorStop(0,calcColor(c,-0x30,opacity));
+			g.addColorStop(1,calcColor(c,0x30,opacity));
 			break;
 		case "r": //radial
 			g=gc.createRadialGradient(rx2,ry2,0,rx,ry2,1);
-			g.addColorStop(1,calcColor(color,-0x30,opacity));
-			g.addColorStop(0,calcColor(color,0x30,opacity));
+			g.addColorStop(1,calcColor(c,-0x30,opacity));
+			g.addColorStop(0,calcColor(c,0x30,opacity));
 			break;
 		}
 		return g ? gc.fillStyle=g : false;
@@ -457,55 +474,88 @@ harry=(function(o){
 	},
 	
 	//draw the background grid
-	drawGrid=function() {
-		if(/chart|line|curve/.test(mode)) {
+	drawGrid=function(o) {
+		if(!flag.pie) {
 			var i,l,x,y;
 			gc.lineWidth=grid.linewidth || 1;
 			gc.strokeStyle=grid.color;
 			//console.log("[harry] grid x("+grid.x.join(",")+") y("+grid.y.join(",")+")"); 
 			if(grid.x)
 				for(i=0,l=grid.x.length;i<l;++i) {
-					x=rx+Math.round(rw*grid.x[i]/100);
 					gc.beginPath();
-					gc.moveTo(x,ry);
-					gc.lineTo(x,ry2);
+					if(flag.vertical) {
+						y=ry+Math.round(rh*grid.x[i]/100);
+						gc.moveTo(rx,y);
+						gc.lineTo(rx2,y);
+					} else {
+						x=rx+Math.round(rw*grid.x[i]/100);
+						gc.moveTo(x,ry);
+						gc.lineTo(x,ry2);
+					}
 					gc.stroke();
 				}
 			if(grid.y)
 				for(i=0,l=grid.y.length;i<l;++i) {
-					y=ry2-Math.round(rh*grid.y[i]/100);
 					gc.beginPath();
-					gc.moveTo(rx,y);
-					gc.lineTo(rx2,y);
+					if(flag.vertical) {
+						x=rx+Math.round(rw*grid.y[i]/100);
+						gc.moveTo(x,ry);
+						gc.lineTo(x,ry2);
+					} else {
+						y=ry2-Math.round(rh*grid.y[i]/100);
+						gc.moveTo(rx,y);
+						gc.lineTo(rx2,y);
+					}
 					gc.stroke();
 				}
 		}
 	},
 
 	//draw labels on Y axis
-	drawYLabels=function() {
+	drawYLabels=function(o) {
 		if(dlen && labels.y) {
 			//console.log("[harry] labels y("+labels.y.join(",")+") "+labels.font);
-			if(/chart|line|curve/.test(mode)) {
+			if(!flag.pie) {
 				var
 				i,l,x,y,w,v,dec=drng<10?100:(drng<100?10:1);
 				setShadow(labels.shadow);
 				gc.font=labels.font;
 				gc.fillStyle=labels.color;
-				gc.textBaseline='middle';				
-				for(i=0,l=labels.y.length;i<l;++i) {
-					y=ry2-Math.round(rh*labels.y[i]/100);
-					v=dinc+drng*labels.y[i]/100;
-					v=Math.round(dec*v)/dec;
-					if(/r/i.test(labels.ypos)){
-						x=rx2+1;
-						gc.textAlign='left';
-						gc.fillText(v,x,y);
+				if(flag.vertical) {
+					gc.textAlign='center';
+					for(i=0,l=labels.y.length;i<l;++i) {
+						x=rx+Math.round(rw*labels.y[i]/100);
+						v=dinc+drng*labels.y[i]/100;
+						v=Math.round(dec*v)/dec;
+						if(/r/i.test(labels.ypos)){
+							y=ry2+1;
+							gc.textBaseline='top';
+							gc.fillText(v,x,y);
+						}
+						if(/l/i.test(labels.ypos)){
+							y=ry-2;
+							gc.textBaseline='bottom';
+							gc.fillText(v,x,y);
+						}
 					}
-					if(/l/i.test(labels.ypos)){
-						x=rx-2;
-						gc.textAlign='right';
-						gc.fillText(v,x,y);
+
+
+				} else {
+					gc.textBaseline='middle';
+					for(i=0,l=labels.y.length;i<l;++i) {
+						y=ry2-Math.round(rh*labels.y[i]/100);
+						v=dinc+drng*labels.y[i]/100;
+						v=Math.round(dec*v)/dec;
+						if(/r/i.test(labels.ypos)){
+							x=rx2+1;
+							gc.textAlign='left';
+							gc.fillText(v,x,y);
+						}
+						if(/l/i.test(labels.ypos)){
+							x=rx-2;
+							gc.textAlign='right';
+							gc.fillText(v,x,y);
+						}
 					}
 				}
 				unsetShadow();
@@ -537,7 +587,7 @@ harry=(function(o){
 		gc.restore();
 	},
 
-	drawLegends=function() {
+	drawLegends=function(o) {
 		if(legends!==false && dlen>1) {
 			gc.save();
 			gc.font=legends.font;
@@ -691,14 +741,14 @@ harry=(function(o){
 
 	plot={
 
-		line: function(river,curve) {
-			var nds=dlen,cy=drng?rh/drng:0,d,g,i,j,v,l,
+		line: function() {
+			var nds=dlen,cy=drng?rh/drng:0,d,g,i,j,v,l,cu=mode=="curve",
 			drawPath=function(gc,x,y,v,n1,n2) {
 				var n=n1,nx,ny,mx,my,px,py;
 				while(n<=n2) {
 					if(v[n]===null)
 						n++;
-					else if(curve) {
+					else if(cu) {
 						nx=x[n];
 						ny=y[n];
 						n++;
@@ -724,15 +774,13 @@ harry=(function(o){
 			gc.lineWidth=linewidth;
 			gc.lineJoin=linejoin;
 			overpoints=[];
-
 			while(d=data[--nds])
 				if((l=d.len)>1) {
-					//console.log("[harry] curve("+d.tit+")"+(river?" river":""));
 					//calc
 					var x=[],y=[],n1,n2;
 					for(i=0;i<l;++i) {
 						v=0;
-						if(river) for(j=0;j<=nds;j++) v+=data[j].val[i]-dinc;
+						if(flag.stack) for(j=0;j<=nds;j++) v+=data[j].val[i]-dinc;
 						else v=d.val[i]-dinc;
 						x.push(rx+Math.round(i*(rw/(l-1))));
 						y.push(ry2-Math.round(cy*v));
@@ -780,48 +828,76 @@ harry=(function(o){
 				}
 		},
 
-		curve: function(river) { 
-			plot.line(river,true);
-		},
+		curve: function(){ plot.line() },
 
-		chart: function(stack) {
+		chart: function() {
 			//console.log("[harry] chart ("+dlen+" dataset)");
 			overpoints = [];
 			if(dlen){
-				var nd,nds,nbd=data[0].len,m=dlen>1?4:0,nbdsv=stack?1:dlen,
-				    bw=(nbd && dlen)?(((rw-(m*(nbd-1)))/nbd)/nbdsv)-1:0,d,g,y,y0,
-				    x=rx,x1,x2,cy=stack?(dsum?rh/dsum:0):(dmax?rh/dmax:0);
+				var nd,nds,nbd=data[0].len,m=dlen>1?4:0,nbdsv=flag.stack?1:dlen,
+				    tbw=flag.vertical?rh:rw,bw=(nbd && dlen)?(((tbw-(m*(nbd-1)))/nbd)/nbdsv)-1:0,
+				    d,g,y=ry,y1,y2,x=rx,x1,x2,tcf=flag.vertical?rw:rh,
+				    cf=flag.stack?(dsum?tcf/dsum:0):(dmax?tcf/dmax:0);
 				if(bw<0) bw=0;
 				gc.lineWidth=linewidth;
 				gc.lineJoin="miter";
 				for(nds=0;nds<dlen;nds++) overpoints.push({x:[],y:[],v:[],nds:nds});
-				for(nd=0;nd<nbd;nd++) {
-					drawXLabel(nd,x+(((bw+1)*nbdsv)/2),h-3);
-					y=ry2;
-					for(nds=0;nds<dlen;nds++) {
-						d=data[nds];
-						y0=stack?y:ry2;
-						y=y0-Math.round(cy*d.val[nd]);
-						x1=Math.round(x);
-						x2=Math.round(x+bw);
-						if(d.val[nd]!==null) {
-							gc.beginPath();
-							gc.moveTo(x1,y0);
-							gc.lineTo(x1,y);
-							gc.lineTo(x2,y);
-							gc.lineTo(x2,y0);
-							gc.closePath();
-							if(setGradient(d.col)) gc.fill();
-							gc.strokeStyle=d.col;
-							gc.stroke();
+				if(flag.vertical)
+					for(nd=0;nd<nbd;nd++) {
+						drawXLabel(nd,rx-labels.marks-2,y+(bw/2),'right','top');
+						x=rx;
+						for(nds=0;nds<dlen;nds++) {
+							d=data[nds];
+							x1=flag.stack?x:rx;
+							x=x1+Math.round(cf*d.val[nd]);
+							y1=Math.round(y);
+							y2=Math.round(y+bw);
+							if(d.val[nd]!==null) {
+								gc.beginPath();
+								gc.moveTo(x1,y1);
+								gc.lineTo(x1,y2);
+								gc.lineTo(x,y2);
+								gc.lineTo(x,y1);
+								gc.closePath();
+								if(setGradient(d.col)) gc.fill();
+								gc.strokeStyle=d.col;
+								gc.stroke();
+							}
+							overpoints[nds].x.push(x);
+							overpoints[nds].y.push(Math.floor(y+bw/2));
+							overpoints[nds].v.push(d.val[nd]);
+							if(!flag.stack) y+=bw+1;
 						}
-						overpoints[nds].x.push(Math.floor(x+bw/2));
-						overpoints[nds].y.push(y);
-						overpoints[nds].v.push(d.val[nd]);
-						if(!stack) x+=bw+1;
+						y+=flag.stack?bw+1+m:m;
 					}
-					x+=stack?bw+1+m:m;
-				}
+				else
+					for(nd=0;nd<nbd;nd++) {
+						drawXLabel(nd,x+(((bw+1)*nbdsv)/2),h-3);
+						y=ry2;
+						for(nds=0;nds<dlen;nds++) {
+							d=data[nds];
+							y1=flag.stack?y:ry2;
+							y=y1-Math.round(cf*d.val[nd]);
+							x1=Math.round(x);
+							x2=Math.round(x+bw);
+							if(d.val[nd]!==null) {
+								gc.beginPath();
+								gc.moveTo(x1,y1);
+								gc.lineTo(x1,y);
+								gc.lineTo(x2,y);
+								gc.lineTo(x2,y1);
+								gc.closePath();
+								if(setGradient(d.col)) gc.fill();
+								gc.strokeStyle=d.col;
+								gc.stroke();
+							}
+							overpoints[nds].x.push(Math.floor(x+bw/2));
+							overpoints[nds].y.push(y);
+							overpoints[nds].v.push(d.val[nd]);
+							if(!flag.stack) x+=bw+1;
+						}
+						x+=flag.stack?bw+1+m:m;
+					}					
 			}
 		},
 
@@ -899,23 +975,26 @@ harry=(function(o){
 
 	over={
 
-		line: function(x,y,river,curve) {
-			var i,n=false,o,xmin,lw=mouseover.linewidth||1,bs=[];
+		line: function(x,y) {
+			var i,n=false,p,m,c,lw=mouseover.linewidth||1,bs=[];
 			if(overpoints.length) {
-				o=overpoints[0];
-				for(i=0;i<o.x.length;++i)
-					if(o.v[i]!=undefined && (Math.abs(x-o.x[i])<xmin || n===false)) {
-						xmin=Math.abs(x-o.x[i]);
-						n=i;
+				p=overpoints[0];
+				for(i=0;i<p.x.length;++i)
+					if(p.v[i]!=undefined) {
+						c=flag.vertical ? Math.abs(y-p.y[i]) : Math.abs(x-p.x[i]);
+						if(n===false || c<m) {
+							m=c;
+							n=i;
+						}
 					}
 				if(n!==false) {
 					for(i=0;i<overpoints.length;++i) {
-						o=overpoints[i];
-						if(o.v[n]!=undefined) {
+						p=overpoints[i];
+						if(p.v[n]!=undefined) {
 							if(mouseover.border2) {
 								gc.beginPath();
 								gc.lineWidth=lw+2;
-								gc.arc(o.x[n],o.y[n],mouseover.radius,0,2*Math.PI);
+								gc.arc(p.x[n],p.y[n],mouseover.radius,0,2*Math.PI);
 								if(mouseover.linewidth==0) {
 									gc.fillStyle=mouseover.border2;
 									gc.fill();
@@ -926,7 +1005,7 @@ harry=(function(o){
 							}
 							gc.beginPath();
 							gc.lineWidth=lw;
-							gc.arc(o.x[n],o.y[n],mouseover.radius,0,2*Math.PI);
+							gc.arc(p.x[n],p.y[n],mouseover.radius,0,2*Math.PI);
 							if(mouseover.linewidth==0) {
 								gc.fillStyle=mouseover.circle;
 								gc.fill();
@@ -939,35 +1018,35 @@ harry=(function(o){
 								gc.lineWidth=1;
 								//draw axis
 								if(/x/i.test(mouseover.axis)){
-									z=o.y[n]+mouseover.radius;
+									z=p.y[n]+mouseover.radius;
 									while(z<ry2){
-										gc.moveTo(o.x[n],z);
+										gc.moveTo(p.x[n],z);
 										z+=s;
 										if(z>ry2) z=ry2;
-										gc.lineTo(o.x[n],z);
+										gc.lineTo(p.x[n],z);
 										z+=s;
 									}
 									gc.stroke();
 								}
 								if(/y/i.test(mouseover.axis)){
-									x=o.x[n]+mouseover.radius;
+									x=p.x[n]+mouseover.radius;
 									while(x<rx2){
-										gc.moveTo(x,o.y[n]);
+										gc.moveTo(x,p.y[n]);
 										x+=s;
 										if(x>rx2) x=rx2;
-										gc.lineTo(x,o.y[n]);
+										gc.lineTo(x,p.y[n]);
 										x+=s;
 									}
 									gc.stroke();
 								}
 							}
 							bs.push({
-								x: o.x[n],
-								y: o.y[n],
+								x: p.x[n],
+								y: p.y[n],
 								r: lw/2+1+mouseover.radius,
-								v: o.v[n],
+								v: p.v[n],
 								n: n,
-								nds: o.nds
+								nds: p.nds
 							})
 						}
 					}
@@ -976,14 +1055,8 @@ harry=(function(o){
 			}
 		},
 
-		chart: function(x,y,stack) {
-			over.line(x,y);
-		},
-		
-
-		curve: function(x,y,river) {
-			over.line(x,y,river,true);
-		},
+		chart: function(x,y){ over.line(x,y) },
+		curve: function(x,y){ over.line(x,y) },
 
 		pie: function(x,y) {
 			var d=Math.sqrt(Math.pow(x-overpie.x,2)+Math.pow(y-overpie.y,2)),a,n,i=0;
@@ -1009,20 +1082,16 @@ harry=(function(o){
 	};
 
 	draw=function(nover) {
-		//console.log("[harry] draw("+mode+")");
-		var
-		args=mode.split(/:/),
-		m=args[0],
-		o=args[1]||false;
+		//console.log("[harry] draw "+mode+" "+keys(flag).join(" "));
 		cls();
 		drawGrid();
 		drawYLabels();
 		if(title && title.z=='top') {
-			plot[m](o);
+			plot[mode]();
 			drawTitle();
 		} else {
 			drawTitle();
-			plot[m](o);
+			plot[mode]();
 		}
 		drawLegends();
 		if(!nover) {
@@ -1031,26 +1100,22 @@ harry=(function(o){
 			canvas.onmouseout=undefined;
 			overpie.n=false;
 			if(mouseover) {
-
 				imgdata = gc.getImageData(0,0,w,h);
-				if(mousepos) over[m](mousepos.x,mousepos.y,o);
-
+				if(mousepos) over[mode](mousepos.x,mousepos.y);
 				canvas.onmouseover=function(e){
 					mousepos=mouseXY(e);
-
 				};
 				canvas.onmousemove=function(e){
 					if(mousepos) {
-						if(m!="pie") gc.putImageData(imgdata,0,0);
+						if(!flag.pie) gc.putImageData(imgdata,0,0);
 						mousepos=mouseXY(e);
-						over[m](mousepos.x,mousepos.y,o);
+						over[mode](mousepos.x,mousepos.y);
 					};
 				};
 				canvas.onmouseout=function(){
 					mousepos=undefined;
 					gc.putImageData(imgdata,0,0);
 				};
-
 			} else
 				mousepos=undefined;
 		}
@@ -1083,7 +1148,8 @@ harry=(function(o){
 		},
 		draw: function(m) {
 			if(m) {
-				mode=m.toLowerCase();
+				mode=getMode(m);
+				flag=getFlag(m);
 				setup();
 			}
 			draw();
