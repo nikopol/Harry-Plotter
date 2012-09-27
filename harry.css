@@ -77,7 +77,6 @@ menu button {
 	padding: 0 10px;
 	font: bold 16px "Ubuntu","Sans Serif";
 	line-height: 24px;
-	text-shadow: 1px 1px 0 #000;
 	border: none;
 	background: #6d6f65;
 	color: #eee;
@@ -119,17 +118,17 @@ content {
 	padding: 10px;
 	z-index: 0;
 	opacity: 0;
-	-webkit-transition: all 0.4s linear;
-	-moz-transition: all 0.4s linear;
-	transition: all 0.4s linear;
+	-webkit-transition: 0.4s;
+	-moz-transition: 0.4s;
+	transition: 0.4s;
 }
 
 content.on {
 	opacity: 1;
 	z-index: 1;
-	-webkit-transition: all 0.4s linear;
-	-moz-transition: all 0.4s linear;
-	transition: all 0.4s linear;
+	-webkit-transition: 0.4s;
+	-moz-transition: 0.4s;
+	transition: 0.4s;
 }
 
 form {

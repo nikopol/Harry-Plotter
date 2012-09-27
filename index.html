@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 	<meta charset="UTF-8">
@@ -68,17 +69,17 @@
 
 		js={
 
-			encode: function(o,jsquote) { /*ignore functions*/
+			encode: function(o,quote) { /*ignore functions*/
 				if(o==undefined) return 'null';
-				jsquote=jsquote||false;
-				var lines=[], isarray=(o.constructor==Array),k,v,s;
+				var lines=[], isarray=(o.constructor==Array),k,v,s,qk;
 				for(k in o) {
 					v=o[k];
+					qk=quote||/[\: ]/.test(k)?'"'+k+'"':k;
 					if(typeof v=="object") {
-						if(isarray) lines.push(js.encode(v,jsquote));
-						else lines.push((jsquote?k:'"'+k+'"')+':'+js.encode(v,jsquote));
+						if(isarray) lines.push(js.encode(v,quote));
+						else lines.push(qk+':'+js.encode(v,quote));
 					} else if(typeof v!="function") {
-						s=(isarray)?"":(jsquote?k+':':'"'+k+'":');
+						s=isarray?"":qk+':';
 						if(typeof v=="number") s+=v.toString(10);
 						else if(v===false) s+='false';
 						else if(v===true) s+='true';
@@ -243,7 +244,7 @@
 					o.legends=false;
 
 				//let's show
-				_('#jsout',"plotter("+js.tidy(js.encode(o,true))+")");
+				_('#jsout',"plotter("+js.tidy(js.encode(o))+")");
 				_('#plot','');
 				plotter(o);
 			},
@@ -351,7 +352,7 @@
 							'<div id="box'+n+'" class="plotbox"></div>'+
 							'<hr/>'+
 							'<div class="src hide" id="src'+n+'">'+
-								'<pre>plotter('+js.tidy(js.encode(j,true))+');</pre>'+
+								'<pre>plotter('+js.tidy(js.encode(j))+');</pre>'+
 								'<hr/>'+
 							'</div>'+
 							'<div class="footer">'+
@@ -360,7 +361,7 @@
 							'</div>'+
 						'</div>';
 						append(p,h);
-						builder.bgswitch('box'+n,j.bg);
+						if(!j.background) builder.bgswitch('box'+n,j.bg);
 						delete j.bg;
 						PRESETS[t]=j;
 						PRESETS[t].container="box"+n;
@@ -500,12 +501,14 @@
 				<select id="mode">
 					<option></option>
 					<option>line</option>
-					<option>line:river</option>
+					<option>line:stack</option>
 					<option>pie</option>
 					<option>chart</option>
 					<option>chart:stack</option>
+					<option>chart:vertical</option>
+					<option>chart:vertical:stack</option>
 					<option selected="selected">curve</option>
-					<option>curve:river</option>
+					<option>curve:stack</option>
 				</select><br/>
 				<label for="width">width</label>
 				<input type="text" id="width" class="int" value="" placeholder="300"/>px<br/>
