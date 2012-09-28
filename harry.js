@@ -145,7 +145,7 @@ harry=(function(o){
 
 //TOOLS LIB ===================================================================
 
-	getRGB=function(color){
+	getRGB=function(color) {
 		var result;
 		if(color && color.constructor==Array && color.length==3) return color;
 		if(result=/rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\)/.exec(color)) return [parseInt(result[1],10), parseInt(result[2],10), parseInt(result[3],10)];
@@ -155,7 +155,7 @@ harry=(function(o){
 		return [0,0,0];
 	},
 
-	calcColor=function(color,delta,alpha){
+	calcColor=function(color,delta,alpha) {
 		var rgb=getRGB(color);
 		if(typeof delta!="array") delta=[delta,delta,delta];
 		for(var i=0;i<3;++i) rgb[i]=Math.max(Math.min(rgb[i]+delta[i],255),0);
@@ -164,7 +164,7 @@ harry=(function(o){
 			"rgb("+rgb.join(',')+")";
 	},
 
-	fontPixSize=function(f){
+	fontPixSize=function(f) {
 		var p=f.match(/\d+px/i);
 		if(p) return parseInt(p,10);
 		p=f.match(/[0-9\.]+em/i);
@@ -174,21 +174,21 @@ harry=(function(o){
 		return 10;
 	},
 
-	scaleUp=function(n){
+	scaleUp=function(n) {
 		var s=Math.floor(n).toString(),
 		    d=parseInt(s.substr(0,1),10),
 		    m=d*parseFloat("1E"+(s.length-1));
 		return m==n ? n : (d+1)*parseFloat("1E"+(s.length-1));
 	},
 
-	merge=function(a,b){
+	merge=function(a,b) {
 		if(typeof(b)=='object')
 			for(var k in b)
 				a[k]=b[k];
 		return a;
 	},
 
-	mouseXY=function(e){
+	mouseXY=function(e) {
 		e=e||window.event;
 		if('offsetX' in e) return {x:e.offsetX,y:e.offsetY};
 		var o=e.target,p={x:e.pageX,y:e.pageY};
@@ -200,7 +200,7 @@ harry=(function(o){
 		return p;
 	},
 
-	buildCanvas=function(o,w,h){
+	buildCanvas=function(o,w,h) {
 		var c=document.createElement('canvas'),p;
 		c.setAttribute('width',w+'px');
 		c.setAttribute('height',h+'px');
@@ -210,7 +210,7 @@ harry=(function(o){
 		return c;
 	},
 
-	calcMargins=function(flag,l,mo){
+	calcMargins=function(flag,l,mo) {
 		var m=fontPixSize(l.font);
 		if(flag.pie) {
 			m=l.x ? m*2 : (mo===false ? 0 : 15);
@@ -232,11 +232,11 @@ harry=(function(o){
 		];
 	},
 
-	getMode=function(m){
+	getMode=function(m) {
 		return (m||'line').split(':')[0];
 	},
 
-	getFlag=function(m){
+	getFlag=function(m) {
 		var o={},l=(m||'line').split(':');
 		while(l.length) o[l.pop()]=true;
 		return o;
@@ -314,7 +314,7 @@ harry=(function(o){
 	draw,
 
 	//setup precalc vars
-	setup=function(){
+	setup=function() {
 		var i,j,l,d,s;
 		//datasets vars
 		dlen=data.length;
@@ -328,7 +328,7 @@ harry=(function(o){
 			}
 			if(scaletop) dmax=scaleUp(dmax);
 			if(flag.stack) {
-				for(i=0,l=data[0].len;i<l;++i){
+				for(i=0,l=data[0].len;i<l;++i) {
 					s=0;
 					for(j=0;j<dlen;++j) s+=(data[j].val[i]||0);
 					if(s>dsum) dsum=scaletop ? scaleUp(s) : s;
@@ -400,7 +400,7 @@ harry=(function(o){
 	},
 	
 	//set and return a fillstyle
-	setGradient=function(c){
+	setGradient=function(c) {
 		var g;
 		switch(getFillMode()) {
 		case "s": //solid
@@ -423,16 +423,17 @@ harry=(function(o){
 			g.addColorStop(1,calcColor(c,0x30,opacity));
 			break;
 		case "r": //radial
-			g=gc.createRadialGradient(rx2,ry2,0,rx,ry2,1);
-			g.addColorStop(1,calcColor(c,-0x30,opacity));
-			g.addColorStop(0,calcColor(c,0x30,opacity));
+			var cx=rx+rw/2,cy=ry+rh/2;
+			g=gc.createRadialGradient(cx,cy,0,cx,cy,rh/2);
+			g.addColorStop(0,calcColor(c,-0x30,opacity));
+			g.addColorStop(1,calcColor(c,0x30,opacity));
 			break;
 		}
 		return g ? gc.fillStyle=g : false;
 	},
 
 	//set shadow
-	setShadow=function(s){
+	setShadow=function(s) {
 		if(s && gc.hasOwnProperty('shadowBlur')) {
 			var p=s.split(/[ ,;:-]/);
 			gc.shadowOffsetX = parseInt(p[0]||1,10);
@@ -443,7 +444,7 @@ harry=(function(o){
 	},
 
 	//unset shadow
-	unsetShadow=function(){
+	unsetShadow=function() {
 		if(gc.hasOwnProperty('clearShadow')) gc.clearShadow();
 		else if(gc.hasOwnProperty('shadowBlur')) {
 			gc.shadowOffsetX = 0;
