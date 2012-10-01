@@ -28,7 +28,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		//datas can be provided in these formats :
 		
 		datas: [v1,v2,v3,...],        //simple dataset values
-		datas: [v1,v2,v3,...],        //simple dataset values
+		datas: {l1:v1,l2:v2,l3:v3,..},//simple dataset labels/values
 		datas: [[v1,v2],[w1,w2],...], //multiple dataset values
 		datas: {                      //simple dataset with optionaly labels, color and title
 			values: [v1,v2,...],      //  excepting values, all keys are
@@ -47,19 +47,21 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		container: "str/elem",        //container where create canvas, default=body
 		canvas: "str/elem",           //canvas element, default=create it into container
 		width: int,                   //canvas's width, default=container.width or 300
-		height: int,                  //canvas's height, default=container.height or 80
+		height: int,                  //canvas's height, default=container.height or 150
 		
 		//rendering
 
 		background: "rgba(0,0,0,0.5)" //background color, default=transparent
-		mode: "curve:river",          //draw mode, can be:
+			mode: "curve:river",      //draw mode, can be:
 		                              //  pie          cheesecake
 		                              //  chart        histogram, side by side
 		                              //  chart:stack  stacked histograms
+		                              //  chart:vertical vert. histograms
+		                              //  chart:stack:vertical vert. stacked histograms
 		                              //  line         lines (default)
-		                              //  line:river   stacked lines
+		                              //  line:stack   stacked lines
 		                              //  curve        curved lines
-		                              //  curve:river  stacked curved lines
+		                              //  curve:stack  stacked curved lines
 		linewidth: int,               //line width, default=1
 		linejoin: "round",            //line join, can be round|bevel|miter default=miter
 		fill: "vertical",             //fill style (only first letter matter), can be:

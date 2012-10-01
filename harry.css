@@ -28,8 +28,8 @@ button::-moz-focus-inner { border: 0; }
 
 ::-webkit-scrollbar {
 	background-color: transparent;
-	width: 8px;
-	height: 8px;
+	width: 10px;
+	height: 10px;
 	border: none;
 }
 
