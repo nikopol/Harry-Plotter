@@ -12,7 +12,7 @@ var h=harry({
 	//datas can be provided in these formats :
 	
 	datas: [v1,v2,v3,...],        //simple dataset values
-	datas: [v1,v2,v3,...],        //simple dataset values
+	datas: {l1:v1,l2:v2,l3:v3,..},//simple dataset labels/values
 	datas: [[v1,v2],[w1,w2],...], //multiple dataset values
 	datas: {                      //simple dataset with optionaly labels, color and title
 		values: [v1,v2,...],      //  excepting values, all keys are
@@ -31,7 +31,7 @@ var h=harry({
 	container: "str/elem",	      //container where create canvas, default=body
 	canvas: "str/elem",           //canvas element, default=create it into container
 	width: int,                   //canvas's width, default=container.width or 300
-	height: int,                  //canvas's height, default=container.height or 80
+	height: int,                  //canvas's height, default=container.height or 150
 	
 	//rendering
 
