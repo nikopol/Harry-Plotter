@@ -27,8 +27,8 @@
 			var
 			conv=function(s){
 				return s
-					.replace('<','&lt;')
-					.replace('>','&gt;')
+					.replace(/</g,'&lt;')
+					.replace(/>/g,'&gt;')
 					.replace(/\[([^\]]+)\]\((http[^\)]+)\)/,'<a href="$2">$1</a>')
 					.replace(/\s\s+$/,"<br/>")
 					.replace('\t','  ')
@@ -374,6 +374,7 @@
 						n++;
 					}
 				}
+				console.log(n+' presets generated');
 				if((t=hash.get('preset')) && t in PRESETS) builder.load(PRESETS[t]);
 			});
 						
@@ -512,7 +513,7 @@
 					<option>chart:stack</option>
 					<option>chart:vertical</option>
 					<option>chart:vertical:stack</option>
-					<option selected="selected">curve</option>
+					<option>curve</option>
 					<option>curve:stack</option>
 				</select><br/>
 				<label for="width">width</label>
