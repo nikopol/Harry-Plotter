@@ -2,7 +2,7 @@
 /*niko 2012*/
 
 @import url(http://fonts.googleapis.com/css?family=Ubuntu);
-@import url(http://fonts.googleapis.com/css?family=McLaren);
+@import url(http://fonts.googleapis.com/css?family=Righteous); //B angers
 
 * {
 	padding: 0;
@@ -34,17 +34,17 @@ button::-moz-focus-inner { border: 0; }
 }
 
 ::-webkit-scrollbar-thumb {
-	background: #666;
+	background: #999;
 	border: none;
 	border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb:vertical {
-	background: -webkit-linear-gradient(left,#999,#444);
+	background: -webkit-linear-gradient(left,#666,#222);
 }
 
 ::-webkit-scrollbar-thumb:horizontal {
-	background: -webkit-linear-gradient(top,#999,#444);
+	background: -webkit-linear-gradient(top,#666,#222);
 }
 
 ::-webkit-scrollbar-button {
@@ -75,8 +75,8 @@ menu button {
 	display: inline;
 	margin: 4px 4px 0 0;
 	padding: 0 10px;
-	font: bold 16px "Ubuntu","Sans Serif";
-	line-height: 24px;
+	font: bold 20px "Righteous","Sans Serif";
+	line-height: 25px;
 	border: none;
 	background: #6d6f65;
 	color: #eee;
@@ -97,12 +97,12 @@ h1 {
 	position: absolute;
 	z-index: 4;
 	left: 5px;
-	line-height: 32px !important;
+	/*line-height: 0px !important;*/
 	width: 320px;
-	top: 0;
+	top: -24px;
 	right: 0;
 	color: #fff;
-	font: bold 32px "McLaren","Sans Serif";
+	font: bold 32px "Righteous","Sans Serif";
 	/*text-shadow: 0 1px 0 #CCC, 0 2px 0 #C9C9C9,0 3px 0 #BBB, 0 4px 0 #B9B9B9,0 5px 0 #AAA, 0 6px 1px rgba(0, 0, 0, 0.1),0 0 5px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3),0 3px 5px rgba(0, 0, 0, 0.2), 0 5px 10px rgba(0, 0, 0, 0.25),0 10px 10px rgba(0, 0, 0, 0.2), 0 20px 20px rgba(0, 0, 0, 0.15);*/
 	text-shadow: 1px 1px 1px #000;
 }
@@ -415,7 +415,7 @@ span.comment { color: #999; }
 #presets header {
 	clear: both;
 	display: block;
-	font:bold 18pt "McLaren","Sans Serif";
+	font:bold 18pt "Righteous","Sans Serif";
 	color: #ddd;
 	padding: 15px 0 5px 0;
 
