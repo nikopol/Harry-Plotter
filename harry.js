@@ -27,7 +27,7 @@ var h=harry({
 
 	//context
 
-	id: "str",                    //canvas's id, by default harry$n
+	id: "str",                    //canvas's id, by default "harry"+count++
 	container: "str/elem",	      //container where create canvas, default=body
 	canvas: "str/elem",           //canvas element, default=create it into container
 	width: int,                   //canvas's width, default=container.width or 300
@@ -146,12 +146,12 @@ harry=(function(o){
 //TOOLS LIB ===================================================================
 
 	getRGB=function(color) {
-		var result;
+		var r;
 		if(color && color.constructor==Array && color.length==3) return color;
-		if(result=/rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\)/.exec(color)) return [parseInt(result[1],10), parseInt(result[2],10), parseInt(result[3],10)];
-		if(result=/rgb\(\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*\)/.exec(color)) return [parseFloat(result[1])*2.55, parseFloat(result[2])*2.55, parseFloat(result[3])*2.55];
-		if(result=/#([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})/.exec(color)) return [parseInt(result[1],16), parseInt(result[2],16), parseInt(result[3],16)];
-		if(result=/#([a-fA-F0-9])([a-fA-F0-9])([a-fA-F0-9])/.exec(color)) return [parseInt(result[1]+result[1],16), parseInt(result[2]+result[2],16), parseInt(result[3]+result[3],16)];
+		if(r=/rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\)/.exec(color)) return [parseInt(r[1],10), parseInt(r[2],10), parseInt(r[3],10)];
+		if(r=/rgb\(\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*\)/.exec(color)) return [parseFloat(r[1])*2.55, parseFloat(r[2])*2.55, parseFloat(r[3])*2.55];
+		if(r=/#([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})/.exec(color)) return [parseInt(r[1],16), parseInt(r[2],16), parseInt(r[3],16)];
+		if(r=/#([a-fA-F0-9])([a-fA-F0-9])([a-fA-F0-9])/.exec(color)) return [parseInt(r[1]+r[1],16), parseInt(r[2]+r[2],16), parseInt(r[3]+r[3],16)];
 		return [0,0,0];
 	},
 
@@ -204,8 +204,11 @@ harry=(function(o){
 		var c=document.createElement('canvas'),p;
 		c.setAttribute('width',w+'px');
 		c.setAttribute('height',h+'px');
-		if(o) p=typeof(o)=='string'?document.getElementById(o):o;
-		if(!p) p=document.body;
+		if(o) {
+			p=typeof(o)=='string'?document.getElementById(o):o;
+			if(!p) return;
+		} else
+			p=document.body;
 		p.appendChild(c);
 		return c;
 	},
