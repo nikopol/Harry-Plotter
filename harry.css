@@ -113,7 +113,7 @@ content {
 	right: 0;
 	top: 34px;
 	bottom: 0;
-	background: #888;
+	background: #666;
 	overflow: auto;
 	padding: 10px;
 	z-index: 0;
@@ -149,7 +149,7 @@ h2 {
 	margin: 0 10px 3px 0;
 	font:bold 12pt "Ubuntu","Sans Serif";
 	color: #b1d9e8;
-	text-shadow: 0 2px 0 #000;
+	text-shadow: 0 0 3px #000;
 }
 
 table {
