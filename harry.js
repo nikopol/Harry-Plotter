@@ -367,7 +367,8 @@ harry=(function(o){
 		};
 		for(k in vals) {
 			v=parseFloat(vals[k]);
-			ds.val.push(vals[k]==null?null:v);
+			if(isNaN(v)) v=null;
+			ds.val.push(v);
 			ds.lab.push(labs[k]||k);
 			ds.sum+=v;
 			if(v>ds.max) ds.max=v;
