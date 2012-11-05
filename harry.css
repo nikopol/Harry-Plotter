@@ -87,7 +87,7 @@ menu button {
 }
 
 menu button.on {
-	text-shadow: 0 0 13px #B1D9E8;
+	text-shadow: 0 0 5px #B1D9E8;
 	-webkit-transition: 0.4s;
 	-moz-transition: 0.4s;
 	transition: 0.4s;
