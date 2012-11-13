@@ -46,6 +46,7 @@ var h=harry({
 	                              //  line:stack   stacked lines
 	                              //  curve        curved lines
 	                              //  curve:stack  stacked curved lines
+	barspace: int,                //space between bars for mode chart only, default=auto
 	linewidth: int,               //line width, default=1
 	linejoin: "round",            //line join, can be round|bevel|miter default=miter
 	fill: "vertical",             //fill style (only first letter matter), can be:
@@ -93,6 +94,7 @@ var h=harry({
 		color: "#000",            //  text color, default, #666
 		shadow: "x,y,blur,#col",  //  legends text shadow, default=none
 		font:'9px "Trebuchet MS"' //  font size & family, default=normal 10px "Sans Serif"
+		layout: 'h'               //  legends layout h(orizontal) or v(ertical) default=v
 	},
 
 	grid: {                       //grid options
@@ -115,7 +117,7 @@ var h=harry({
 		circle: "#888888",        //  spot color, default=#888
 		border2: "#fff",          //  spot color, default=none
 		axis: "xy|x|y",           //  draw spot axis, default=none
-		text: "%t\n%l: %v",       //  text in the bullet %v=value %l=label %n=index %t=title
+		text: "%v",               //  text in the bullet (%v=value %l=label %n=index %t=title)
 		text: callback(n,v,l,x,y) //  or text can trigger a callback
 		                          //     if it returns a string, it'll be displayed
 	}
@@ -125,9 +127,9 @@ var h=harry({
 var h=plotter({...});
 
 
-h.clear()             //delete all dataset
- .load(data)          //add a dataset, see contructor
- .draw();             //draw all dataset
+h.clear()             //delete all datasets
+ .load(data)          //add a dataset (see contructor)
+ .draw();             //draw all datasets
 h.canvas.onclick=function(){
 	 h.draw('chart'); //redraw
 };
@@ -261,6 +263,7 @@ harry=(function(o){
 	opacity=parseFloat(o.opacity)||1,
 	linewidth=parseInt(o.linewidth,10)||1,
 	linejoin=o.linejoin||"miter",
+	barspace=o.barspace==undefined?'a':parseInt(o.barspace,10),
 	radiuspoint=parseInt(o.radiuspoint,10)||0,
 	scaletop=o.autoscale && /top/i.test(o.autoscale),
 	scalebot=o.autoscale && /bot/i.test(o.autoscale),
@@ -865,7 +868,7 @@ harry=(function(o){
 			//console.log("[harry] chart ("+dlen+" dataset)");
 			overpoints = [];
 			if(dlen){
-				var nd,nds,nbd=data[0].len,m=dlen>1?4:0,nbdsv=flag.stack?1:dlen,
+				var nd,nds,nbd=data[0].len,m=barspace=='a'?(dlen>1?4:0):barspace,nbdsv=flag.stack?1:dlen,
 				    tbw=flag.vertical?rh:rw,bw=(nbd && dlen)?(((tbw-(m*(nbd-1)))/nbd)/nbdsv)-1:0,
 				    d,g,y=ry,y1,y2,x=rx,x1,x2,tcf=flag.vertical?rw:rh,
 				    cf=flag.stack?(dsum?tcf/dsum:0):(dmax?tcf/dmax:0);
