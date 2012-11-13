@@ -223,15 +223,15 @@ harry=(function(o){
 		f=Math.floor(m/2),
 		k=labels.marks;
 		return flag.vertical ? [
-		/*top*/    l.y && /l/i.test(l.ypos) ? m+4 : (l.x?m:0),
-		/*right*/  l.y ? m : 0,
+		/*top*/    l.y && /l/i.test(l.ypos) ? m+4 : (l.x?m:1),
+		/*right*/  l.y ? m : 1,
 		/*bottom*/ l.y && /r/i.test(l.ypos) ? m+4 : (l.x?m:1),
 		/*left*/   l.x ? 4+l.xwidth : (l.y?m:1)
 		] : [
-		/*top*/    l.y ? f : 0,
+		/*top*/    l.y ? f : 1,
 		/*right*/  l.y && /r/i.test(l.ypos) ? 4+l.ywidth : (l.x?m:1),
 		/*bottom*/ l.x ? 3+m+k : (l.y?m:1),
-		/*left*/   l.y && /l/i.test(l.ypos) ? 4+l.ywidth : (l.x?f:0)
+		/*left*/   l.y && /l/i.test(l.ypos) ? 4+l.ywidth : (l.x?f:1)
 		];
 	},
 
