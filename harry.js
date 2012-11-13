@@ -79,7 +79,7 @@ var h=harry({
 		shadow: "x,y,blur,#col",  //  label text shadow, default=none
 		y: [0,50,100],            //  y axis, numbers are %, default=none
 		ypos: "left+right",       //  y labels position, default=right
-		x: int,                   //  x axis, 1=draw all label, 2=one/two..., default=none
+		x: int,                   //  x axis, display 1/int labels, 1=all..., default=none
 		marks: int                //  graduation's marks size, default=0
 	},
 
@@ -226,12 +226,12 @@ harry=(function(o){
 		/*top*/    l.y && /l/i.test(l.ypos) ? m+4 : (l.x?m:0),
 		/*right*/  l.y ? m : 0,
 		/*bottom*/ l.y && /r/i.test(l.ypos) ? m+4 : (l.x?m:1),
-		/*left*/   l.x ? 60 : (l.y?m:1)
+		/*left*/   l.x ? 4+l.xwidth : (l.y?m:1)
 		] : [
 		/*top*/    l.y ? f : 0,
-		/*right*/  l.y && /r/i.test(l.ypos) ? m*4 : (l.x?m:1),
+		/*right*/  l.y && /r/i.test(l.ypos) ? 4+l.ywidth : (l.x?m:1),
 		/*bottom*/ l.x ? 3+m+k : (l.y?m:1),
-		/*left*/   l.y && /l/i.test(l.ypos) ? m*4 : (l.x?f:0)
+		/*left*/   l.y && /l/i.test(l.ypos) ? 4+l.ywidth : (l.x?f:0)
 		];
 	},
 
@@ -268,13 +268,15 @@ harry=(function(o){
 		color: "#a0a0a0",
 		font: 'normal 9px "Sans Serif"',
 		marks: 0,
+		xwidth: 0,
+		ywidth: 0,
 		ypos: 'right'
 	},o.labels),
 	mouseover=o.mouseover===false
 		? false
 		: merge({
 			radius: 5,
-			linewidth: linewidth,
+			linewidth: linewidth*2,
 			circle: "#888",
 			font: 'normal 10px "Sans Serif"',
 			color: "#fff",
@@ -310,7 +312,7 @@ harry=(function(o){
 			font: '10px "Sans Serif"'
 		},o.legends),
 	data=[], dmin, dmax, dlen=0, dsum, drng, dinc,
-	rx, ry, rw, rh, rx2, ry2,
+	rx, ry, rw, rh, rx2, ry2, lxl,
 
 //PRIVATE METHODS =============================================================
 
@@ -323,13 +325,17 @@ harry=(function(o){
 		dlen=data.length;
 		dmin=dmax=false;
 		drng=dsum=dinc=0;
+		labels.xwidth=0;
+		gc.font=labels.font;
 		if(dlen) {
 			for(i=0;i<dlen;i++) {
 				d=data[i];
 				dmin=dmin===false?d.min:Math.min(d.min,dmin);
 				dmax=dmax===false?d.max:Math.max(d.max,dmax);
+				if(d.maxlab) labels.xwidth=Math.max(labels.xwidth,gc.measureText(d.maxlab).width);
 			}
 			if(scaletop) dmax=scaleUp(dmax);
+			labels.ywidth=gc.measureText(dmax||'0').width;
 			if(flag.stack) {
 				for(i=0,l=data[0].len;i<l;++i) {
 					s=0;
@@ -342,9 +348,14 @@ harry=(function(o){
 				drng=scalebot ? dmax-dmin : dmax;
 			}
 			dinc=scalebot ? dmin : 0;
+			
 		}
 		//misc
 		labels.fontpx=fontPixSize(labels.font);
+		if(labels.x=='auto'){
+			labels.x=1;
+			labels.xauto=true;
+		}
 		if(/none|false/.test(grid.x)) grid.x=[];
 		if(/none|false/.test(grid.y)) grid.y=[];
 		//plot zone
@@ -359,17 +370,19 @@ harry=(function(o){
 
 	//load a dataset
 	load=function(d) { 
-		var t,v,k,vals=d.values||d,labs=d.labels||[],
+		var t,v,k,vals=d.values||d,labs=d.labels||[],l,
 		ds={
 			val:[], lab:[], len:0, sum:0, avg:0, max:0, min:0xffffffffffff,
-			tit:d.title || "dataset#"+(data.length+1),
+			tit:d.title || "dataset#"+(data.length+1), maxlab: '',
 			col:d.color || COLORS[data.length%COLORS.length]
 		};
 		for(k in vals) {
 			v=parseFloat(vals[k]);
 			if(isNaN(v)) v=null;
 			ds.val.push(v);
-			ds.lab.push(labs[k]||k);
+			l=labs[k]||k;
+			if(l.length>ds.maxlab.length) ds.maxlab=l;
+			ds.lab.push(l);
 			ds.sum+=v;
 			if(v>ds.max) ds.max=v;
 			if(v<ds.min) ds.min=v;
@@ -392,7 +405,6 @@ harry=(function(o){
 	//return auto fillmode
 	getFillMode=function() {
 		if(fill=="a") {
-			opacity=1;
 			if(flag.stack) return "v";
 			if(flag.line)  return dlen>1?"n":"v";
 			if(flag.curve) return dlen>1?"n":"v";
@@ -521,8 +533,7 @@ harry=(function(o){
 		if(dlen && labels.y) {
 			//console.log("[harry] labels y("+labels.y.join(",")+") "+labels.font);
 			if(!flag.pie) {
-				var
-				i,l,x,y,w,v,dec=drng<10?100:(drng<100?10:1);
+				var i,l,x,y,w,v,dec=drng<10?100:(drng<100?10:1);
 				setShadow(labels.shadow);
 				gc.font=labels.font;
 				gc.fillStyle=labels.color;
@@ -532,19 +543,17 @@ harry=(function(o){
 						x=rx+Math.round(rw*labels.y[i]/100);
 						v=dinc+drng*labels.y[i]/100;
 						v=Math.round(dec*v)/dec;
-						if(/r/i.test(labels.ypos)){
+						if(/r/i.test(labels.ypos)) {
 							y=ry2+1;
 							gc.textBaseline='top';
 							gc.fillText(v,x,y);
 						}
-						if(/l/i.test(labels.ypos)){
+						if(/l/i.test(labels.ypos)) {
 							y=ry-2;
 							gc.textBaseline='bottom';
 							gc.fillText(v,x,y);
 						}
 					}
-
-
 				} else {
 					gc.textBaseline='middle';
 					for(i=0,l=labels.y.length;i<l;++i) {
@@ -556,7 +565,7 @@ harry=(function(o){
 							gc.textAlign='left';
 							gc.fillText(v,x,y);
 						}
-						if(/l/i.test(labels.ypos)){
+						if(/l/i.test(labels.ypos)) {
 							x=rx-2;
 							gc.textAlign='right';
 							gc.fillText(v,x,y);
@@ -571,15 +580,32 @@ harry=(function(o){
 	//draw labels on X axis
 	drawXLabel=function(n,x,y,align,baseline) {
 		gc.save();
+		x=Math.round(x);
+		y=Math.round(y);
 		if(labels.x && (n%labels.x)==0) {
-			var l=data[0].lab[n]||n;
-			setShadow(labels.shadow);
+			var
+			ok=true,
+			l=data[0].lab[n]||n,
+			ta=align||'center',
+			tb=baseline||'alphabetic',
+			w=0;
 			gc.font=labels.font;
-			gc.fillStyle=labels.color;
-			gc.textAlign=align||'center';
-			gc.textBaseline=baseline||'alphabetic';
-			gc.fillText(l,x,y);
-			unsetShadow();
+			if(labels.xauto) {
+				w=gc.measureText(l).width;
+				if(
+					(ta=='center' && x-w/2<lxl) ||
+					(tb=='top' && y<lxl) 
+				) ok=false;
+			}
+			if(ok) {
+				setShadow(labels.shadow);
+				gc.fillStyle=labels.color;
+				gc.textAlign=ta;
+				gc.textBaseline=tb;
+				gc.fillText(l,x,y);
+				unsetShadow();
+				lxl=ta=='center'?x+w/2:y+labels.fontpx;
+			}
 		}
 		if(labels.marks) {
 			gc.lineWidth=1;
@@ -849,7 +875,7 @@ harry=(function(o){
 				for(nds=0;nds<dlen;nds++) overpoints.push({x:[],y:[],v:[],nds:nds});
 				if(flag.vertical)
 					for(nd=0;nd<nbd;nd++) {
-						drawXLabel(nd,rx-labels.marks-2,y+(bw/2),'right','top');
+						drawXLabel(nd,rx-labels.marks-2,y,'right','top');
 						x=rx;
 						for(nds=0;nds<dlen;nds++) {
 							d=data[nds];
@@ -1088,6 +1114,7 @@ harry=(function(o){
 
 	draw=function(nover) {
 		//console.log("[harry] draw "+mode+" "+keys(flag).join(" "));
+		lxl=-1;
 		cls();
 		drawGrid();
 		drawYLabels();
