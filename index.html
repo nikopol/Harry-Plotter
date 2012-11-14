@@ -6,7 +6,6 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 	<title>Harry Plotter</title>
 	<link href='harry.css' rel='stylesheet' type='text/css'>
-	
 	<script src="https://raw.github.com/nikopol/Harry-Plotter/master/harry.min.js"></script>
 	<script src="https://raw.github.com/nikopol/miniko.js/master/miniko.min.js"></script>
 	<script src="https://raw.github.com/nikopol/minitools.js/master/minitools.min.js"></script>
@@ -225,7 +224,7 @@
 				//get grid
 				z={};
 				if((v=val('gridx')).length) z.x=/none|false/.test(v)?v:values(v);
-				if((v=val('gridy')).length) z.y=/none|false/.test(w)?w:values(w);
+				if((v=val('gridy')).length) z.y=/none|false/.test(v)?w:values(v);
 				if((v=val('gridcolor')).length) z.color=v;
 				if(!isEmpty(z)) o.grid=z;
 				//get labels
@@ -249,7 +248,7 @@
 					o.mouseover=false;
 				//get legends
 				if(_('#legends').checked) {
-					var m=getlst('x y font background color border border2 shadow shadowbox','leg');
+					var m=getlst('layout x y font background color border border2 shadow shadowbox','leg');
 					if(!isEmpty(m)) o.legends=m;
 				} else
 					o.legends=false;
@@ -292,7 +291,7 @@
 						setlst('x y color font color marks shadow ypos','label',o.labels);
 						setlst('width height mode fill opacity margins background linewidth linejoin radiuspoint autoscale barspace','',o);
 						setlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo',o.mouseover);
-						setlst('x y font background color border border2 shadow shadowbox','leg',o.legends);
+						setlst('layout x y font background color border border2 shadow shadowbox','leg',o.legends);
 					}
 				}
 				_('input.color').forEach(function(e){ setcolor(e.value,'#i'+e.id) });
@@ -649,7 +648,7 @@
 				<input type="text" id="labely" placeholder="%,%,%..." value="" title="show veritcals labels for each labels.y percent"/><br/>
 				<label for="labelypos">y axis position</label>
 				<select id="labelypos">
-					<option value="">none</option>
+					<option value="">auto</option>
 					<option>left</option>
 					<option>right</option>
 					<option>left+right</option>
@@ -683,15 +682,19 @@
 			<div class="formcol">
 				<label for="legends">enabled</label>
 				<input type="checkbox" id="legends" checked="checked" /><br/>
+				<label for="leglayout">layout</label>
+				<select id="leglayout">
+					<option value="">default</option>
+					<option value="h">horizontal</option>
+					<option value="v">vertical</option>
+				</select></br>
 				<label for="legx">x</label>
 				<input type="text" id="legx" placeholder="int" value="" /><br/>
 				<label for="legy">y</label>
 				<input type="text" id="legy" placeholder="int" value="" /><br/>
 				<label for="legbackground">background</label>
 				<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legbackground" value="" class="color"/>
-				<input type="color" id="ilegbackground"/><br/>
-				<label for="legshadowbox">box shadow</label>
-				<input type="text" placeholder="x,y,blur,color" id="legshadowbox" value="" />
+				<input type="color" id="ilegbackground"/>
 			</div>
 			<div class="formcol">
 				<label for="legfont">font</label>
@@ -703,7 +706,9 @@
 				<label for="legborder">border</label>
 				<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder" value="" alt="legend border color"/><br/>
 				<label for="legborder2">color box border</label>
-				<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder2" value="" alt="color box border color"/>
+				<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder2" value="" alt="color box border color"/><br/>
+				<label for="legshadowbox">box shadow</label>
+				<input type="text" placeholder="x,y,blur,color" id="legshadowbox" value="" />
 			</div>
 
 			<hr/>
