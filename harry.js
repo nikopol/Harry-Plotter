@@ -223,7 +223,7 @@ harry=(function(o){
 		}
 		var
 		f=Math.floor(m/2),
-		k=labels.marks;
+		k=l.marks;
 		return flag.vertical ? [
 		/*top*/    l.y && /l/i.test(l.ypos) ? m+4 : (l.x?m:1),
 		/*right*/  l.y ? m : 1,
@@ -308,7 +308,8 @@ harry=(function(o){
 		? false
 		: merge({
 			color: "#666",
-			font: '10px "Sans Serif"'
+			font: '10px "Sans Serif"',
+			layout: 'v'
 		},o.legends),
 	data=[], dmin, dmax, dlen=0, dsum, drng, dinc,
 	rx, ry, rw, rh, rx2, ry2, lxl,
@@ -494,7 +495,7 @@ harry=(function(o){
 	},
 	
 	//draw the background grid
-	drawGrid=function(o) {
+	drawGrid=function() {
 		if(!flag.pie) {
 			var i,l,x,y;
 			gc.lineWidth=grid.linewidth || 1;
@@ -532,7 +533,7 @@ harry=(function(o){
 	},
 
 	//draw labels on Y axis
-	drawYLabels=function(o) {
+	drawYLabels=function() {
 		if(dlen && labels.y) {
 			//console.log("[harry] labels y("+labels.y.join(",")+") "+labels.font);
 			if(!flag.pie) {
@@ -581,7 +582,7 @@ harry=(function(o){
 	},
 
 	//draw labels on X axis
-	drawXLabel=function(n,x,y,align,baseline) {
+	drawXLabel=function(n,x,y,ta,tb,chk) {
 		gc.save();
 		x=Math.round(x);
 		y=Math.round(y);
@@ -589,16 +590,11 @@ harry=(function(o){
 			var
 			ok=true,
 			l=data[0].lab[n]||n,
-			ta=align||'center',
-			tb=baseline||'alphabetic',
 			w=0;
 			gc.font=labels.font;
-			if(labels.xauto) {
+			if(labels.xauto && chk) {
 				w=gc.measureText(l).width;
-				if(
-					(ta=='center' && x-w/2<lxl) ||
-					(tb=='top' && y<lxl) 
-				) ok=false;
+				ok=!((chk=='h' && ta=='center' && x-w/2<lxl) || (chk=='v' && y<lxl));
 			}
 			if(ok) {
 				setShadow(labels.shadow);
@@ -621,24 +617,29 @@ harry=(function(o){
 		gc.restore();
 	},
 
-	drawLegends=function(o) {
+	drawLegends=function() {
 		if(legends!==false && dlen>1) {
 			gc.save();
 			gc.font=legends.font;
-			var i,w,g,py,d,
+			var i,w,g,px,py,d,lw=[],
+			    hor=legends.layout=='h',
+			    mw=0,
 			    tw=0,
 			    s=3,
 			    lh=fontPixSize(legends.font)+s,
+			    nl=dlen,
 			    bs=lh-s,
 			    tx=s*2+bs,
-			    nl=dlen,
-			    h=s+lh*nl,
-			    x=legends.x==undefined?margins[3]+2:legends.x,
-			    y=legends.y==undefined?margins[0]+2+(title && !title.x?2+fontPixSize(title.font):0):legends.y;
-			for(i=0;i<nl;++i)
-				if((w=gc.measureText(data[i].tit)).width>tw)
-					tw=w.width;
-			w=s*3+bs+tw;
+			    h=hor?s+lh:s+lh*nl,
+			    x=legends.x!=undefined?legends.x:margins[3]+2,
+			    y=legends.y!=undefined?legends.y:margins[0]+2+(title && !title.x?2+fontPixSize(title.font):0);
+			for(i=0;i<nl;++i) {
+				w=gc.measureText(data[i].tit).width;
+				if(w>mw) mw=w;
+				lw.push(w);
+				tw+=w;
+			}
+			w=hor?(tx+s*2)*nl+tw:s*3+bs+mw;
 			//draw background
 			gc.lineWidth=1;
 			if((g=legends.background)) {
@@ -651,25 +652,25 @@ harry=(function(o){
 				gc.strokeStyle=g;
 				gc.strokeRect(x,y,w,h);
 			}
-
-			for(i=0,py=y+s;i<nl;++i,py+=lh) {
+			for(i=0,py=y+s,px=x+s;i<nl;++i) {
 				d=data[i];
 				//draw color box
 				setShadow(legends.shadow);
 				gc.fillStyle=d.col;
-				gc.fillRect(x+s,py,bs,bs);
+				gc.fillRect(px,py,bs,bs);
 				unsetShadow();
 				if((g=legends.border2)) {
 					gc.strokeStyle=g;
-					gc.strokeRect(x+s,py,bs,bs);
+					gc.strokeRect(px,py,bs,bs);
 				}
 				//draw text
 				setShadow(legends.shadow);
 				gc.textAlign='left';
 				gc.textBaseline='top';
 				gc.fillStyle=legends.color;
-				gc.fillText(d.tit,x+s*2+bs,py);
+				gc.fillText(d.tit,px+s+bs,py);
 				unsetShadow();
+				if(hor) px+=s*4+bs+lw[i]; else py+=lh;
 			}
 			gc.restore();
 		}
@@ -776,7 +777,7 @@ harry=(function(o){
 	plot={
 
 		line: function() {
-			var nds=dlen,cy=drng?rh/drng:0,d,g,i,j,v,l,cu=mode=="curve",
+			var nds=dlen,cy=drng?rh/drng:0,d,g,i,j,v,l,cu=mode=="curve",ly=ry2+labels.marks+2,
 			drawPath=function(gc,x,y,v,n1,n2) {
 				var n=n1,nx,ny,mx,my,px,py;
 				while(n<=n2) {
@@ -847,7 +848,7 @@ harry=(function(o){
 					//draw x labels
 					if(nds==0)
 						for(i=0;i<l;++i)
-							drawXLabel(i,x[i],h-3);
+							drawXLabel(i,x[i],ly,'center','top','h');
 					//draw points
 					if(radiuspoint) {
 						gc.fillStyle=d.col;
@@ -870,7 +871,7 @@ harry=(function(o){
 			if(dlen){
 				var nd,nds,nbd=data[0].len,m=barspace=='a'?(dlen>1?4:0):barspace,nbdsv=flag.stack?1:dlen,
 				    tbw=flag.vertical?rh:rw,bw=(nbd && dlen)?(((tbw-(m*(nbd-1)))/nbd)/nbdsv)-1:0,
-				    d,g,y=ry,y1,y2,x=rx,x1,x2,tcf=flag.vertical?rw:rh,
+				    d,g,y=ry,y1,y2,x=rx,x1,x2,tcf=flag.vertical?rw:rh,ly=ry2+labels.marks+2,
 				    cf=flag.stack?(dsum?tcf/dsum:0):(dmax?tcf/dmax:0);
 				if(bw<0) bw=0;
 				gc.lineWidth=linewidth;
@@ -878,7 +879,7 @@ harry=(function(o){
 				for(nds=0;nds<dlen;nds++) overpoints.push({x:[],y:[],v:[],nds:nds});
 				if(flag.vertical)
 					for(nd=0;nd<nbd;nd++) {
-						drawXLabel(nd,rx-labels.marks-2,y,'right','top');
+						drawXLabel(nd,rx-labels.marks-2,y,'right','top','v');
 						x=rx;
 						for(nds=0;nds<dlen;nds++) {
 							d=data[nds];
@@ -906,7 +907,7 @@ harry=(function(o){
 					}
 				else
 					for(nd=0;nd<nbd;nd++) {
-						drawXLabel(nd,x+(((bw+1)*nbdsv)/2),h-3);
+						drawXLabel(nd,x+(((bw+1)*nbdsv)/2),ly,'center','top','h');
 						y=ry2;
 						for(nds=0;nds<dlen;nds++) {
 							d=data[nds];
