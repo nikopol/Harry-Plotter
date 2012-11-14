@@ -301,16 +301,12 @@ harry=(function(o){
 		? merge({
 			font: 'bold 12px "Sans Serif"',
 			color: 'rgba(4,4,4,0.5)',
-			x: margins[3]+2,
-			y: margins[0]+2,
 			z: 'top'
 		},	o.title)
 		: false,
 	legends=o.legends===false
 		? false
 		: merge({
-			x: margins[3]+2,
-			y: margins[0]+2+(o.title && !o.title.x ? 2+fontPixSize(title.font) : 0),
 			color: "#666",
 			font: '10px "Sans Serif"'
 		},o.legends),
@@ -488,7 +484,11 @@ harry=(function(o){
 			gc.textAlign='left';
 			gc.textBaseline='top';
 			gc.fillStyle=title.color;
-			gc.fillText(title.text,title.x,title.y);
+			gc.fillText(
+				title.text,
+				title.x==undefined?margins[3]+2:title.x,
+				title.y==undefined?margins[0]+2:title.y
+			);
 			unsetShadow();
 		}
 	},
@@ -633,8 +633,8 @@ harry=(function(o){
 			    tx=s*2+bs,
 			    nl=dlen,
 			    h=s+lh*nl,
-			    x=legends.x,
-			    y=legends.y;
+			    x=legends.x==undefined?margins[3]+2:legends.x,
+			    y=legends.y==undefined?margins[0]+2+(title && !title.x?2+fontPixSize(title.font):0):legends.y;
 			for(i=0;i<nl;++i)
 				if((w=gc.measureText(data[i].tit)).width>tw)
 					tw=w.width;
