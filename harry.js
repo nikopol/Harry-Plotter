@@ -106,6 +106,7 @@ var h=harry({
 	//interaction
 
 	mouseover: {,                 //set to false to disable mouseover, default=enabled
+		sort: true,               //  sort values, default=false
 		bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=rgba(99,99,99,0.8)
 		border: "#fc0",           //  bullet border color, default=none,
 		shadowbox: "x,y,b,#col",  //  bullet box shadow, default=none
@@ -247,6 +248,10 @@ harry=(function(o){
 		return o;
 	},
 
+	percent=function(v,m) {
+		return m ? (Math.round(1000*v/m)/10)+'%' : '0%';
+	},
+
 //PRIVATE VARS ================================================================
 
 	canvas=o.canvas
@@ -275,7 +280,7 @@ harry=(function(o){
 		ywidth: 0,
 		ypos: 'right'
 	},o.labels),
-	mouseover=o.mouseover===false
+	mo=o.mouseover===false
 		? false
 		: merge({
 			radius: 5,
@@ -288,10 +293,10 @@ harry=(function(o){
 			text: "%v"
 		},o.mouseover),
 	mousepos,
-	overpoints=[],
+	overpts=[],
 	overpie={n:false},
 	automargins=o.margins ? false : true,
-	margins=automargins ? calcMargins(flag,labels,mouseover) : o.margins,
+	margins=automargins ? calcMargins(flag,labels,mo) : o.margins,
 	grid=merge({
 		color: "#a0a0a0",
 		x: [0,100],
@@ -304,7 +309,7 @@ harry=(function(o){
 			z: 'top'
 		},	o.title)
 		: false,
-	legends=o.legends===false
+	leg=o.legends===false
 		? false
 		: merge({
 			color: "#666",
@@ -359,7 +364,7 @@ harry=(function(o){
 		if(/none|false/.test(grid.x)) grid.x=[];
 		if(/none|false/.test(grid.y)) grid.y=[];
 		//plot zone
-		if(automargins) margins=calcMargins(flag,labels,mouseover);
+		if(automargins) margins=calcMargins(flag,labels,mo);
 		rx=margins[3];
 		ry=margins[0];
 		rw=Math.max(w-margins[1]-margins[3],0);
@@ -618,21 +623,21 @@ harry=(function(o){
 	},
 
 	drawLegends=function() {
-		if(legends!==false && dlen>1) {
+		if(leg!==false && dlen>1) {
 			gc.save();
-			gc.font=legends.font;
+			gc.font=leg.font;
 			var i,w,g,px,py,d,lw=[],
-			    hor=legends.layout=='h',
+			    hor=leg.layout=='h',
 			    mw=0,
 			    tw=0,
 			    s=3,
-			    lh=fontPixSize(legends.font)+s,
+			    lh=fontPixSize(leg.font)+s,
 			    nl=dlen,
 			    bs=lh-s,
 			    tx=s*2+bs,
 			    h=hor?s+lh:s+lh*nl,
-			    x=legends.x!=undefined?legends.x:margins[3]+2,
-			    y=legends.y!=undefined?legends.y:margins[0]+2+(title && !title.x?2+fontPixSize(title.font):0);
+			    x=leg.x!=undefined?leg.x:margins[3]+2,
+			    y=leg.y!=undefined?leg.y:margins[0]+2+(title && !title.x?2+fontPixSize(title.font):0);
 			for(i=0;i<nl;++i) {
 				w=gc.measureText(data[i].tit).width;
 				if(w>mw) mw=w;
@@ -642,32 +647,32 @@ harry=(function(o){
 			w=hor?(tx+s*2)*nl+tw:s*3+bs+mw;
 			//draw background
 			gc.lineWidth=1;
-			if((g=legends.background)) {
-				setShadow(legends.shadowbox);
+			if((g=leg.background)) {
+				setShadow(leg.shadowbox);
 				gc.fillStyle=g;
 				gc.fillRect(x,y,w,h);
 				unsetShadow();
 			}
-			if((g=legends.border)) {
+			if((g=leg.border)) {
 				gc.strokeStyle=g;
 				gc.strokeRect(x,y,w,h);
 			}
 			for(i=0,py=y+s,px=x+s;i<nl;++i) {
 				d=data[i];
 				//draw color box
-				setShadow(legends.shadow);
+				setShadow(leg.shadow);
 				gc.fillStyle=d.col;
 				gc.fillRect(px,py,bs,bs);
 				unsetShadow();
-				if((g=legends.border2)) {
+				if((g=leg.border2)) {
 					gc.strokeStyle=g;
 					gc.strokeRect(px,py,bs,bs);
 				}
 				//draw text
-				setShadow(legends.shadow);
+				setShadow(leg.shadow);
 				gc.textAlign='left';
 				gc.textBaseline='top';
-				gc.fillStyle=legends.color;
+				gc.fillStyle=leg.color;
 				gc.fillText(d.tit,px+s+bs,py);
 				unsetShadow();
 				if(hor) px+=s*4+bs+lw[i]; else py+=lh;
@@ -678,20 +683,22 @@ harry=(function(o){
 
 	drawBullets=function(bs,center) { //[{x,y,r,v,n,nds}]
 		gc.save();
-		gc.font=mouseover.font;
+		gc.font=mo.font;
 		var i,n,m,l=bs.length,b,lab,tit,txt,bh=0,bw=0,s=3,
-		    pt=fontPixSize(mouseover.font),
+		    pt=fontPixSize(mo.font),
 		    pr=Math.floor(pt/2),lh=pt+s,x,y,x1,y1,x2,y2,
-		    xl=w,xr=0,yt=h,yb=0;
-		bs.sort(function(a,b){return parseInt(b.v,10)-parseInt(a.v,10)});
+		    xl=w,xr=0,yt=h,yb=0,mx=0;
+		if(mo.sort) bs.sort(function(a,b){return parseFloat(b.v)-parseFloat(a.v)});
+		//calc max for pct if needed
+		for(n=0;n<l;n++) mx+=bs[n].v;
 		//calc texts sizes
 		for(n=0;n<l;n++){
 			b=bs[n];
 			lab=data[b.nds].lab[b.n];
 			tit=data[b.nds].tit;
-			txt=typeof(mouseover.text)=="function"
-				? mouseover.text(b.n,b.v,lab,b.x,b.y)
-				: mouseover.text.replace('%v',b.v).replace('%l',lab).replace('%n',b.n).replace('%t',tit).replace('%p',b.pct);
+			txt=typeof(mo.text)=="function"
+				? mo.text(b.n,b.v,lab,b.x,b.y)
+				: mo.text.replace('%v',b.v).replace('%l',lab).replace('%n',b.n).replace('%t',tit).replace('%p',b.pct||percent(b.v,mx));
 			if(txt) {
 				b.lines=txt.split(/\n|\\n/);
 				b.h=b.lines.length*lh;
@@ -737,17 +744,17 @@ harry=(function(o){
 			gc.lineTo(x2,y2);
 			gc.lineTo(x1,y2);
 			gc.closePath();
-			if(mouseover.bullet){
-				setShadow(mouseover.shadowbox);
+			if(mo.bullet){
+				setShadow(mo.shadowbox);
 				gc.strokStyle='';
-				gc.fillStyle=mouseover.bullet;
+				gc.fillStyle=mo.bullet;
 				gc.fill();
 				unsetShadow();
 			}
-			if(mouseover.border) {
+			if(mo.border) {
 				gc.lineWidth=1;
 				gc.lineJoin='round';
-				gc.strokeStyle=mouseover.border;
+				gc.strokeStyle=mo.border;
 				gc.stroke();
 			}
 			//draw texts
@@ -764,8 +771,8 @@ harry=(function(o){
 					gc.fill();
 					x+=pt+s;
 				}
-				setShadow(mouseover.shadow);
-				gc.fillStyle=mouseover.color;
+				setShadow(mo.shadow);
+				gc.fillStyle=mo.color;
 				for(i=0;i<b.lines.length;++i,y+=lh)
 					gc.fillText(b.lines[i],x,y);
 				unsetShadow();
@@ -808,7 +815,7 @@ harry=(function(o){
 			};
 			gc.lineWidth=linewidth;
 			gc.lineJoin=linejoin;
-			overpoints=[];
+			overpts=[];
 			while(d=data[--nds])
 				if((l=d.len)>1) {
 					//calc
@@ -820,7 +827,7 @@ harry=(function(o){
 						x.push(rx+Math.round(i*(rw/(l-1))));
 						y.push(ry2-Math.round(cy*v));
 					}
-					overpoints.push({x:x,y:y,v:data[nds].val,nds:nds});
+					overpts.push({x:x,y:y,v:data[nds].val,nds:nds});
 					i--;
 					x.push(rx+Math.round(i*(rw/(l-1))));
 					y.push(ry2-Math.round(cy*v));
@@ -867,7 +874,7 @@ harry=(function(o){
 
 		chart: function() {
 			//console.log("[harry] chart ("+dlen+" dataset)");
-			overpoints = [];
+			overpts = [];
 			if(dlen){
 				var nd,nds,nbd=data[0].len,m=barspace=='a'?(dlen>1?4:0):barspace,nbdsv=flag.stack?1:dlen,
 				    tbw=flag.vertical?rh:rw,bw=(nbd && dlen)?(((tbw-(m*(nbd-1)))/nbd)/nbdsv)-1:0,
@@ -876,7 +883,7 @@ harry=(function(o){
 				if(bw<0) bw=0;
 				gc.lineWidth=linewidth;
 				gc.lineJoin="miter";
-				for(nds=0;nds<dlen;nds++) overpoints.push({x:[],y:[],v:[],nds:nds});
+				for(nds=0;nds<dlen;nds++) overpts.push({x:[],y:[],v:[],nds:nds});
 				if(flag.vertical)
 					for(nd=0;nd<nbd;nd++) {
 						drawXLabel(nd,rx-labels.marks-2,y,'right','top','v');
@@ -898,9 +905,9 @@ harry=(function(o){
 								gc.strokeStyle=d.col;
 								gc.stroke();
 							}
-							overpoints[nds].x.push(x);
-							overpoints[nds].y.push(Math.floor(y+bw/2));
-							overpoints[nds].v.push(d.val[nd]);
+							overpts[nds].x.push(x);
+							overpts[nds].y.push(Math.floor(y+bw/2));
+							overpts[nds].v.push(d.val[nd]);
 							if(!flag.stack) y+=bw+1;
 						}
 						y+=flag.stack?bw+1+m:m;
@@ -926,9 +933,9 @@ harry=(function(o){
 								gc.strokeStyle=d.col;
 								gc.stroke();
 							}
-							overpoints[nds].x.push(Math.floor(x+bw/2));
-							overpoints[nds].y.push(y);
-							overpoints[nds].v.push(d.val[nd]);
+							overpts[nds].x.push(Math.floor(x+bw/2));
+							overpts[nds].y.push(y);
+							overpts[nds].v.push(d.val[nd]);
 							if(!flag.stack) x+=bw+1;
 						}
 						x+=flag.stack?bw+1+m:m;
@@ -938,7 +945,7 @@ harry=(function(o){
 
 		pie: function() {
 			//console.log("[harry] pie ("+dlen+" dataset)");
-			overpoints = [];
+			overpts = [];
 			if(dlen){
 				//precalc angles
 				var i,nb=0,va=[],vc=[],pi2=Math.PI*2,lab=[],pct=[];
@@ -950,7 +957,7 @@ harry=(function(o){
 							va[i]=data[i].sum/sum*pi2;
 							vc[i]=data[i].col;
 							lab.push(data[i].sum);
-							pct.push(Math.round(100*data[i].sum/sum));
+							pct.push(percent(data[i].sum,sum));
 						}
 				} else {
 					var d=data[0];
@@ -959,7 +966,7 @@ harry=(function(o){
 							va[i]=d.val[i]/d.sum*pi2;
 							vc[i]=COLORS[i%COLORS.length];
 							lab.push(d.val[i]);
-							pct.push(Math.round(100*d.val[i]/d.sum));
+							pct.push(percent(d.val[i],d.sum));
 						}
 				}
 				//draw
@@ -972,7 +979,7 @@ harry=(function(o){
 				for(i=0;i<nb;i++) {
 					a2=a1+va[i];
 					a=(a1+a2)/2;
-					overpoints.push({a:a1%(2*Math.PI),n:i});
+					overpts.push({a:a1%(2*Math.PI),n:i});
 					if(i===n) {
 						dx=cx+Math.cos(a)*10;
 						dy=cy+Math.sin(a)*10;
@@ -999,11 +1006,11 @@ harry=(function(o){
 					y: ny,
 					r: 0,
 					v: lab[n],
-					pct: pct[n]+'%',
+					pct: pct[n],
 					n: n,
 					nds: dlen>1?n:0
 				}], true);
-				overpoints.sort(function(a,b){return a.a-b.a});
+				overpts.sort(function(a,b){return a.a-b.a});
 			}
 		}
 	},
@@ -1011,9 +1018,9 @@ harry=(function(o){
 	over={
 
 		line: function(x,y) {
-			var i,n=false,p,m,c,lw=mouseover.linewidth||1,bs=[];
-			if(overpoints.length) {
-				p=overpoints[0];
+			var i,n=false,p,m,c,lw=mo.linewidth||1,bs=[];
+			if(overpts.length) {
+				p=overpts[0];
 				for(i=0;i<p.x.length;++i)
 					if(p.v[i]!=undefined) {
 						c=flag.vertical ? Math.abs(y-p.y[i]) : Math.abs(x-p.x[i]);
@@ -1023,37 +1030,37 @@ harry=(function(o){
 						}
 					}
 				if(n!==false) {
-					for(i=0;i<overpoints.length;++i) {
-						p=overpoints[i];
+					for(i=0;i<overpts.length;++i) {
+						p=overpts[i];
 						if(p.v[n]!=undefined) {
-							if(mouseover.border2) {
+							if(mo.border2) {
 								gc.beginPath();
 								gc.lineWidth=lw+2;
-								gc.arc(p.x[n],p.y[n],mouseover.radius,0,2*Math.PI);
-								if(mouseover.linewidth==0) {
-									gc.fillStyle=mouseover.border2;
+								gc.arc(p.x[n],p.y[n],mo.radius,0,2*Math.PI);
+								if(mo.linewidth==0) {
+									gc.fillStyle=mo.border2;
 									gc.fill();
 								} else {
-									gc.strokeStyle=mouseover.border2;
+									gc.strokeStyle=mo.border2;
 									gc.stroke();
 								}
 							}
 							gc.beginPath();
 							gc.lineWidth=lw;
-							gc.arc(p.x[n],p.y[n],mouseover.radius,0,2*Math.PI);
-							if(mouseover.linewidth==0) {
-								gc.fillStyle=mouseover.circle;
+							gc.arc(p.x[n],p.y[n],mo.radius,0,2*Math.PI);
+							if(mo.linewidth==0) {
+								gc.fillStyle=mo.circle;
 								gc.fill();
 							} else {
-								gc.strokeStyle=mouseover.circle;
+								gc.strokeStyle=mo.circle;
 								gc.stroke();
 							}
-							if(mouseover.axis){
+							if(mo.axis){
 								var xy,z,s=2;
 								gc.lineWidth=1;
 								//draw axis
-								if(/x/i.test(mouseover.axis)){
-									z=p.y[n]+mouseover.radius;
+								if(/x/i.test(mo.axis)){
+									z=p.y[n]+mo.radius;
 									while(z<ry2){
 										gc.moveTo(p.x[n],z);
 										z+=s;
@@ -1063,8 +1070,8 @@ harry=(function(o){
 									}
 									gc.stroke();
 								}
-								if(/y/i.test(mouseover.axis)){
-									x=p.x[n]+mouseover.radius;
+								if(/y/i.test(mo.axis)){
+									x=p.x[n]+mo.radius;
 									while(x<rx2){
 										gc.moveTo(x,p.y[n]);
 										x+=s;
@@ -1078,7 +1085,7 @@ harry=(function(o){
 							bs.push({
 								x: p.x[n],
 								y: p.y[n],
-								r: lw/2+1+mouseover.radius,
+								r: lw/2+1+mo.radius,
 								v: p.v[n],
 								n: n,
 								nds: p.nds
@@ -1098,9 +1105,9 @@ harry=(function(o){
 			if(d<=overpie.r){
 				a=Math.PI-Math.atan2(overpie.y-y,x-overpie.x);
 				a=(a+3*Math.PI)%(2*Math.PI);
-				while(i<overpoints.length && a>overpoints[i].a) i++;
-				if(--i<0) i=overpoints.length-1;
-				overpie.n=overpoints[i].n;
+				while(i<overpts.length && a>overpts[i].a) i++;
+				if(--i<0) i=overpts.length-1;
+				overpie.n=overpts[i].n;
 				draw(true);
 			} else if(overpie.n!==false) {
 				overpie.n=false;
@@ -1135,7 +1142,7 @@ harry=(function(o){
 			canvas.onmousemove=
 			canvas.onmouseout=undefined;
 			overpie.n=false;
-			if(mouseover) {
+			if(mo) {
 				imgdata = gc.getImageData(0,0,w,h);
 				if(mousepos) over[mode](mousepos.x,mousepos.y);
 				canvas.onmouseover=function(e){
