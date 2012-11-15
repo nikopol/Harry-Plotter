@@ -243,6 +243,7 @@
 				//get mouseover
 				if(_('#mouseover').checked) {
 					var m=getlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo');
+					if(_('#mosort').checked) m.sort=true;
 					if(!isEmpty(m)) o.mouseover=m;
 				} else
 					o.mouseover=false;
@@ -290,7 +291,11 @@
 						setlst('x y color','grid',o.grid);
 						setlst('x y color font color marks shadow ypos','label',o.labels);
 						setlst('width height mode fill opacity margins background linewidth linejoin radiuspoint autoscale barspace','',o);
+						_('#mouseover').checked=(o.mouseover==undefined || o.mouseover!==false);
+						_('#mosort').checked=(o.mouseover && o.mouseover.sort);
 						setlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo',o.mouseover);
+						_('#legends').checked=(o.legends==undefined || o.legends!==false);
+
 						setlst('layout x y font background color border border2 shadow shadowbox','leg',o.legends);
 					}
 				}
@@ -694,7 +699,7 @@
 				<input type="text" id="legy" placeholder="int" value="" /><br/>
 				<label for="legbackground">background</label>
 				<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legbackground" value="" class="color"/>
-				<input type="color" id="ilegbackground"/>
+				<input type="color" id="ilegbackground"/><br/>
 			</div>
 			<div class="formcol">
 				<label for="legfont">font</label>
@@ -745,7 +750,9 @@
 					<option>xy</option>
 					<option>x</option>
 					<option>y</option>
-				</select>
+				</select><br/>
+				<label for="mosort">sorted</label>
+				<input type="checkbox" id="mosort" /><br/>
 			</div>
 			<div class="formcol">
 				<label for="motext">text</label>

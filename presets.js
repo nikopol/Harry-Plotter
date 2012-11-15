@@ -43,7 +43,7 @@
 			"mode":"chart",
 			"fill":"vertical",
 			"autoscale":"top",
-			"legends":{"color":"#","border":"#fff"},
+			"legends":false,
 			"bg":"white",
 			"mouseover":{"radius":3,"linewidth":3,"circle":"#666","border":"#fff","border2":"#fff","bullet":"#666"}
 		},
