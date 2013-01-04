@@ -390,7 +390,7 @@ harry=(function(o){
 			ds.lab.push(l);
 			ds.sum+=v;
 			if(v>ds.max) ds.max=v;
-			if(v<ds.min) ds.min=v;
+			if(v && v<ds.min) ds.min=v;
 		}
 		ds.len=ds.val.length;
 		ds.avg=ds.len ? ds.sum/ds.len : 0;
