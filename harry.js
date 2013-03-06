@@ -1,5 +1,5 @@
-// harry plotter 0.8
-// ~L~ nikomomo@gmail.com 2009-2012
+// harry plotter 0.8a
+// ~L~ nikomomo@gmail.com 2009-2013
 // https://github.com/nikopol/Harry-Plotter
 
 /*
@@ -119,8 +119,14 @@ var h=harry({
 		border2: "#fff",          //  spot color, default=none
 		axis: "xy|x|y",           //  draw spot axis, default=none
 		text: "%v",               //  text in the bullet (%v=value %l=label %n=index %t=title)
-		text: callback(n,v,l,x,y) //  or text can trigger a callback
+		text: callback(obj)       //  or text can trigger a callback
 		                          //     if it returns a string, it'll be displayed
+		header: {                 //  header in the bullet 
+			text: "%v",               //  text in the bullet (same var than mouseover.text)
+			font: "9px Trebuchet MS", //  bullet header font, default=mouveover.font
+			color: "#666",            //  bullet text color, default=mouseover.color
+			shadow: "x,y,blur,#col",  //  bullet text shadow, default=none
+		}
 	}
 });
 
@@ -159,9 +165,9 @@ harry=(function(o){
 	},
 
 	calcColor=function(color,delta,alpha) {
-		var rgb=getRGB(color);
+		var rgb=getRGB(color),i;
 		if(typeof delta!="array") delta=[delta,delta,delta];
-		for(var i=0;i<3;++i) rgb[i]=Math.max(Math.min(rgb[i]+delta[i],255),0);
+		for(i=0;i<3;++i) rgb[i]=Math.max(Math.min(rgb[i]+delta[i],255),0);
 		return (alpha!=undefined)?
 			"rgba("+rgb.join(',')+","+alpha+")":
 			"rgb("+rgb.join(',')+")";
@@ -250,6 +256,27 @@ harry=(function(o){
 
 	percent=function(v,m) {
 		return m ? (Math.round(1000*v/m)/10)+'%' : '0%';
+	},
+
+	strf=function(t,v) {
+		var k,s="";
+		if(t){
+			s = typeof(t)=="function" ? t(v) : t;
+			if(v) for(k in v) s=s.replace('%'+k,v[k]);
+		}
+		return s;
+	},
+
+	textBox=function(gc,t,v,m,b) {
+		var n,w;
+		if(!b) b={};
+		if(!m) m=0;
+		b.lines=strf(t,v).split(/\n|\\n/);
+		b.lh=fontPixSize(gc.font)+m,
+		b.h=b.lines.length*b.lh,
+		b.w=0;
+		for(n in b.lines) if((w=gc.measureText(b.lines[n]).width+m*2)>b.w) b.w=w;
+		return b;
 	},
 
 //PRIVATE VARS ================================================================
@@ -684,29 +711,26 @@ harry=(function(o){
 	drawBullets=function(bs,center) { //[{x,y,r,v,n,nds}]
 		gc.save();
 		gc.font=mo.font;
-		var i,n,m,l=bs.length,b,lab,tit,txt,bh=0,bw=0,s=3,
+		var i,n,m,l=bs.length,b,txt,bh=0,bw=0,s=3,
 		    pt=fontPixSize(mo.font),
 		    pr=Math.floor(pt/2),lh=pt+s,x,y,x1,y1,x2,y2,
-		    xl=w,xr=0,yt=h,yb=0,mx=0;
+		    xl=w,xr=0,yt=h,yb=0,mx=0,v,head;
 		if(mo.sort) bs.sort(function(a,b){return parseFloat(b.v)-parseFloat(a.v)});
 		//calc max for pct if needed
 		for(n=0;n<l;n++) mx+=bs[n].v;
 		//calc texts sizes
 		for(n=0;n<l;n++){
 			b=bs[n];
-			lab=data[b.nds].lab[b.n];
-			tit=data[b.nds].tit;
-			txt=typeof(mo.text)=="function"
-				? mo.text(b.n,b.v,lab,b.x,b.y)
-				: mo.text.replace('%v',b.v).replace('%l',lab).replace('%n',b.n).replace('%t',tit).replace('%p',b.pct||percent(b.v,mx));
-			if(txt) {
-				b.lines=txt.split(/\n|\\n/);
-				b.h=b.lines.length*lh;
+			v={
+				v: b.v,
+				l: data[b.nds].lab[b.n],
+				n: b.n,
+				t: data[b.nds].tit,
+				p: b.pct||percent(b.v,mx)
+			};
+			b=textBox(gc,mo.text,v,s,b);
+			if(b.w) {
 				b.h2=Math.floor(b.h/2);
-				b.w=0;
-				for(i in b.lines)
-					if((m=gc.measureText(b.lines[i]).width+s*2)>b.w)
-						b.w=m;
 				if(b.w>bw) bw=b.w;
 				bh+=b.h;
 				b.r++;
@@ -716,10 +740,16 @@ harry=(function(o){
 				if(yb<b.y) yb=b.y;
 			}
 		}
-		//calc position
 		if(l>1) bw+=s*2+pt;
 		if(bh) {
+			if(mo.header) {
+				if(mo.header.font) gc.font=mo.header.font;
+				head=textBox(gc,mo.header.text,v,s);
+				if(head.w>bw) bw=head.w;
+				bh+=head.h;
+			}
 			bh+=s;
+			//calc position
 			if(center) {
 				x=xl+(xr-xl)/2;
 				x1=x-(bw/2);
@@ -761,6 +791,15 @@ harry=(function(o){
 			gc.textAlign='left';
 			gc.textBaseline='top';
 			y=y2+s;
+			if(head) {
+				x=x1+s;
+				setShadow(mo.header.shadow);
+				gc.fillStyle=mo.header.color||mo.color;
+				for(i=0;i<head.lines.length;++i,y+=head.lh)
+					gc.fillText(head.lines[i],x,y);
+				unsetShadow();
+				gc.font=mo.font;
+			}
 			for(n=0;n<l;n++) {
 				b=bs[n];
 				x=x1+s;

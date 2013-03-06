@@ -84,7 +84,14 @@ harry.timeline = (function(){
 			}
 		return r;
 	},
-	parse = function(d){ return new Date(d) },
+	parse = function(d){ 
+		var o = new Date(d);
+		if(!isNaN(o)) return o;
+		if(/^(\d{4})\D(\d{2})\D(\d{2})(?:\D(\d{2}))?(?:\D(\d{2}))?(?:\D(\d{2}))?/.test(d) )
+			return new Date(RegExp.$1,RegExp.$2,RegExp.$3,RegExp.$4||0,RegExp.$5||0,RegExp.$6||0);
+		console.log("unable to parse date ",d," please setup a parser");
+		return null;
+	},
 	fmtiso55 = function(d){ return d.toISOString().substr(5,5) },
 	fmttime5 = function(d){ return d.toTimeString().substr(0,5) },
 	fmttime8 = function(d){ return d.toTimeString().substr(0,8) };
