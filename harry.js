@@ -1,4 +1,4 @@
-// harry plotter 0.8a
+// harry plotter 0.9
 // ~L~ nikomomo@gmail.com 2009-2013
 // https://github.com/nikopol/Harry-Plotter
 
@@ -62,6 +62,7 @@ var h=harry({
 	margins:[top,right,bot,left], //margin size (for labels), default=auto
 	autoscale: "top+bottom",      //auto round top and/or bottom y scale, default=none
 	pointradius: int,             //radius point size in mode line/curve only, default=none
+	anim: int,                    //initial animation duration in seconds, default=disabled
 
 	title: {                      //title options
 		text: "title",            //  clear enough
@@ -344,7 +345,7 @@ harry=(function(o){
 			layout: 'v'
 		},o.legends),
 	data=[], dmin, dmax, dlen=0, dsum, drng, dinc,
-	rx, ry, rw, rh, rx2, ry2, lxl,
+	rx, ry, rw, rh, rx2, ry2, lxl, acf=1,
 
 //PRIVATE METHODS =============================================================
 
@@ -864,7 +865,7 @@ harry=(function(o){
 						if(flag.stack) for(j=0;j<=nds;j++) v+=data[j].val[i]-dinc;
 						else v=d.val[i]-dinc;
 						x.push(rx+Math.round(i*(rw/(l-1))));
-						y.push(ry2-Math.round(cy*v));
+						y.push(ry2-Math.round(cy*v*acf));
 					}
 					overpts.push({x:x,y:y,v:data[nds].val,nds:nds});
 					i--;
@@ -930,7 +931,7 @@ harry=(function(o){
 						for(nds=0;nds<dlen;nds++) {
 							d=data[nds];
 							x1=flag.stack?x:rx;
-							x=x1+Math.round(cf*d.val[nd]);
+							x=x1+Math.round(cf*d.val[nd]*acf);
 							y1=Math.round(y);
 							y2=Math.round(y+bw);
 							if(d.val[nd]!==null) {
@@ -958,7 +959,7 @@ harry=(function(o){
 						for(nds=0;nds<dlen;nds++) {
 							d=data[nds];
 							y1=flag.stack?y:ry2;
-							y=y1-Math.round(cf*d.val[nd]);
+							y=y1-Math.round(cf*d.val[nd]*acf);
 							x1=Math.round(x);
 							x2=Math.round(x+bw);
 							if(d.val[nd]!==null) {
@@ -1160,7 +1161,7 @@ harry=(function(o){
 		data=[];
 		dlen=0;
 		setup();
-	};
+	},
 
 	draw=function(nover) {
 		//console.log("[harry] draw "+mode+" "+keys(flag).join(" "));
@@ -1201,6 +1202,21 @@ harry=(function(o){
 			} else
 				mousepos=undefined;
 		}
+	},
+
+	anim=function(s){
+		var icf=1/(s*100/6),cb;
+		cb=function(){
+			console.log('anim frame ',acf);
+			draw();
+			if(acf<1) {
+				acf+=icf;
+				if(acf>=1) acf=1;
+				requestAnimationFrame(cb);
+			}
+		};
+		acf=0;
+		cb();
 	};
 	
 //INIT ========================================================================
@@ -1209,7 +1225,8 @@ harry=(function(o){
 	gc.translate(0.5,0.5);
 	if(o.datas) loads(o.datas);
 	else setup();
-	draw();
+	if(o.anim) anim(o.anim);
+	else draw();
 
 //PUBLIC METHODS ==============================================================
 

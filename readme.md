@@ -1,4 +1,4 @@
-harry plotter 0.8
+harry plotter 0.9
 -----------------
 ~L~ nikopol 2009-2012
 
@@ -81,6 +81,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		margins:[top,right,bot,left], //margin size (for labels), default=auto
 		autoscale: "top+bottom",      //auto round top and/or bottom y scale, default=none
 		pointradius: int,             //radius point size in mode line/curve only, default=none
+		anim: int,                    //initial animation duration in seconds, default=disabled
 
 		title: {                      //title options
 			text: "title",            //  clear enough
