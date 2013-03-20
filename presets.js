@@ -12,7 +12,7 @@
 			"linewidth":3, 
 			"background":"#666",
 			"autoscale":"top",
-			"grid":{"x":"0","y":"0"},
+			"grid":{"x":[0,100]},
 			"mouseover":{"radius":4,"linewidth":2,"circle":"#fff","bullet":"#444","shadowbox":"1,1,0,#000","axis":"x"},
 			"legends":{"color":"#fff","shadow":"1,1,0,#000"}
 		},
@@ -22,14 +22,15 @@
 				{"values":[59,21,30,86,5,75,24,92,80,11,22,83,19,91,99,74],"color":"#0cf"},
 				{"values":[58,0,5,40,82,37,37,77,92,76,38,47,98,43,38,42]}
 			],
-			"labels":{"x":1,"y":[0,50,100],"color":"#ddd","ypos":"right"},
+			"labels":{"y":[25,50,75,100],"color":"#ddd","ypos":"right"},
 			"mode":"curve:stack",
+			"margins":[5,22,18,1],
 			"fill":"solid",
 			"anim":1,
 			"linewidth":3,
 			"autoscale":"top",
 			"mouseover":{"radius":4,"linewidth":0,"circle":"#fff"},
-			"legends":{"background":"#444","color":"#fff","border":"#fff"},
+			"legends":{"layout":"h","color":"#fff","x":1,"y":135},
 			"bg":"black"
 		}
 	},
@@ -39,11 +40,11 @@
 				{"title":"in","color":"#393","values":{"May 12":20,"May 13":32,"May 14":55,"May 15":11,"May 16":18}},
 				{"title":"out","color":"#933","values":{"May 12":14,"May 13":21,"May 14":66,"May 15":33,"May 16":15}}
 			],
-			"labels":{"color":"#666","x":1,"y":[0,50,100]},
+			"labels":{"color":"#666","x":1,"y":[0,50,100],"ypos":"left+right"},
 			"mode":"chart",
 			"fill":"vertical",
 			"autoscale":"top",
-			"legends":{"color":"#","border":"#fff"},
+			"legends":false,
 			"bg":"white",
 			"anim":2,
 			"mouseover":{"radius":3,"linewidth":3,"circle":"#666","border":"#fff","border2":"#fff","bullet":"#666"}
@@ -59,7 +60,7 @@
 			"fill":"solid",
 			"autoscale":"top",
 			"mouseover":{"radius":3,"linewidth":3,"circle":"#666","border":"#fff","border2":"#fff","bullet":"#666"},
-			"legends":{"color":"#444"}
+			"legends":{"color":"#444","layout":"h"}
 		},
 		"Vertical Chart": {
 			"datas":[

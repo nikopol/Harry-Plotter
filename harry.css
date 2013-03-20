@@ -2,7 +2,7 @@
 /*niko 2012*/
 
 @import url(http://fonts.googleapis.com/css?family=Ubuntu);
-@import url(http://fonts.googleapis.com/css?family=Righteous); //B angers
+@import url(http://fonts.googleapis.com/css?family=Righteous);
 
 * {
 	padding: 0;
@@ -99,7 +99,7 @@ h1 {
 	left: 5px;
 	/*line-height: 0px !important;*/
 	width: 320px;
-	top: -24px;
+	top: -4px;
 	right: 0;
 	color: #fff;
 	font: bold 32px "Righteous","Sans Serif";
@@ -208,6 +208,10 @@ input[type="text"] {
 
 select {
 	box-shadow: rgba(255,255,255,0.1) 0 -1px 0, rgba(0,0,0,0.8) 0 -1px 7px 0 inset;
+}
+
+select:disabled {
+	background: #282C31;
 }
 
 select:after {
@@ -343,7 +347,7 @@ div.formcol {
 
 div.footer {
 	clear: both;
-	margin-top: 10px;
+	/*margin-top: 10px;*/
 	text-align: right;
 }
 
