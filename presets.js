@@ -25,6 +25,7 @@
 			"labels":{"x":1,"y":[0,50,100],"color":"#ddd","ypos":"right"},
 			"mode":"curve:stack",
 			"fill":"solid",
+			"anim":1,
 			"linewidth":3,
 			"autoscale":"top",
 			"mouseover":{"radius":4,"linewidth":0,"circle":"#fff"},
@@ -44,6 +45,7 @@
 			"autoscale":"top",
 			"legends":{"color":"#","border":"#fff"},
 			"bg":"white",
+			"anim":2,
 			"mouseover":{"radius":3,"linewidth":3,"circle":"#666","border":"#fff","border2":"#fff","bullet":"#666"}
 		},
 		"Stacked Charts": {

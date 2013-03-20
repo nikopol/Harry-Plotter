@@ -179,7 +179,7 @@
 				if(typeof(lst)=="string") lst=lst.split(' ');
 				lst.forEach(function(l){
 					if((v=val((pfx||'')+l)).length)
-						if(/^(x|y|radius|radiuspoint|marks|linewidth|width|height)$/.test(l))
+						if(/^(x|y|radius|radiuspoint|marks|anim|linewidth|width|height)$/.test(l))
 							h[l]=parseInt(v,10);
 						else if(/^(opacity)$/.test(l))
 							h[l]=parseFloat(v);
@@ -234,7 +234,7 @@
 					if(w.length) o.labels.y=values(w);
 				}
 				//get render
-				getlst('width height mode fill opacity margins background linewidth linejoin radiuspoint autoscale','',o);
+				getlst('width height mode fill opacity margins background linewidth linejoin radiuspoint anim autoscale','',o);
 				//get mouseover
 				if(_('#mouseover').checked) {
 					var m=getlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo');
@@ -284,7 +284,7 @@
 						setlst('text font color x y z shadow','title',o.title);
 						setlst('x y color','grid',o.grid);
 						setlst('x y color font color marks shadow ypos','label',o.labels);
-						setlst('width height mode fill opacity margins background linewidth linejoin radiuspoint autoscale','',o);
+						setlst('width height mode fill opacity margins background linewidth linejoin radiuspoint anim autoscale','',o);
 						setlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo',o.mouseover);
 						setlst('x y font background color border border2 shadow shadowbox','leg',o.legends);
 					}
@@ -437,7 +437,7 @@
 </head>
 <body>
 
-	<h1>Harry Plotter v0.8</h1>
+	<h1>Harry Plotter v0.9</h1>
 	<menu>
 		<button id="butreadme">Read me</button><button id="butgenerator">Generator</button><button id="butpresets">Presets</button>
 	</menu>
@@ -593,7 +593,17 @@
 					<option>15</option>
 					<option>20</option>
 					<option>40</option>
-				</select>px
+				</select>px<br/>
+				<label for="anim">animation</label>
+				<select title="animation duration in seconds" id="anim">
+					<option></option>
+					<option>1</option>
+					<option>2</option>
+					<option>3</option>
+					<option>4</option>
+					<option>5</option>
+					<option>10</option>
+				</select>s
 			</div>
 
 			<hr/>

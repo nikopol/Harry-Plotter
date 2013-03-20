@@ -1,6 +1,6 @@
-harry plotter 0.8
+harry plotter 0.9
 -----------------
-~L~ nikopol 2009-2012
+~L~ nikopol 2009-2013
 
 **what's that**
 
@@ -23,6 +23,9 @@ a generator, that let's you play with all parameters can be used [here](http://n
 
 **constructor**
 
+	//everything in the constructor is optional
+	//if data are provided, the graph is directly drawn
+
 	var h=harry({
 
 		//datas can be provided in these formats :
@@ -43,8 +46,8 @@ a generator, that let's you play with all parameters can be used [here](http://n
 
 		//context
 
-		id: "str",                    //canvas's id, by default harry$n
-		container: "str/elem",        //container where create canvas, default=body
+		id: "str",                    //canvas's id, by default "harry"+count++
+		container: "str/elem",	      //container where create canvas, default=body
 		canvas: "str/elem",           //canvas element, default=create it into container
 		width: int,                   //canvas's width, default=container.width or 300
 		height: int,                  //canvas's height, default=container.height or 150
@@ -52,16 +55,17 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		//rendering
 
 		background: "rgba(0,0,0,0.5)" //background color, default=transparent
-			mode: "curve:river",      //draw mode, can be:
+		mode: "curve:stack",          //draw mode, can be:
 		                              //  pie          cheesecake
 		                              //  chart        histogram, side by side
 		                              //  chart:stack  stacked histograms
-		                              //  chart:vertical vert. histograms
-		                              //  chart:stack:vertical vert. stacked histograms
+		                              //  chart:vertical  vert. histograms
+		                              //  chart:stack:vertical  vert. stacked histograms
 		                              //  line         lines (default)
 		                              //  line:stack   stacked lines
 		                              //  curve        curved lines
 		                              //  curve:stack  stacked curved lines
+		barspace: int,                //space between bars for mode chart only, default=auto
 		linewidth: int,               //line width, default=1
 		linejoin: "round",            //line join, can be round|bevel|miter default=miter
 		fill: "vertical",             //fill style (only first letter matter), can be:
@@ -75,8 +79,9 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		                              //  radial       radial gradient fill
 		opacity: 0.8,                 //fill opacity, between 0 and 1, overrided if fill=auto
 		margins:[top,right,bot,left], //margin size (for labels), default=auto
-		autoscale: true,              //auto round up y scale, default=true (unused for pie)
-		pointradius: int,             //radius point in mode line/curve only (default=none)
+		autoscale: "top+bottom",      //auto round top and/or bottom y scale, default=none
+		pointradius: int,             //radius point size in mode line/curve only, default=none
+		anim: int,                    //initial animation duration in seconds, default=disabled
 
 		title: {                      //title options
 			text: "title",            //  clear enough
@@ -95,7 +100,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 			shadow: "x,y,blur,#col",  //  label text shadow, default=none
 			y: [0,50,100],            //  y axis, numbers are %, default=none
 			ypos: "left+right",       //  y labels position, default=right
-			x: int,                   //  x axis, 1=draw all label, 2=one/two..., default=none
+			x: int,                   //  x axis, display 1/int labels, 1=all..., default=none
 			marks: int                //  graduation's marks size, default=0
 		},
 
@@ -105,10 +110,11 @@ a generator, that let's you play with all parameters can be used [here](http://n
 			background: "rgba(180,180,180,0.5)",//background color, default=rgba(255,255,255,0.5)
 			border: "#fff",           //  legends border color, default=none
 			shadowbox: "x,y,b,#col",  //  legends box shadow, default=none
-			border2: "#fff",          //  color box border color, default=fff
+			border2: "#fff",          //  color box border color, default=none
 			color: "#000",            //  text color, default, #666
 			shadow: "x,y,blur,#col",  //  legends text shadow, default=none
 			font:'9px "Trebuchet MS"' //  font size & family, default=normal 10px "Sans Serif"
+			layout: 'h'               //  legends layout h(orizontal) or v(ertical) default=v
 		},
 
 		grid: {                       //grid options
@@ -119,18 +125,19 @@ a generator, that let's you play with all parameters can be used [here](http://n
 
 		//interaction
 
-		mouseover: {                  //set to false to disable mouseover, default=enabled
-			radius: int,              //  spot radius, default=5
-			linewidth: int,           //  spot linewidth, default=linewidth below,0=fill
-			circle: "#888888",        //  spot color, default=#888
+		mouseover: {,                 //set to false to disable mouseover, default=enabled
+			bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=rgba(99,99,99,0.8)
+			border: "#fc0",           //  bullet border color, default=none,
+			shadowbox: "x,y,b,#col",  //  bullet box shadow, default=none
 			font: "9px Trebuchet MS", //  bullet text font, default=normal 9px "Sans Serif"
 			color: "#666",            //  bullet text color, default=#fff
 			shadow: "x,y,blur,#col",  //  bullet text shadow, default=none
-			bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=rgba(99,99,99,0.8)
-			shadowbox: "x,y,b,#col",  //  bullet box shadow, default=none
-			border: "#fc0",           //  bullet border color, default=#fff,
+			radius: int,              //  spot radius, default=5
+			linewidth: int,           //  spot linewidth, default=linewidth below,0=fill
+			circle: "#888888",        //  spot color, default=#888
+			border2: "#fff",          //  spot color, default=none
 			axis: "xy|x|y",           //  draw spot axis, default=none
-			text: "%t\n%l: %v",       //  text in the bullet %v=value %l=label %n=index %t=title
+			text: "%v",               //  text in the bullet (%v=value %l=label %n=index %t=title)
 			text: callback(n,v,l,x,y) //  or text can trigger a callback
 			                          //     if it returns a string, it'll be displayed
 		}
