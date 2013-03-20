@@ -528,13 +528,13 @@
 				</select><br/>
 				<label for="anim">animation</label>
 				<select title="animation duration in seconds" id="anim">
-					<option></option>
-					<option>1</option>
-					<option>2</option>
+					<option value="">0 - disabled</option>
+					<option value="1">1 - speed</option>
+					<option value="2">2 - smooth</option>
 					<option>3</option>
 					<option>4</option>
 					<option>5</option>
-					<option>10</option>
+					<option value="10">10 - slowmotion</option>
 				</select>s<br/>
 				<label for="width">width</label>
 				<input type="text" id="width" class="int" value="" placeholder="300"/>px<br/>
@@ -555,9 +555,8 @@
 			<div class="formcol">
 				<label for="fill">fill</label>
 				<select id="fill">
-					<option value="">auto</option>
+					<option value="">solid</option>
 					<option>none</option>
-					<option>solid</option>
 					<option>light</option>
 					<option>dark</option>
 					<option>vertical</option>
