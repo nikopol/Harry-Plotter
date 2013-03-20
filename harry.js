@@ -283,7 +283,7 @@ harry=(function(o){
 //PRIVATE VARS ================================================================
 
 	canvas=o.canvas
-		? document.getElementById(o.canvas)
+		? (o.canvas.constructor == HTMLCanvasElement ? o.canvas : document.getElementById(o.canvas))
 		: buildCanvas(o.container,o.width||300,o.height||150),
 	w=canvas.width,
 	h=canvas.height,
