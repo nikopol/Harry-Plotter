@@ -51,8 +51,7 @@ var h=harry({
 	linejoin: "round",            //line join, can be round|bevel|miter default=miter
 	fill: "vertical",             //fill style (only first letter matter), can be:
 	                              //  none         without fills
-	                              //  auto         fill or not depending mode (default)
-	                              //  solid        uniform fill
+	                              //  solid        uniform fill (default)
 	                              //  light        lighten color
 	                              //  dark         darken color
 	                              //  vertical     vertical gradient fill
@@ -137,9 +136,9 @@ var h=plotter({...});
 
 h.clear()             //delete all datasets
  .load(data)          //add a dataset (see contructor)
- .draw();             //draw all datasets
+ .draw();             //draw all datasets without anim
 h.canvas.onclick=function(){
-	 h.draw('chart'); //redraw
+	h.draw('chart'); //redraw
 };
 
 */
@@ -292,7 +291,7 @@ harry=(function(o){
 	bg=o.background,
 	flag=getFlag(o.mode),
 	mode=getMode(o.mode),
-	fill=(o.fill||"a")[0].toLowerCase().replace(/[^nasvhrdl]+/g,"a"),
+	fill=(o.fill||"s")[0].toLowerCase().replace(/[^nsvhrdl]/g,"s"),
 	opacity=parseFloat(o.opacity)||1,
 	linewidth=parseInt(o.linewidth,10)||1,
 	linejoin=o.linejoin||"miter",
@@ -435,23 +434,10 @@ harry=(function(o){
 		setup();
 	},
 
-	//return auto fillmode
-	getFillMode=function() {
-		if(fill=="a") {
-			if(flag.stack) return "v";
-			if(flag.line)  return dlen>1?"n":"v";
-			if(flag.curve) return dlen>1?"n":"v";
-			if(flag.chart) return dlen>1?"s":flag.vertical?"h":"v";
-			if(flag.pie)   return "r";
-			return "s";
-		}
-		return fill;
-	},
-	
 	//set and return a fillstyle
 	setGradient=function(c) {
 		var g;
-		switch(getFillMode()) {
+		switch(fill) {
 		case "s": //solid
 			g=calcColor(c,0,opacity);
 			break;
