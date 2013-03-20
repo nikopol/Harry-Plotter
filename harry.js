@@ -229,18 +229,19 @@ harry=(function(o){
 			return [m,m,m,m];
 		}
 		var
+		lp=/^l/i.test(l.ypos),
 		f=Math.floor(m/2),
 		k=l.marks;
 		return flag.vertical ? [
-		/*top*/    l.y && /l/i.test(l.ypos) ? m+4 : (l.x?m:1),
+		/*top*/    l.y && lp ? m+4 : (l.x?m:1),
 		/*right*/  l.y ? m : 1,
-		/*bottom*/ l.y && /r/i.test(l.ypos) ? m+4 : (l.x?m:1),
+		/*bottom*/ l.y && !lp ? m+4 : (l.x?m:1),
 		/*left*/   l.x ? 4+l.xwidth : (l.y?m:1)
 		] : [
 		/*top*/    l.y ? f : 1,
-		/*right*/  l.y && /r/i.test(l.ypos) ? 4+l.ywidth : (l.x?m:1),
+		/*right*/  l.y && !lp ? 4+l.ywidth : (l.x?m:1),
 		/*bottom*/ l.x ? 3+m+k : (l.y?m:1),
-		/*left*/   l.y && /l/i.test(l.ypos) ? 4+l.ywidth : (l.x?f:1)
+		/*left*/   l.y && lp ? 4+l.ywidth : (l.x?f:1)
 		];
 	},
 
@@ -323,7 +324,7 @@ harry=(function(o){
 	overpts=[],
 	overpie={n:false},
 	automargins=o.margins ? false : true,
-	margins=automargins ? calcMargins(flag,labels,mo) : o.margins,
+	margins=o.margins||[0,0,0,0],
 	grid=merge({
 		color: "#a0a0a0",
 		x: [0,100],
@@ -367,7 +368,6 @@ harry=(function(o){
 				if(d.maxlab) labels.xwidth=Math.max(labels.xwidth,gc.measureText(d.maxlab).width);
 			}
 			if(scaletop) dmax=scaleUp(dmax);
-			labels.ywidth=gc.measureText(dmax||'0').width;
 			if(flag.stack) {
 				for(i=0,l=data[0].len;i<l;++i) {
 					s=0;
@@ -380,7 +380,7 @@ harry=(function(o){
 				drng=scalebot ? dmax-dmin : dmax;
 			}
 			dinc=scalebot ? dmin : 0;
-			
+			labels.ywidth=gc.measureText(dsum||'0').width;
 		}
 		//misc
 		labels.fontpx=fontPixSize(labels.font);
