@@ -202,7 +202,7 @@ input[type="text"] {
 	box-shadow: rgba(255,255,255,0.1) 0 1px 0, rgba(0,0,0,0.8) 0 1px 7px 0 inset;
 	border-radius: 4px;
 	font: normal 9pt "Ubuntu","Sans Serif";
-	width: 180px;
+	width: 175px;
 	margin: 1px;
 }
 
@@ -234,6 +234,7 @@ input[type=color] {
 	width: 16px;
 	border: none;
 	background: transparent;
+	color: transparent;
 }
 
 input[type="text"].color {
@@ -302,7 +303,7 @@ td input[type="text"].color {
 }
 
 td input[type="text"].data {
-	width: 328px;
+	width: 320px;
 }
 
 pre {
