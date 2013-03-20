@@ -20,6 +20,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
   - lightweight
   - standalone
   - fully configurable
+  - animation
 
 **constructor**
 

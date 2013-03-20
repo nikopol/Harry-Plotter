@@ -1205,13 +1205,13 @@ harry=(function(o){
 	},
 
 	anim=function(s){
-		var icf=1/(s*100/6),cb;
+		var i=100/6,icf=1/(s*i),cb;
 		cb=function(){
 			draw();
 			if(acf<1) {
 				acf+=icf;
 				if(acf>=1) acf=1;
-				requestAnimationFrame(cb);
+				setTimeout(cb,i);
 			}
 		};
 		acf=0;
