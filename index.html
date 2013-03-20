@@ -6,9 +6,9 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 	<title>Harry Plotter</title>
 	<link href='harry.css' rel='stylesheet' type='text/css'>
-	<script src="https://raw.github.com/nikopol/Harry-Plotter/master/harry.min.js"></script>
-	<script src="https://raw.github.com/nikopol/miniko.js/master/miniko.min.js"></script>
-	<script src="https://raw.github.com/nikopol/minitools.js/master/minitools.min.js"></script>
+	<script src="harry.js"></script>
+	<script src="miniko.js"></script>
+	<script src="minitools.js"></script>
 	<!--
 	<script src="harry.js"></script>
 	<script src="miniko.js"></script>
@@ -334,6 +334,32 @@
 			else if(/^rgba?\((\d+),(\d+),(\d+)(?:,[\d\.]+)?\)$/i.test(col))
 				v='#'+('0'+RegExp.$1.toString(16)).substr(-2)+('0'+RegExp.$2.toString(16)).substr(-2)+('0'+RegExp.$3.toString(16)).substr(-2);
 			if(o.value.toLowerCase()!=v.toLowerCase()) o.value=v;
+		},
+
+		animode="chart",
+		anitimer=false,
+		anidata=[],
+		setupanim=function(){
+			var w=window.innerWidth,c=_('#headanim'),p,nbd=w/4;
+			if(anitimer!==false) clearInterval(anitimer);
+			css(c,{width:w+'px'});
+			c.setAttribute('width',w+'px');
+			while(anidata.length>nbd) anidata.pop();
+			while(anidata.length<nbd) anidata.push(Math.floor(Math.random()*100));
+			p=plotter({
+				canvas:c,
+				datas:[{color:"#5d5f55",values:anidata}],
+				grid:{ y:"", x:"" },
+				width:w,
+				height:9,
+				mode:animode,
+				mouseover:false
+			});
+			anitimer=setInterval(function(){
+				anidata.shift();
+				anidata.push(Math.floor(Math.random()*100));
+				p.clear().load([{color:"#5d5f55",values:anidata}]).draw();
+			},40);
 		};
 
 		//INIT
@@ -442,11 +468,15 @@
 				.add("alt+r",function(){ settab("readme") }, true)
 				.add("alt+g",function(){ settab("generator") }, true)
 				.add("alt+p",function(){ settab("presets") }, true);
+
+			setupanim();
+			window.onresize=setupanim;
 		});
 	</script>
 </head>
 <body>
 
+	<canvas id="headanim"></canvas>
 	<h1>Harry Plotter v0.9</h1>
 	<menu>
 		<button id="butreadme">Read me</button><button id="butgenerator">Generator</button><button id="butpresets">Presets</button>
@@ -806,6 +836,16 @@
 		Presets are in the file presets.js
 	</content>
 
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-27845368-6']);
+		_gaq.push(['_trackPageview']);
+		(function() {
+		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
 </body>
 </html>
 

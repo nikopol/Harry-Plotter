@@ -95,7 +95,7 @@ menu button.on {
 
 h1 {
 	position: absolute;
-	z-index: 4;
+	z-index: 5;
 	left: 5px;
 	/*line-height: 0px !important;*/
 	width: 320px;
@@ -522,4 +522,12 @@ input.none {
 	linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa)bl;
 	background-size: 30px 30px;
 	background-position: 0 0, 15px 15px
+}
+
+#headanim {
+	z-index: 4;
+	position: absolute;
+	left: 0;
+	top: 25px;
+	height: 9px;
 }
