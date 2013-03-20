@@ -57,7 +57,7 @@ var h=harry({
 	                              //  vertical     vertical gradient fill
 	                              //  horizontal   horizontal gradient fill
 	                              //  radial       radial gradient fill
-	opacity: 0.8,                 //fill opacity, between 0 and 1, overrided if fill=auto
+	opacity: 0.8,                 //fill opacity, between 0 and 1
 	margins:[top,right,bot,left], //margin size (for labels), default=auto
 	autoscale: "top+bottom",      //auto round top and/or bottom y scale, default=none
 	pointradius: int,             //radius point size in mode line/curve only, default=none
