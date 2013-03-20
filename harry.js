@@ -994,7 +994,7 @@ harry=(function(o){
 					for(i=0;i<dlen;i++) sum+=data[i].sum;
 					if(sum)
 						for(i=0,nb=dlen;i<dlen;i++) {
-							va[i]=data[i].sum/sum*pi2;
+							va[i]=acf*data[i].sum/sum*pi2;
 							vc[i]=data[i].col;
 							lab.push(data[i].sum);
 							pct.push(percent(data[i].sum,sum));
@@ -1003,7 +1003,7 @@ harry=(function(o){
 					var d=data[0];
 					if(d.sum)
 						for(nb=d.len,i=0;i<nb;i++) {
-							va[i]=d.val[i]/d.sum*pi2;
+							va[i]=acf*d.val[i]/d.sum*pi2;
 							vc[i]=COLORS[i%COLORS.length];
 							lab.push(d.val[i]);
 							pct.push(percent(d.val[i],d.sum));
@@ -1207,7 +1207,6 @@ harry=(function(o){
 	anim=function(s){
 		var icf=1/(s*100/6),cb;
 		cb=function(){
-			console.log('anim frame ',acf);
 			draw();
 			if(acf<1) {
 				acf+=icf;
