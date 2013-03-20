@@ -125,6 +125,7 @@
 			var
 			val=function(id,val){
 				var o=_('#'+id);
+				if(!o) console.log(id,"not found!");
 				if(val!==undefined) o.value=val;
 				return o.value;
 			},
@@ -242,8 +243,10 @@
 					_('#barspace').setAttribute('disabled','disabled');
 				//get mouseover
 				if(_('#mouseover').checked) {
-					var m=getlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo');
+					var m=getlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo'),
+					    h=getlst('text font color shadow','head');
 					if(_('#mosort').checked) m.sort=true;
+					if(!isEmpty(h)) m.header=h;
 					if(!isEmpty(m)) o.mouseover=m;
 				} else
 					o.mouseover=false;
@@ -294,6 +297,7 @@
 						_('#mouseover').checked=(o.mouseover==undefined || o.mouseover!==false);
 						_('#mosort').checked=(o.mouseover && o.mouseover.sort);
 						setlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo',o.mouseover);
+						setlst('text font color shadow','head',o.mouseover.header||{});
 						_('#legends').checked=(o.legends==undefined || o.legends!==false);
 
 						setlst('layout x y font background color border border2 shadow shadowbox','leg',o.legends);
@@ -790,19 +794,6 @@
 					<option>x</option>
 					<option>y</option>
 				</select><br/>
-				<label for="mosort">sorted</label>
-				<input type="checkbox" id="mosort" /><br/>
-			</div>
-			<div class="formcol">
-				<label for="motext">text</label>
-				<input type="text" id="motext" title="%l=label %v=value %n=index %p=pct(pie only)" placeholder="%v" value=""/><br/>
-				<label for="mofont">text font</label>
-				<input type="text" id="mofont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
-				<label for="mocolor">text color</label>
-				<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocolor" value="" class="color"/>
-				<input type="color" id="imocolor"/><br/>
-				<label for="moshadow">text shadow</label>
-				<input type="text" placeholder="x,y,blur,color" id="moshadow" value="" /><br/>
 				<label for="mobullet">bullet color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mobullet" value="" class="color"/>
 				<input type="color" id="imobullet"/><br/>
 				<label for="moshadowbox">bullet shadow</label>
@@ -810,6 +801,28 @@
 				<label for="moborder">bullet border</label>
 				<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="moborder" value="" class="color"/>
 				<input type="color" id="imoborder"/>
+			</div>
+			<div class="formcol">
+				<label for="motext">text</label>
+				<input type="text" id="motext" title="%l=label %v=value %n=index %p=pct(pie only) %t=dataset" placeholder="%v" value=""/><br/>
+				<label for="mofont">text font</label>
+				<input type="text" id="mofont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
+				<label for="mocolor">text color</label>
+				<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocolor" value="" class="color"/>
+				<input type="color" id="imocolor"/><br/>
+				<label for="moshadow">text shadow</label>
+				<input type="text" placeholder="x,y,blur,color" id="moshadow" value="" /><br/>
+				<label for="mosort">sorted</label>
+				<input type="checkbox" id="mosort" /><br/>
+				<label for="headtext">header text</label>
+				<input type="text" id="headtext" title="%l=label %v=value %n=index %p=pct(pie only) %t=dataset" placeholder="" value=""/><br/>
+				<label for="headfont">header font</label>
+				<input type="text" id="headfont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
+				<label for="headcolor">header color</label>
+				<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="headcolor" value="" class="color"/>
+				<input type="color" id="iheadcolor"/><br/>
+				<label for="headshadow">header shadow</label>
+				<input type="text" placeholder="x,y,blur,color" id="headshadow" value="" /><br/>
 			</div>
 
 			<hr/>

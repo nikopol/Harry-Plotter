@@ -47,7 +47,7 @@
 			"legends":false,
 			"bg":"white",
 			"anim":2,
-			"mouseover":{"radius":3,"linewidth":3,"circle":"#666","border":"#fff","border2":"#fff","bullet":"#666"}
+			"mouseover":{"radius":3,"linewidth":3,"circle":"#666","border":"#fff","border2":"#fff","bullet":"#666","header":{"text":"%l","font":"bold 10px \"Sans Serif\""},"text":"%t: %v"}
 		},
 		"Stacked Charts": {
 			"datas": [
