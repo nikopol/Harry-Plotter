@@ -233,10 +233,10 @@ harry=(function(o){
 		f=Math.floor(m/2),
 		k=l.marks;
 		return flag.vertical ? [
-		/*top*/    l.y && lp ? m+4 : (l.x?m:1),
+		/*top*/    l.y && lp ? m+4 : (l.x?m:0),
 		/*right*/  l.y ? m : 1,
 		/*bottom*/ l.y && !lp ? m+4 : (l.x?m:1),
-		/*left*/   l.x ? 4+l.xwidth : (l.y?m:1)
+		/*left*/   l.x ? 4+l.xwidth : (l.y?m:0)
 		] : [
 		/*top*/    l.y ? f : 0,
 		/*right*/  l.y && !lp ? 4+l.ywidth : (l.x?m:1),
