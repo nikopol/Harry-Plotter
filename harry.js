@@ -99,8 +99,9 @@ var h=harry({
 
 	grid: {                       //grid options
 		color:"#a0a0a0",          //  grid color, default=#a0a0a0
+		linewidth: int            //  grid linewidth default=1
 		y: [0,50,100],            //  y axis, numbers are %, default=[0,25,50,75,100]
-		x: [0,100]                //  x axis, numbers are %, default=[0,100]
+		x: "left|right|all|int"   //  x axis, int=display 1/n, default="left+right"
 	},
 
 	//interaction
@@ -229,19 +230,20 @@ harry=(function(o){
 			return [m,m,m,m];
 		}
 		var
-		lp=/^l/i.test(l.ypos),
+		ll=/l/i.test(l.ypos),
+		lr=/r/i.test(l.ypos),
 		f=Math.floor(m/2),
 		k=l.marks;
 		return flag.vertical ? [
-		/*top*/    l.y && lp ? m+4 : (l.x?m:0),
+		/*top*/    l.y && ll ? m+4 : (l.x?m:0),
 		/*right*/  l.y ? m : 1,
-		/*bottom*/ l.y && !lp ? m+4 : (l.x?m:1),
+		/*bottom*/ l.y && lr ? m+4 : (l.x?m:1),
 		/*left*/   l.x ? 4+l.xwidth : (l.y?m:0)
 		] : [
 		/*top*/    l.y ? f : 0,
-		/*right*/  l.y && !lp ? 4+l.ywidth : (l.x?m:1),
+		/*right*/  l.y && lr ? 4+l.ywidth : (l.x?m:1),
 		/*bottom*/ l.x ? 3+m+k : (l.y?m:1),
-		/*left*/   l.y && lp ? 4+l.ywidth : (l.x?f:0)
+		/*left*/   l.y && ll ? 4+l.ywidth : (l.x?f:0)
 		];
 	},
 
@@ -327,7 +329,8 @@ harry=(function(o){
 	margins=o.margins||[0,0,0,0],
 	grid=merge({
 		color: "#a0a0a0",
-		x: [0,100],
+		linewidth: 1,
+		x: 'lr',
 		y: [0,25,50,75,100]
 	},o.grid),
 	title=o.title
@@ -388,7 +391,6 @@ harry=(function(o){
 			labels.x=1;
 			labels.xauto=true;
 		}
-		if(/none|false/.test(grid.x)) grid.x=[];
 		if(/none|false/.test(grid.y)) grid.y=[];
 		//plot zone
 		if(automargins) margins=calcMargins(flag,labels,mo);
@@ -513,27 +515,13 @@ harry=(function(o){
 		}
 	},
 	
-	//draw the background grid
-	drawGrid=function() {
+	//draw the background grid Y axis
+	drawYGrid=function() {
 		if(!flag.pie) {
 			var i,l,x,y;
-			gc.lineWidth=grid.linewidth || 1;
+			gc.lineWidth=grid.linewidth;
 			gc.strokeStyle=grid.color;
-			//console.log("[harry] grid x("+grid.x.join(",")+") y("+grid.y.join(",")+")"); 
-			if(grid.x)
-				for(i=0,l=grid.x.length;i<l;++i) {
-					gc.beginPath();
-					if(flag.vertical) {
-						y=ry+Math.round(rh*grid.x[i]/100);
-						gc.moveTo(rx,y);
-						gc.lineTo(rx2,y);
-					} else {
-						x=rx+Math.round(rw*grid.x[i]/100);
-						gc.moveTo(x,ry);
-						gc.lineTo(x,ry2);
-					}
-					gc.stroke();
-				}
+			//console.log("[harry] grid x("+grid.x+") y("+grid.y.join(",")+")"); 
 			if(grid.y)
 				for(i=0,l=grid.y.length;i<l;++i) {
 					gc.beginPath();
@@ -545,6 +533,33 @@ harry=(function(o){
 						y=ry2-Math.round(rh*grid.y[i]/100);
 						gc.moveTo(rx,y);
 						gc.lineTo(rx2,y);
+					}
+					gc.stroke();
+				}
+		}
+	},
+
+	//draw the background grid on X axis
+	drawXGrid=function(x) {
+		var i,y,
+		l=x.length,
+		gx=grid.x,
+		ga=/a/i.test(gx),
+		gl=/l/i.test(gx),
+		gr=/r/i.test(gx),
+		n=parseInt(gx,10);
+		if(gx) {
+			gc.lineWidth=grid.linewidth;
+			gc.strokeStyle=grid.color;
+			for(i=0;gx && i<l;++i) 
+				if(ga || (n && i%n==0) || (i==0 && gl) || (i==l-1 && gr)) {
+					gc.beginPath();
+					if(flag.vertical) {
+						gc.moveTo(rx,x[i]);
+						gc.lineTo(rx2,x[i]);
+					} else {
+						gc.moveTo(x[i],ry);
+						gc.lineTo(x[i],ry2);
 					}
 					gc.stroke();
 				}
@@ -853,6 +868,7 @@ harry=(function(o){
 						x.push(rx+Math.round(i*(rw/(l-1))));
 						y.push(ry2-Math.round(cy*v*acf));
 					}
+					if(nds+1==dlen) drawXGrid(x);
 					overpts.push({x:x,y:y,v:data[nds].val,nds:nds});
 					i--;
 					x.push(rx+Math.round(i*(rw/(l-1))));
@@ -902,21 +918,24 @@ harry=(function(o){
 			//console.log("[harry] chart ("+dlen+" dataset)");
 			overpts = [];
 			if(dlen){
-				var nd,nds,nbd=data[0].len,m=barspace=='a'?(dlen>1?4:0):barspace,nbdsv=flag.stack?1:dlen,
-				    tbw=flag.vertical?rh:rw,bw=(nbd && dlen)?(((tbw-(m*(nbd-1)))/nbd)/nbdsv)-1:0,
-				    d,g,y=ry,y1,y2,x=rx,x1,x2,tcf=flag.vertical?rw:rh,ly=ry2+labels.marks+2,
-				    cf=flag.stack?(dsum?tcf/dsum:0):(dmax?tcf/dmax:0);
+				var nd,nds,nbd=data[0].len,m=barspace=='a'?(dlen>1?4:0):barspace,
+					fs=flag.stack,fv=flag.vertical,nbdsv=fs?1:dlen,tbw=fv?rh:rw,
+					bw=(nbd && dlen)?(((tbw-(m*(nbd-1)))/nbd)/nbdsv)-1:0,
+				    d,g,y,y1,y2,x,x1,x2,tcf=fv?rw:rh,ly=ry2+labels.marks+2,gx=[],
+				    cf=fs?(dsum?tcf/dsum:0):(dmax?tcf/dmax:0);
 				if(bw<0) bw=0;
+				for(y=fv?ry:rx,g=(fv?rh:rw)/(nbd||1),nd=0;nd<=nbd;nd++) gx.push(Math.round(y+nd*g));
+				drawXGrid(gx);
 				gc.lineWidth=linewidth;
 				gc.lineJoin="miter";
 				for(nds=0;nds<dlen;nds++) overpts.push({x:[],y:[],v:[],nds:nds});
-				if(flag.vertical)
-					for(nd=0;nd<nbd;nd++) {
+				if(fv)
+					for(y=ry,nd=0;nd<nbd;nd++) {
 						drawXLabel(nd,rx-labels.marks-2,y,'right','top','v');
 						x=rx;
 						for(nds=0;nds<dlen;nds++) {
 							d=data[nds];
-							x1=flag.stack?x:rx;
+							x1=fs?x:rx;
 							x=x1+Math.round(cf*d.val[nd]*acf);
 							y1=Math.round(y);
 							y2=Math.round(y+bw);
@@ -934,17 +953,17 @@ harry=(function(o){
 							overpts[nds].x.push(x);
 							overpts[nds].y.push(Math.floor(y+bw/2));
 							overpts[nds].v.push(d.val[nd]);
-							if(!flag.stack) y+=bw+1;
+							if(!fs) y+=bw+1;
 						}
-						y+=flag.stack?bw+1+m:m;
+						y+=fs?bw+1+m:m;
 					}
 				else
-					for(nd=0;nd<nbd;nd++) {
+					for(x=rx,nd=0;nd<nbd;nd++) {
 						drawXLabel(nd,x+(((bw+1)*nbdsv)/2),ly,'center','top','h');
 						y=ry2;
 						for(nds=0;nds<dlen;nds++) {
 							d=data[nds];
-							y1=flag.stack?y:ry2;
+							y1=fs?y:ry2;
 							y=y1-Math.round(cf*d.val[nd]*acf);
 							x1=Math.round(x);
 							x2=Math.round(x+bw);
@@ -962,9 +981,9 @@ harry=(function(o){
 							overpts[nds].x.push(Math.floor(x+bw/2));
 							overpts[nds].y.push(y);
 							overpts[nds].v.push(d.val[nd]);
-							if(!flag.stack) x+=bw+1;
+							if(!fs) x+=bw+1;
 						}
-						x+=flag.stack?bw+1+m:m;
+						x+=fs?bw+1+m:m;
 					}					
 			}
 		},
@@ -1153,7 +1172,7 @@ harry=(function(o){
 		//console.log("[harry] draw "+mode+" "+keys(flag).join(" "));
 		lxl=-1;
 		cls();
-		drawGrid();
+		drawYGrid();
 		drawYLabels();
 		if(title && title.z=='top') {
 			plot[mode]();
