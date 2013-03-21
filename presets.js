@@ -30,8 +30,21 @@
 			"linewidth":3,
 			"autoscale":"top",
 			"mouseover":{"radius":4,"linewidth":0,"circle":"#fff"},
-			"legends":{"layout":"h","color":"#fff","x":1,"y":135},
+			"legends":{"layout":"h","color":"#fff","x":1,"y":133},
 			"bg":"black"
+		},
+		"Filled Lines" : {
+			"datas":[{"values":[1,2,4,8,16,32,16,8,4,2,1]},{"values":[32,16,8,4,2,1,2,4,8,16,32]}],
+			"labels":{"ypos":"left+right","y":[25,50,75,100]},
+			"mode":"line",
+			"opacity":0.5,
+			"background":"#fff",
+			"linewidth":2,
+			"radiuspoint":3,
+			"anim":1,
+			"autoscale":"top",
+			"mouseover":{"radius":4,"linewidth":2,"circle":"#666"},
+			"legends":false
 		}
 	},
 	"Charts": {
@@ -47,6 +60,7 @@
 			"legends":false,
 			"bg":"white",
 			"anim":2,
+			"barspace":10,
 			"mouseover":{"radius":3,"linewidth":3,"circle":"#666","border":"#fff","border2":"#fff","bullet":"#666","header":{"text":"%l","font":"bold 10px \"Sans Serif\""},"text":"%t: %v"}
 		},
 		"Stacked Charts": {
@@ -55,23 +69,24 @@
 				{"title":"spiderman","values":[97,57,33,99,31,53,29,85,78,68,48,30,43,69,43,9]},
 				{"title":"superman","values":[19,42,45,99,27,40,47,47,60,2,73,88,79,38,89,55]}
 			],
-			"labels":{"color":"#666","x":1,"y":[0,50,100]},
+			"labels":{"color":"#aaa","x":1,"y":[0,50,100]},
 			"mode":"chart:stack",
 			"fill":"solid",
 			"autoscale":"top",
 			"mouseover":{"radius":3,"linewidth":3,"circle":"#666","border":"#fff","border2":"#fff","bullet":"#666"},
-			"legends":{"color":"#444","layout":"h"}
+			"legends":{"color":"#fff","layout":"h"}
 		},
 		"Vertical Chart": {
 			"datas":[
 				{"title":"in","color":"#fc0","values":{"May 12":20,"May 13":32,"May 14":55,"May 15":11,"May 16":18}},
 				{"title":"out","color":"#779378","values":[14,21,66,33,15]}
 			],
-			"labels":{"color":"#666","ypos":"left+right","x":1,"y":[0,50,100]},
+			"labels":{"color":"#333","ypos":"left+right","x":1,"y":[0,50,100]},
 			"mode":"chart:vertical",
 			"autoscale":"top",
 			"mouseover":{"radius":3,"linewidth":3,"circle":"#666","border":"#fff","border2":"#fff","bullet":"#666"},
-			"legends":{"x":240,"color":"#000"}
+			"legends":{"x":240,"color":"#000"},
+			"bg":"white"
 		}		
 	},
 	"Pies": {
