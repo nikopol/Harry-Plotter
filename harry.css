@@ -131,10 +131,6 @@ content.on {
 	transition: 0.4s;
 }
 
-form {
-	width: 640px;
-}
-
 hr {
 	margin: 5px 0;
 	border-top: 1px solid #383c41;
@@ -197,7 +193,7 @@ input[type="text"] {
 	box-sizing: border-box;
 	color: #fff;
 	margin: 0 3px 1px 0;
-	background: #383C41;
+	background: #484C51;
 	border: 1px solid transparent;
 	box-shadow: rgba(255,255,255,0.1) 0 1px 0, rgba(0,0,0,0.8) 0 1px 7px 0 inset;
 	border-radius: 4px;
@@ -211,7 +207,7 @@ select {
 }
 
 select:disabled {
-	background: #282C31;
+	background: #383C41;
 }
 
 select:after {
@@ -303,7 +299,7 @@ td input[type="text"].color {
 }
 
 td input[type="text"].data {
-	width: 320px;
+	width: 480px;
 }
 
 pre {
@@ -342,7 +338,7 @@ pre {
 
 div.formcol {
 	float: left;
-	width: 49%;
+	width: 310px;
 	margin: 4px 0 4px 0;
 }
 
@@ -350,18 +346,6 @@ div.footer {
 	clear: both;
 	/*margin-top: 10px;*/
 	text-align: right;
-}
-
-#plot {
-	/*border: 1px #ddd dotted;*/
-	margin-bottom: 10px;
-}
-
-#js {
-}
-
-#jsout {
-	padding: 3px;
 }
 
 #forkme {
@@ -513,7 +497,7 @@ input.none {
 }
 
 .bgnone {
-	background-color: #eee;
+/*	background-color: #eee;
 	background-image: -webkit-linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), 
 	-webkit-linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa);
 	background-image: -moz-linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), 
@@ -521,7 +505,8 @@ input.none {
 	background-image: linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), 
 	linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa)bl;
 	background-size: 30px 30px;
-	background-position: 0 0, 15px 15px
+	background-position: 0 0, 15px 15px*/
+	background: none;
 }
 
 #headanim {
@@ -530,4 +515,75 @@ input.none {
 	left: 0;
 	top: 25px;
 	height: 9px;
+}
+
+content#generator {
+	/*background: #4b5056;*/
+	background: #666;
+}
+
+#rendgen {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	height: 200px;
+	overflow: hidden;
+	padding-left: -webkit-calc(50% - 480px);
+}
+
+#harrygen {
+	float: left;
+	width: 480px;
+	height: 190px;
+	padding: 3px;
+}
+
+#harrygen .bgswitch {
+	position: relative;
+	vertical-align: top;
+	top: auto;
+	display: inline;
+	float: right;
+}
+
+#plot {
+	overflow: auto;
+	text-align: center;
+}
+
+#jsgen {
+	float: left;
+	max-width: 480px;
+	width: -webkit-calc(100% - 500px);
+	width: calc(100% - 500px);
+	height: 190px;
+	padding: 3px;
+}
+
+#jsout {
+	padding: 3px;
+	height: 160px;
+	width: 460px;
+	overflow: auto;
+}
+
+#formgen {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 200px;
+	bottom: 0;
+	color: #fff;
+	overflow: auto;
+	padding: 5px;
+	padding-left: -webkit-calc(50% - 480px);
+}
+
+#fgen {
+	width: 960px;
+}
+
+#title0,#title1,#title2 {
+	width: 250px;
 }
