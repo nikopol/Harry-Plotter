@@ -238,10 +238,10 @@ harry=(function(o){
 		/*bottom*/ l.y && !lp ? m+4 : (l.x?m:1),
 		/*left*/   l.x ? 4+l.xwidth : (l.y?m:1)
 		] : [
-		/*top*/    l.y ? f : 1,
+		/*top*/    l.y ? f : 0,
 		/*right*/  l.y && !lp ? 4+l.ywidth : (l.x?m:1),
 		/*bottom*/ l.x ? 3+m+k : (l.y?m:1),
-		/*left*/   l.y && lp ? 4+l.ywidth : (l.x?f:1)
+		/*left*/   l.y && lp ? 4+l.ywidth : (l.x?f:0)
 		];
 	},
 
