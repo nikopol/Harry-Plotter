@@ -11,15 +11,15 @@ a generator, that let's you play with all parameters can be used [here](http://n
 
 **prerequisite**
 
-  - browser supporting canvas required (Chrome,Firefox,Opera,Safari,IE9)
+  - browser supporting canvas required (Chrome,Firefox,Opera,Safari,IE9+,iOS)
 
 **key features**
 
   - mono or multi dataset
   - mouseover support
-  - lightweight
+  - lightweight (15k minified)
   - standalone
-  - fully configurable
+  - highly configurable
   - animation
 
 **constructor**
@@ -175,3 +175,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 			fill:'vertical'
 		});
 	</script>
+
+**license**
+
+	[MIT](https://github.com/nikopol/Harry-Plotter/blob/master/license)
