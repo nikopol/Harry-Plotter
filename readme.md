@@ -178,4 +178,4 @@ a generator, that let's you play with all parameters can be used [here](http://n
 
 **license**
 
-	[MIT](https://github.com/nikopol/Harry-Plotter/blob/master/license)
+[MIT](http://github.com/nikopol/Harry-Plotter/blob/master/license)
