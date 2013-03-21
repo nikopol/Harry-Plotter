@@ -100,7 +100,7 @@ var h=harry({
 	grid: {                       //grid options
 		color:"#a0a0a0",          //  grid color, default=#a0a0a0
 		y: [0,50,100],            //  y axis, numbers are %, default=[0,25,50,75,100]
-		x: [0,100]                //  x axis, numbers are %, default=[0,100]
+		x: "left|right|all|int"   //  x axis, int=display 1/n, default="left+right"
 	},
 
 	//interaction
@@ -229,19 +229,20 @@ harry=(function(o){
 			return [m,m,m,m];
 		}
 		var
-		lp=/^l/i.test(l.ypos),
+		ll=/l/i.test(l.ypos),
+		lr=/r/i.test(l.ypos),
 		f=Math.floor(m/2),
 		k=l.marks;
 		return flag.vertical ? [
-		/*top*/    l.y && lp ? m+4 : (l.x?m:1),
+		/*top*/    l.y && ll ? m+4 : (l.x?m:0),
 		/*right*/  l.y ? m : 1,
-		/*bottom*/ l.y && !lp ? m+4 : (l.x?m:1),
-		/*left*/   l.x ? 4+l.xwidth : (l.y?m:1)
+		/*bottom*/ l.y && lr ? m+4 : (l.x?m:1),
+		/*left*/   l.x ? 4+l.xwidth : (l.y?m:0)
 		] : [
-		/*top*/    l.y ? f : 1,
-		/*right*/  l.y && !lp ? 4+l.ywidth : (l.x?m:1),
+		/*top*/    l.y ? f : 0,
+		/*right*/  l.y && lr ? 4+l.ywidth : (l.x?m:1),
 		/*bottom*/ l.x ? 3+m+k : (l.y?m:1),
-		/*left*/   l.y && lp ? 4+l.ywidth : (l.x?f:1)
+		/*left*/   l.y && ll ? 4+l.ywidth : (l.x?f:0)
 		];
 	},
 
@@ -327,7 +328,7 @@ harry=(function(o){
 	margins=o.margins||[0,0,0,0],
 	grid=merge({
 		color: "#a0a0a0",
-		x: [0,100],
+		x: 'lr',
 		y: [0,25,50,75,100]
 	},o.grid),
 	title=o.title
