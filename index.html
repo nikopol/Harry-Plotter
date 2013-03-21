@@ -226,9 +226,9 @@
 				}
 				//get grid
 				z={};
-				if((v=val('gridx')).length) z.x=/none|false/.test(v)?v:values(v);
+				getlst('color linewidth','grid',z);
 				if((v=val('gridy')).length) z.y=/none|false/.test(v)?w:values(v);
-				if((v=val('gridcolor')).length) z.color=v;
+				if((v=val('gridx')).length) z.x=v;
 				if(!isEmpty(z)) o.grid=z;
 				//get labels
 				if((v=val('labelx')).length+(w=val('labely')).length) {
@@ -296,7 +296,7 @@
 							val('color'+n,d.color||'');
 						}
 						setlst('text font color x y z shadow','title',o.title);
-						setlst('x y color','grid',o.grid);
+						setlst('x y color linewidth','grid',o.grid);
 						setlst('x y color font color marks shadow ypos','label',o.labels);
 						setlst('width height mode fill opacity margins background linewidth linejoin radiuspoint anim autoscale barspace','',o);
 						_('#mouseover').checked=(o.mouseover==undefined || o.mouseover!==false);
@@ -355,6 +355,7 @@
 				// return Math.abs(Math.cos(++anicount/10)*100);
 				return Math.floor(Math.random()*100);
 			};
+return;
 			if(anitimer!==false) clearInterval(anitimer);
 			css(c,{width:w+'px'});
 			c.setAttribute('width',w+'px');
@@ -518,7 +519,9 @@
 		<div id="formgen" class="center">
 			<form id="fgen">
 				<hr/>
+
 				<h2>Title</h2>
+				
 				<div class="formcol">
 					<label for="titletext">text</label><input type="text" id="titletext" /><br/>
 					<label for="titlefont">font</label><input type="text" id="titlefont" class="font" placeholder='bold 12px "Sans Serif"' /><br/>
@@ -565,6 +568,7 @@
 				<hr/>
 
 				<h2>Rendering</h2>
+				
 				<div class="formcol">
 					<label for="mode">mode</label><select id="mode">
 						<option value="">auto</option>
@@ -671,23 +675,48 @@
 						<option>bevel</option>
 					</select><br/>
 				</div>
-
 				<hr/>
 
 				<h2>Grid</h2>
+
 				<div class="formcol">
-					<label for="gridx">x</label><input type="text" id="gridx" placeholder="none or %,%,%..." value="" /><br/>
+					<label for="gridx">x</label><select id="gridx">
+						<option value="">default</option>
+						<option>none</option>
+						<option>all</option>
+						<option>left</option>
+						<option>right</option>
+						<option>left+right</option>
+						<option value="2">1/2</option>
+						<option value="3">1/3</option>
+						<option value="4">1/4</option>
+						<option value="5">1/5</option>
+						<option value="10">1/10</option>
+					</select><br/>
+					<label for="gridy">y</label><input type="text" id="gridy" placeholder="none or %,%,%..." value="" /><br/>
 				</div>
 				<div class="formcol">
-					<label for="gridy">y</label><input type="text" id="gridy" placeholder="none or %,%,%..." value="" /><br/>
+					<label for="gridlinewidth">linewidth</label><select id="gridlinewidth">
+						<option value="">default</option>
+						<option>1</option>
+						<option>2</option>
+						<option>3</option>
+						<option>4</option>
+						<option>5</option>
+						<option>6</option>
+						<option>7</option>
+						<option>8</option>
+						<option>9</option>
+						<option>10</option>
+					</select>px<br/>
 				</div>
 				<div class="formcol">
 					<label for="gridcolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="gridcolor" value="" class="color"/><input type="color" id="igridcolor"/><br/>
 				</div>
-
 				<hr/>
 				
 				<h2>Labels</h2>
+
 				<div class="formcol">
 					<label for="labelfont">font</label><input type="text" id="labelfont" class="font" value='' placeholder='normal 9px "Sans Serif"'/><br/>
 					<label for="labelcolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="labelcolor" value="" class="color"/><input type="color" id="ilabelcolor"/><br/>
@@ -723,10 +752,10 @@
 						<option>5</option>
 					</select>px<br/>
 				</div>
-
 				<hr/>
 
 				<h2>Legends</h2>
+
 				<div class="formcol">
 					<label for="legends">enabled</label><input type="checkbox" id="legends" checked="checked" /><br/>
 					<label for="leglayout">layout</label><select id="leglayout">
@@ -748,10 +777,10 @@
 					<label for="legborder2">color box border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder2" value="" alt="color box border color"/><br/>
 					<label for="legshadowbox">box shadow</label><input type="text" placeholder="x,y,blur,color" id="legshadowbox" value="" /><br/>
 				</div>
-
 				<hr/>
 
 				<h2>MouseOver</h2>
+
 				<div class="formcol">
 					<label for="mouseover">enabled</label><input type="checkbox" id="mouseover" checked="checked" /><br/>
 					<label for="moradius">spot radius</label><input type="text" id="moradius" class="int" value="" placeholder="5"/>px<br/>
