@@ -260,9 +260,12 @@
 					o.legends=false;
 
 				//let's show
+				var plot=_('#plot'),bg=plot.firstChild?plot.firstChild.className:'bgnone',ae=document.activeElement;
 				_('#jsout',"plotter("+js.tidy(js.encode(o))+")");
 				_('#plot','');
+				if(ae && ae.id!="anim") delete o.anim;
 				plotter(o);
+				plot.firstChild.className=bg;
 			},
 			load=function(o){
 				_('#fgen').reset();
@@ -345,13 +348,19 @@
 		animode="chart",
 		anitimer=false,
 		anidata=[],
+		anicount=0,
 		setupanim=function(){
-			var w=window.innerWidth,c=_('#headanim'),p,nbd=w/4;
+			var w=window.innerWidth,c=_('#headanim'),p,nbd=w/4,
+			fn=function(){
+				// return Math.abs(Math.cos(++anicount/10)*100);
+				return Math.floor(Math.random()*100);
+			};
 			if(anitimer!==false) clearInterval(anitimer);
 			css(c,{width:w+'px'});
 			c.setAttribute('width',w+'px');
+
 			while(anidata.length>nbd) anidata.pop();
-			while(anidata.length<nbd) anidata.push(Math.floor(Math.random()*100));
+			while(anidata.length<nbd) anidata.push(fn());
 			p=plotter({
 				canvas:c,
 				datas:[{color:"#5d5f55",values:anidata}],
@@ -359,11 +368,12 @@
 				width:w,
 				height:9,
 				mode:animode,
+				barspace: 1,
 				mouseover:false
 			});
 			anitimer=setInterval(function(){
 				anidata.shift();
-				anidata.push(Math.floor(Math.random()*100));
+				anidata.push(fn());
 				p.clear().load([{color:"#5d5f55",values:anidata}]).draw();
 			},40);
 		};
@@ -510,26 +520,21 @@
 				<hr/>
 				<h2>Title</h2>
 				<div class="formcol">
-					<label for="titletext">text</label>
-					<input type="text" id="titletext" /><br/>
-					<label for="titlefont">font</label>
-					<input type="text" id="titlefont" class="font" placeholder='bold 12px "Sans Serif"' /><br/>
+					<label for="titletext">text</label><input type="text" id="titletext" /><br/>
+					<label for="titlefont">font</label><input type="text" id="titlefont" class="font" placeholder='bold 12px "Sans Serif"' /><br/>
 				</div>
 				<div class="formcol">
 					<label for="titlecolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="titlecolor" value="" class="color"/><input type="color" id="ititlecolor"/><br/>
 					<label for="titleshadow">shadow</label><input type="text" placeholder="x,y,blur,color" id="titleshadow" value="" />
 				</div>
 				<div class="formcol">
-					<label for="titlex">x</label>
-					<input type="text" id="titlex" class="int" />px<br/>
-					<label for="titley">y</label>
-					<input type="text" id="titley" class="int" />px<br/>
-					<label for="titlez">z</label>
-					<select id="titlez">
+					<label for="titlex">x</label><input type="text" id="titlex" class="int" />px<br/>
+					<label for="titley">y</label><input type="text" id="titley" class="int" />px<br/>
+					<label for="titlez">z</label><select id="titlez">
 						<option value="">default</option>
 						<option value="top">top</option>
 						<option value="background">background</option>
-					</select>
+					</select><br/>
 				</div>
 				<hr/>
 
@@ -561,8 +566,7 @@
 
 				<h2>Rendering</h2>
 				<div class="formcol">
-					<label for="mode">mode</label>
-					<select id="mode">
+					<label for="mode">mode</label><select id="mode">
 						<option value="">auto</option>
 						<option>line</option>
 						<option>line:stack</option>
@@ -574,8 +578,7 @@
 						<option>curve</option>
 						<option>curve:stack</option>
 					</select><br/>
-					<label for="anim">animation</label>
-					<select title="animation duration in seconds" id="anim">
+					<label for="anim">animation</label><select title="animation duration in seconds" id="anim">
 						<option value="">0 - disabled</option>
 						<option value="1">1 - speed</option>
 						<option value="2">2 - smooth</option>
@@ -584,25 +587,19 @@
 						<option>5</option>
 						<option value="10">10 - slowmotion</option>
 					</select>s<br/>
-					<label for="width">width</label>
-					<input type="text" id="width" class="int" value="" placeholder="300"/>px<br/>
-					<label for="height">height</label>
-					<input type="text" id="height" class="int" value="" placeholder="80"/>px<br/>
-					<label for="margins">margins</label>
-					<input type="text" id="margins" placeholder="top,right,bottom,left" value="" />px<br/>
+					<label for="width">width</label><input type="text" id="width" class="int" value="" placeholder="300"/>px<br/>
+					<label for="height">height</label><input type="text" id="height" class="int" value="" placeholder="80"/>px<br/>
+					<label for="margins">margins</label><input type="text" id="margins" placeholder="top,right,bottom,left" value="" />px<br/>
 				</div>
 				<div class="formcol">
-					<label for="autoscale">autoscale</label>
-					<select id="autoscale">
+					<label for="autoscale">autoscale</label><select id="autoscale">
 						<option value="">none</option>
 						<option>top</option>
 						<option>bottom</option>
 						<option>top+bottom</option>
 					</select><br/>
-					<label for="background">background</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="background" value="" class="color"/><input type="color" id="ibackground"/><br/>
-					<label for="radiuspoint">radiuspoint</label>
-					<select title="line or curve mode" id="radiuspoint">
+					<label for="background">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="background" value="" class="color"/><input type="color" id="ibackground"/><br/>
+					<label for="radiuspoint">radiuspoint</label><select title="line or curve mode" id="radiuspoint">
 						<option value="">default</option>
 						<option>1</option>
 						<option>2</option>
@@ -616,8 +613,7 @@
 						<option>20</option>
 						<option>40</option>
 					</select>px<br/>
-					<label for="barspace">barspace</label>
-					<select id="barspace" title="chart mode only">
+					<label for="barspace">barspace</label><select id="barspace" title="chart mode only">
 						<option value="">auto</option>
 						<option>0</option>
 						<option>1</option>
@@ -633,8 +629,7 @@
 					</select>px
 				</div>
 				<div class="formcol">
-					<label for="fill">fill</label>
-					<select id="fill">
+					<label for="fill">fill</label><select id="fill">
 						<option value="">solid</option>
 						<option>none</option>
 						<option>light</option>
@@ -643,8 +638,7 @@
 						<option>horizontal</option>
 						<option>radial</option>
 					</select><br/>
-					<label for="opacity">opacity</label>
-					<select id="opacity">
+					<label for="opacity">opacity</label><select id="opacity">
 						<option value="">auto</option>
 						<option value="0.1">0.1 - transparent</option>
 						<option>0.2</option>
@@ -657,8 +651,7 @@
 						<option>0.9</option>
 						<option value="1">1.0 - opaque</option>
 					</select><br/>
-					<label for="linewidth">linewidth</label>
-					<select id="linewidth">
+					<label for="linewidth">linewidth</label><select id="linewidth">
 						<option value="">default</option>
 						<option>1</option>
 						<option>2</option>
@@ -671,8 +664,7 @@
 						<option>9</option>
 						<option>10</option>
 					</select>px<br/>
-					<label for="linejoin">linejoin</label>
-					<select title="for line or chart mode" id="linejoin">
+					<label for="linejoin">linejoin</label><select title="for line or chart mode" id="linejoin">
 						<option value="">default</option>
 						<option>round</option>
 						<option>miter</option>
@@ -684,43 +676,32 @@
 
 				<h2>Grid</h2>
 				<div class="formcol">
-					<label for="gridx">x</label>
-					<input type="text" id="gridx" placeholder="none or %,%,%..." value="" /><br/>
+					<label for="gridx">x</label><input type="text" id="gridx" placeholder="none or %,%,%..." value="" /><br/>
 				</div>
 				<div class="formcol">
-					<label for="gridy">y</label>
-					<input type="text" id="gridy" placeholder="none or %,%,%..." value="" />
+					<label for="gridy">y</label><input type="text" id="gridy" placeholder="none or %,%,%..." value="" /><br/>
 				</div>
 				<div class="formcol">
-					<label for="gridcolor">color</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="gridcolor" value="" class="color"/>
-					<input type="color" id="igridcolor"/>
+					<label for="gridcolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="gridcolor" value="" class="color"/><input type="color" id="igridcolor"/><br/>
 				</div>
 
 				<hr/>
 				
 				<h2>Labels</h2>
 				<div class="formcol">
-					<label for="labelfont">font</label>
-					<input type="text" id="labelfont" class="font" value='' placeholder='normal 9px "Sans Serif"'/><br/>
-					<label for="labelcolor">color</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="labelcolor" value="" class="color"/>
-					<input type="color" id="ilabelcolor"/><br/>
-					<label for="labelshadow">shadow</label>
-					<input type="text" placeholder="x,y,blur,color" id="labelshadow" value="" />
+					<label for="labelfont">font</label><input type="text" id="labelfont" class="font" value='' placeholder='normal 9px "Sans Serif"'/><br/>
+					<label for="labelcolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="labelcolor" value="" class="color"/><input type="color" id="ilabelcolor"/><br/>
+					<label for="labelshadow">shadow</label><input type="text" placeholder="x,y,blur,color" id="labelshadow" value="" />
 				</div>
 				<div class="formcol">
-					<label for="labely">y axis labels</label>
-					<input type="text" id="labely" placeholder="%,%,%..." value="" title="show veritcals labels for each labels.y percent"/><br/>
-					<label for="labelypos">y axis position</label>
-					<select id="labelypos">
+					<label for="labely">y axis labels</label><input type="text" id="labely" placeholder="%,%,%..." value="" title="show veritcals labels for each labels.y percent"/><br/>
+					<label for="labelypos">y axis position</label><select id="labelypos">
 						<option value="">auto</option>
 						<option>left</option>
 						<option>right</option>
 						<option>left+right</option>
 					</select><br/>
-					<label for="labelx">x axis labels</label>
-					<select id="labelx">
+					<label for="labelx">x axis labels</label><select id="labelx">
 						<option value="">none</option>
 						<option value="auto">auto</option>
 						<option value="1">all</option>
@@ -733,64 +714,48 @@
 					</select><br/>
 				</div>
 				<div class="formcol">
-					<label for="labelmarks">marks</label>
-					<select id="labelmarks">
+					<label for="labelmarks">marks</label><select id="labelmarks">
 						<option value="">none</option>
 						<option>1</option>
 						<option>2</option>
 						<option>3</option>
 						<option>4</option>
 						<option>5</option>
-					</select>px
+					</select>px<br/>
 				</div>
 
 				<hr/>
 
 				<h2>Legends</h2>
 				<div class="formcol">
-					<label for="legends">enabled</label>
-					<input type="checkbox" id="legends" checked="checked" /><br/>
-					<label for="leglayout">layout</label>
-					<select id="leglayout">
+					<label for="legends">enabled</label><input type="checkbox" id="legends" checked="checked" /><br/>
+					<label for="leglayout">layout</label><select id="leglayout">
 						<option value="">default</option>
 						<option value="h">horizontal</option>
 						<option value="v">vertical</option>
 					</select></br>
-					<label for="legx">x</label>
-					<input type="text" id="legx" placeholder="int" value="" /><br/>
-					<label for="legy">y</label>
-					<input type="text" id="legy" placeholder="int" value="" /><br/>
+					<label for="legx">x</label><input type="text" id="legx" placeholder="int" value="" /><br/>
+					<label for="legy">y</label><input type="text" id="legy" placeholder="int" value="" /><br/>
 				</div>
 				<div class="formcol">
-					<label for="legfont">font</label>
-					<input type="text" id="legfont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
-					<label for="legcolor">color</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legcolor" value="" alt="legend border color" class="color"/><input type="color" id="ilegcolor"/><br/>
-					<label for="legshadow">text shadow</label>
-					<input type="text" placeholder="x,y,blur,color" id="legshadow" value="" /><br/>
-					<label for="legborder">border</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder" value="" alt="legend border color"/><br/>
+					<label for="legfont">font</label><input type="text" id="legfont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
+					<label for="legcolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legcolor" value="" alt="legend border color" class="color"/><input type="color" id="ilegcolor"/><br/>
+					<label for="legshadow">text shadow</label><input type="text" placeholder="x,y,blur,color" id="legshadow" value="" /><br/>
+					<label for="legborder">border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder" value="" alt="legend border color"/><br/>
 				</div>
 				<div class="formcol">
-					<label for="legbackground">background</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legbackground" value="" class="color"/>
-					<input type="color" id="ilegbackground"/><br/>
-					<label for="legborder2">color box border</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder2" value="" alt="color box border color"/><br/>
-					<label for="legshadowbox">box shadow</label>
-					<input type="text" placeholder="x,y,blur,color" id="legshadowbox" value="" />
+					<label for="legbackground">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legbackground" value="" class="color"/><input type="color" id="ilegbackground"/><br/>
+					<label for="legborder2">color box border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="legborder2" value="" alt="color box border color"/><br/>
+					<label for="legshadowbox">box shadow</label><input type="text" placeholder="x,y,blur,color" id="legshadowbox" value="" /><br/>
 				</div>
 
 				<hr/>
 
 				<h2>MouseOver</h2>
 				<div class="formcol">
-					<label for="mouseover">enabled</label>
-					<input type="checkbox" id="mouseover" checked="checked" /><br/>
-					<label for="moradius">spot radius</label>
-					<input type="text" id="moradius" class="int" value="" placeholder="5"/>px<br/>
-					<label for="molinewidth">spot linewidth</label>
-					<select id="molinewidth">
+					<label for="mouseover">enabled</label><input type="checkbox" id="mouseover" checked="checked" /><br/>
+					<label for="moradius">spot radius</label><input type="text" id="moradius" class="int" value="" placeholder="5"/>px<br/>
+					<label for="molinewidth">spot linewidth</label><select id="molinewidth">
 						<option value="">default</option>
 						<option value="0">filled</option>
 						<option>1</option>
@@ -804,33 +769,19 @@
 						<option>9</option>
 						<option>10</option>
 					</select><br/>
-					<label for="mocircle">spot color</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocircle" value="" class="color"/>
-					<input type="color" id="imocircle"/><br/>
-					<label for="moborder2">spot border</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="moborder2" value="" /><br/>
-					<label for="mobullet">bullet color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mobullet" value="" class="color"/>
-					<input type="color" id="imobullet"/><br/>
-					<label for="moshadowbox">bullet shadow</label>
-					<input type="text" placeholder="x,y,blur,color" id="moshadowbox" value="" /><br/>
-					<label for="moborder">bullet border</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="moborder" value="" class="color"/>
-					<input type="color" id="imoborder"/>
+					<label for="mocircle">spot color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocircle" value="" class="color"/><input type="color" id="imocircle"/><br/>
+					<label for="moborder2">spot border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="moborder2" class="color" value="" /><input type="color" id="imoborder2"/><br/>
+					<label for="mobullet">bullet color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mobullet" value="" class="color"/><input type="color" id="imobullet"/><br/>
+					<label for="moshadowbox">bullet shadow</label><input type="text" placeholder="x,y,blur,color" id="moshadowbox" value="" /><br/>
+					<label for="moborder">bullet border</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="moborder" value="" class="color"/><input type="color" id="imoborder"/><br/>
 				</div>
 				<div class="formcol">
-					<label for="motext">text</label>
-					<input type="text" id="motext" title="%l=label %v=value %n=index %p=pct(pie only) %t=dataset" placeholder="%v" value=""/><br/>
-					<label for="mofont">text font</label>
-					<input type="text" id="mofont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
-					<label for="mocolor">text color</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocolor" value="" class="color"/>
-					<input type="color" id="imocolor"/><br/>
-					<label for="moshadow">text shadow</label>
-					<input type="text" placeholder="x,y,blur,color" id="moshadow" value="" /><br/>
-					<label for="mosort">sorted</label>
-					<input type="checkbox" id="mosort" /><br/>
-					<label for="moaxis">axis</label>
-					<select id="moaxis">
+					<label for="motext">text</label><input type="text" id="motext" title="%l=label %v=value %n=index %p=pct(pie only) %t=dataset" placeholder="%v" value=""/><br/>
+					<label for="mofont">text font</label><input type="text" id="mofont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
+					<label for="mocolor">text color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="mocolor" value="" class="color"/><input type="color" id="imocolor"/><br/>
+					<label for="moshadow">text shadow</label><input type="text" placeholder="x,y,blur,color" id="moshadow" value="" /><br/>
+					<label for="mosort">sorted</label><input type="checkbox" id="mosort" /><br/>
+					<label for="moaxis">axis</label><select id="moaxis">
 						<option value="">none</option>
 						<option>xy</option>
 						<option>x</option>
@@ -838,15 +789,10 @@
 					</select><br/>
 				</div>
 				<div class="formcol">
-					<label for="headtext">header text</label>
-					<input type="text" id="headtext" title="%l=label %v=value %n=index %p=pct(pie only) %t=dataset" placeholder="" value=""/><br/>
-					<label for="headfont">header font</label>
-					<input type="text" id="headfont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
-					<label for="headcolor">header color</label>
-					<input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="headcolor" value="" class="color"/>
-					<input type="color" id="iheadcolor"/><br/>
-					<label for="headshadow">header shadow</label>
-					<input type="text" placeholder="x,y,blur,color" id="headshadow" value="" /><br/>
+					<label for="headtext">header text</label><input type="text" id="headtext" title="%l=label %v=value %n=index %p=pct(pie only) %t=dataset" placeholder="" value=""/><br/>
+					<label for="headfont">header font</label><input type="text" id="headfont" placeholder='normal 10px "Sans Serif"' class="font" value="" /><br/>
+					<label for="headcolor">header color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="headcolor" value="" class="color"/><input type="color" id="iheadcolor"/><br/>
+					<label for="headshadow">header shadow</label><input type="text" placeholder="x,y,blur,color" id="headshadow" value="" /><br/>
 				</div>
 
 				<hr/>
