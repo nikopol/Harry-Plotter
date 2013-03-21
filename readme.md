@@ -7,19 +7,19 @@ harry plotter 0.9
 harry is a lightweight standalone javascript library to plot data as charts, pies, lines or curves.
 
 samples can be viewed [here](http://nikopol.github.com/Harry-Plotter/#tab=presets)  
-a generator, that let's you play with all parameters can be used [here](http://nikopol.github.com/Harry-Plotter/#tab=presets)
+a generator, that let's you play with all parameters can be used [here](http://nikopol.github.com/Harry-Plotter/#tab=generator)
 
 **prerequisite**
 
-  - browser supporting canvas required (Chrome,Firefox,Opera,Safari,IE9)
+  - browser supporting canvas required (Chrome,Firefox,Opera,Safari,IE9+,iOS)
 
 **key features**
 
   - mono or multi dataset
   - mouseover support
-  - lightweight
+  - lightweight (15k minified)
   - standalone
-  - fully configurable
+  - highly configurable
   - animation
 
 **constructor**
@@ -71,14 +71,13 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		linejoin: "round",            //line join, can be round|bevel|miter default=miter
 		fill: "vertical",             //fill style (only first letter matter), can be:
 		                              //  none         without fills
-		                              //  auto         fill or not depending mode (default)
-		                              //  solid        uniform fill
+		                              //  solid        uniform fill (default)
 		                              //  light        lighten color
 		                              //  dark         darken color
 		                              //  vertical     vertical gradient fill
 		                              //  horizontal   horizontal gradient fill
 		                              //  radial       radial gradient fill
-		opacity: 0.8,                 //fill opacity, between 0 and 1, overrided if fill=auto
+		opacity: 0.8,                 //fill opacity, between 0 and 1
 		margins:[top,right,bot,left], //margin size (for labels), default=auto
 		autoscale: "top+bottom",      //auto round top and/or bottom y scale, default=none
 		pointradius: int,             //radius point size in mode line/curve only, default=none
@@ -127,6 +126,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		//interaction
 
 		mouseover: {,                 //set to false to disable mouseover, default=enabled
+			sort: true,               //  sort values, default=false
 			bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=rgba(99,99,99,0.8)
 			border: "#fc0",           //  bullet border color, default=none,
 			shadowbox: "x,y,b,#col",  //  bullet box shadow, default=none
@@ -139,8 +139,14 @@ a generator, that let's you play with all parameters can be used [here](http://n
 			border2: "#fff",          //  spot color, default=none
 			axis: "xy|x|y",           //  draw spot axis, default=none
 			text: "%v",               //  text in the bullet (%v=value %l=label %n=index %t=title)
-			text: callback(n,v,l,x,y) //  or text can trigger a callback
+			text: callback(obj)       //  or text can trigger a callback
 			                          //     if it returns a string, it'll be displayed
+			header: {                 //  header in the bullet 
+				text: "%v",               //  text in the bullet (same var than mouseover.text)
+				font: "9px Trebuchet MS", //  bullet header font, default=mouveover.font
+				color: "#666",            //  bullet text color, default=mouseover.color
+				shadow: "x,y,blur,#col",  //  bullet text shadow, default=none
+			}
 		}
 	});
 
@@ -155,7 +161,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 	 .load(data)          //add a dataset, see contructor
 	 .draw();             //draw all dataset
 	h.canvas.onclick=function(){
-		h.draw('river');  //redraw
+	    h.draw('river');  //redraw on click
 	};
 
 **short sample**
@@ -169,3 +175,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 			fill:'vertical'
 		});
 	</script>
+
+**license**
+
+	[MIT](https://github.com/nikopol/Harry-Plotter/blob/master/license)
