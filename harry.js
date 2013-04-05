@@ -296,7 +296,7 @@ harry=(function(o){
 	mode=getMode(o.mode),
 	fill=(o.fill||"s")[0].toLowerCase().replace(/[^nsvhrdl]/g,"s"),
 	opacity=parseFloat(o.opacity)||1,
-	linewidth=parseInt(o.linewidth,10)||1,
+	linewidth=o.linewidth==undefined?1:parseInt(o.linewidth,10),
 	linejoin=o.linejoin||"miter",
 	barspace=o.barspace==undefined?'a':parseInt(o.barspace,10),
 	radiuspoint=parseInt(o.radiuspoint,10)||0,
@@ -469,6 +469,21 @@ harry=(function(o){
 		return g ? gc.fillStyle=g : false;
 	},
 
+	stroke=function(s){
+		if(linewidth) {
+			gc.lineWidth=linewidth;
+			gc.lineJoin=linejoin;
+			gc.strokeStyle=s;
+			gc.stroke();
+		}
+	},
+	
+	fillstroke=function(s){
+		gc.closePath();
+		setGradient(s) && gc.fill();
+		stroke(s);
+	},
+
 	//set shadow
 	setShadow=function(s) {
 		if(s && gc.hasOwnProperty('shadowBlur')) {
@@ -517,25 +532,24 @@ harry=(function(o){
 	
 	//draw the background grid Y axis
 	drawYGrid=function() {
-		if(!flag.pie) {
+		if(!flag.pie && grid.y) {
 			var i,l,x,y;
 			gc.lineWidth=grid.linewidth;
 			gc.strokeStyle=grid.color;
 			//console.log("[harry] grid x("+grid.x+") y("+grid.y.join(",")+")"); 
-			if(grid.y)
-				for(i=0,l=grid.y.length;i<l;++i) {
-					gc.beginPath();
-					if(flag.vertical) {
-						x=rx+Math.round(rw*grid.y[i]/100);
-						gc.moveTo(x,ry);
-						gc.lineTo(x,ry2);
-					} else {
-						y=ry2-Math.round(rh*grid.y[i]/100);
-						gc.moveTo(rx,y);
-						gc.lineTo(rx2,y);
-					}
-					gc.stroke();
+			for(i=0,l=grid.y.length;i<l;++i) {
+				gc.beginPath();
+				if(flag.vertical) {
+					x=rx+Math.round(rw*grid.y[i]/100);
+					gc.moveTo(x,ry);
+					gc.lineTo(x,ry2);
+				} else {
+					y=ry2-Math.round(rh*grid.y[i]/100);
+					gc.moveTo(rx,y);
+					gc.lineTo(rx2,y);
 				}
+				gc.stroke();
+			}
 		}
 	},
 
@@ -854,8 +868,6 @@ harry=(function(o){
 					}
 				}
 			};
-			gc.lineWidth=linewidth;
-			gc.lineJoin=linejoin;
 			overpts=[];
 			while(d=data[--nds])
 				if((l=d.len)>1) {
@@ -889,11 +901,10 @@ harry=(function(o){
 						gc.fill();
 					}
 					//draw lines
-					gc.strokeStyle=d.col;
 					gc.beginPath();
 					gc.moveTo(x[n1],y[n1]);
 					drawPath(gc,x,y,d.val,n1,n2);
-					gc.stroke();
+					stroke(d.col);
 					//draw x labels
 					if(nds==0)
 						for(i=0;i<l;++i)
@@ -926,8 +937,6 @@ harry=(function(o){
 				if(bw<0) bw=0;
 				for(y=fv?ry:rx,g=(fv?rh:rw)/(nbd||1),nd=0;nd<=nbd;nd++) gx.push(Math.round(y+nd*g));
 				drawXGrid(gx);
-				gc.lineWidth=linewidth;
-				gc.lineJoin="miter";
 				for(nds=0;nds<dlen;nds++) overpts.push({x:[],y:[],v:[],nds:nds});
 				if(fv)
 					for(y=ry,nd=0;nd<nbd;nd++) {
@@ -945,10 +954,7 @@ harry=(function(o){
 								gc.lineTo(x1,y2);
 								gc.lineTo(x,y2);
 								gc.lineTo(x,y1);
-								gc.closePath();
-								if(setGradient(d.col)) gc.fill();
-								gc.strokeStyle=d.col;
-								gc.stroke();
+								fillstroke(d.col);
 							}
 							overpts[nds].x.push(x);
 							overpts[nds].y.push(Math.floor(y+bw/2));
@@ -973,10 +979,7 @@ harry=(function(o){
 								gc.lineTo(x1,y);
 								gc.lineTo(x2,y);
 								gc.lineTo(x2,y1);
-								gc.closePath();
-								if(setGradient(d.col)) gc.fill();
-								gc.strokeStyle=d.col;
-								gc.stroke();
+								fillstroke(d.col);
 							}
 							overpts[nds].x.push(Math.floor(x+bw/2));
 							overpts[nds].y.push(y);
@@ -1019,8 +1022,6 @@ harry=(function(o){
 				    r=Math.min(rh/2,rw/2)-1, rl=r+labels.fontpx,dx,dy,
 				    g,a1=Math.PI*1.5,a2,a,nx,ny,n=overpie.n;
 				overpie={r:r,x:cx,y:cy,n:n};
-				gc.lineWidth=linewidth;
-				gc.lineJoin="miter";
 				for(i=0;i<nb;i++) {
 					a2=a1+va[i];
 					a=(a1+a2)/2;
@@ -1035,10 +1036,7 @@ harry=(function(o){
 					gc.beginPath();
 					gc.moveTo(dx,dy);
 					gc.arc(dx,dy,r,a1,a2,false);
-					gc.closePath();
-					if(setGradient(vc[i])) gc.fill();
-					gc.strokeStyle=vc[i];
-					gc.stroke();
+					fillstroke(vc[i]);
 					if(i===n) {
 						nx=dx+rl/2*Math.cos(a);
 						ny=dy+rl/2*Math.sin(a);
