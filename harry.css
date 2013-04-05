@@ -27,7 +27,7 @@ input::-moz-focus-inner { border: 0; }
 button::-moz-focus-inner { border: 0; }
 
 ::-webkit-scrollbar {
-	background-color: transparent;
+	background-color: #555;
 	width: 10px;
 	height: 10px;
 	border: none;
@@ -36,15 +36,14 @@ button::-moz-focus-inner { border: 0; }
 ::-webkit-scrollbar-thumb {
 	background: #999;
 	border: none;
-	border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb:vertical {
-	background: -webkit-linear-gradient(left,#666,#222);
+	background: #bbb;
 }
 
 ::-webkit-scrollbar-thumb:horizontal {
-	background: -webkit-linear-gradient(top,#666,#222);
+	background: #bbb;
 }
 
 ::-webkit-scrollbar-button {
