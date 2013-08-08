@@ -1063,7 +1063,7 @@ harry=(function(o){
 		line: function(x,y) {
 			var i,j,nb,n=false,p,m,c,lw=mo.linewidth||1,bs=[];
 			if(overpts.length) {
-				for(i=0;i<p.x.length;++i) {
+				for(i=0;i<overpts[0].x.length;++i) {
 					for(j=0;j<overpts.length;++j) {
 						p=overpts[j];
 						if(p.v[i]!=undefined) {
