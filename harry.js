@@ -1061,17 +1061,21 @@ harry=(function(o){
 	over={
 
 		line: function(x,y) {
-			var i,n=false,p,m,c,lw=mo.linewidth||1,bs=[];
+			var i,j,nb,n=false,p,m,c,lw=mo.linewidth||1,bs=[];
 			if(overpts.length) {
-				p=overpts[0];
-				for(i=0;i<p.x.length;++i)
-					if(p.v[i]!=undefined) {
-						c=flag.vertical ? Math.abs(y-p.y[i]) : Math.abs(x-p.x[i]);
-						if(n===false || c<m) {
-							m=c;
-							n=i;
+				for(i=0;i<p.x.length;++i) {
+					for(j=0;j<overpts.length;++j) {
+						p=overpts[j];
+						if(p.v[i]!=undefined) {
+							c=flag.vertical ? Math.abs(y-p.y[i]) : Math.abs(x-p.x[i]);
+							if(n===false || c<m) {
+								m=c;
+								n=i;
+							}
+							break;
 						}
 					}
+				}
 				if(n!==false) {
 					for(i=0;i<overpts.length;++i) {
 						p=overpts[i];
