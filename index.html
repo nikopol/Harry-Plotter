@@ -9,487 +9,6 @@
 	<script src="harry.js"></script>
 	<script src="miniko.js"></script>
 	<script src="minitools.js"></script>
-	<!--
-	<script src="harry.js"></script>
-	<script src="miniko.js"></script>
-	<script src="minitools.js"></script>
-	-->
-	<script>
-		"use strict";
-		var
-		PRESETS,
-		MAXDATA=16,
-		TABS=['readme','generator','presets'],
-
-		//MARKDOWN
-
-		md=(function(){
-			var
-			conv=function(s){
-				return s
-					.replace(/</g,'&lt;')
-					.replace(/>/g,'&gt;')
-					.replace(/\[([^\]]+)\]\((http[^\)]+)\)/,'<a href="$2">$1</a>')
-					.replace(/\s\s+$/,"<br/>")
-					.replace('\t','  ')
-				;
-			},
-			colorize=function(s){
-				return s
-					.replace(/(\/\/.+$)/,'<span class="comment">$1</span>')
-				;
-			};
-			return {
-				html: function(md,start){
-					var l=md.split(/[\n\r]/),b='',i=(start||0),s;
-					while(i<l.length) {
-						//list
-						if(/^\s+\-\s/.test(l[i])) {
-							b+="<ul>";
-							while(i<l.length && /^\s+\-\s(.+)/.test(l[i])) {
-								b+="<li>"+conv(RegExp.$1)+"</li>";
-								i++;
-							}
-							b+="</ul>";
-						//code
-						} else if(/^[\s\s|\t]/.test(l[i])) {
-							b+="<pre>";
-							while(i<l.length && (l[i]=="" || /^[\s\s|\t](.*)$/.test(l[i])))
-								b+= l[i++]=="" ? "\n" : colorize(conv(RegExp.$1))+"\n";
-							b+="</pre>";
-						//subtitle
-						} else if(/^\*\*(.+)\*\*$/.test(l[i])) {
-							b+="<h2>"+conv(RegExp.$1)+"</h2>";
-							i++;
-						} else {
-							b+=conv(l[i++]);
-						}
-					}
-					return b;
-				}
-			};
-		})(),
-
-		//JSON
-
-		js={
-
-			encode: function(o,quote) { /*ignore functions*/
-				if(o==undefined) return 'null';
-				var lines=[], isarray=(o.constructor==Array),k,v,s,qk;
-				for(k in o) {
-					v=o[k];
-					qk=quote||/[\: ]/.test(k)?'"'+k+'"':k;
-					if(typeof v=="object") {
-						if(isarray) lines.push(js.encode(v,quote));
-						else lines.push(qk+':'+js.encode(v,quote));
-					} else if(typeof v!="function") {
-						s=isarray?"":qk+':';
-						if(typeof v=="number") s+=v.toString(10);
-						else if(v===false) s+='false';
-						else if(v===true) s+='true';
-						else s+='"'+(v || "").replace(/"/g,"\\\"").replace(/\n|\r/g,' ')+'"';
-						lines.push(s);
-					}
-				}
-				return (isarray) ? "["+lines.join(",")+"]" : "{"+lines.join(",")+"}";
-			},
-
-			tidy: function(txt) {
-				txt=txt.replace(/\n|\r|\t/gi,"").replace(/^\s+/g,'');
-				var l=txt.length,n=0,c,nc,i=0,fmt="",iq=false,ip=0,newline=function(i){ return "\n"+("                                   ".substr(0,i*3)); };
-				while(n<l) {
-					c=txt[n++];
-					nc=(n<l) ? txt[n] : '';
-					if(c=='"') { fmt+=c; iq=!iq; } 
-					else if(iq) fmt+=c;
-					else if(c=='[') {ip++; fmt+=c;}
-					else if(c==']') {ip--; fmt+=c;}
-					else if(ip)     fmt+=c;
-					else if(c=='{') fmt+=c+newline(++i);
-					else if(c==',') fmt+=c+newline(i);
-					else if(c=='}') fmt+=newline(--i)+c;
-					else fmt+=c;
-				}
-				return fmt;
-			}
-		},
-
-		error=function(){
-			console.log(arguments.join(' '));
-		},
-
-		//PAGE STUFFS
-
-		builder=(function(){
-			var
-			val=function(id,val){
-				var o=_('#'+id);
-				if(!o) console.log(id,"not found!");
-				if(val!==undefined) o.value=val;
-				return o.value;
-			},
-			isEmpty=function(o){
-				for(var i in o) return false;
-				return true;
-			},
-			values=function(str){
-				var n,s=str.split(/\s*,\s*/),i,v,k;
-				if(/:/.test(str)){
-					n={};
-					for(i=0;i<s.length;i++){
-						if(s[i].match(/^(.+)\:(.+)$/)){
-							k=RegExp.$1;
-							v=RegExp.$2;
-						} else {
-							k=i;
-							v=s[i];
-						}
-						v=v==""||v=="null"?null:parseFloat(v);
-						n[k]=v;
-					} 
-				} else {
-					n=[];
-					for(i=0;i<s.length;i++){
-						v=s[i]==""||s[i]=="null"?null:parseFloat(s[i]);
-						n.push(v);
-					} 
-				}
-				return n;
-			},
-			nswitch=0,
-			bgswitch=function(cid,dft){
-				var tgt=_('#'+cid),n=nswitch++,d=document.createElement('div');
-				if(!dft) dft='none';
-				d.className='bgswitch';
-				['white','black','none'].forEach(function(c){
-					var col=c,r=document.createElement('input');
-					r.setAttribute('type','radio');
-					r.setAttribute('name','bgswitch'+n);
-					r.className=col;
-					if(col==dft) r.checked=true;
-					r.onclick=function(){ 
-						if(tgt.firstChild) tgt.firstChild.className='bg'+col;
-					};
-					d.appendChild(r);
-				});
-				if(tgt.firstChild) tgt.firstChild.className='bg'+dft;
-				tgt.parentNode.getElementsByTagName('h2')[0].appendChild(d);
-			},
-			getlst=function(lst,pfx,h){
-				var v;
-				if(!h) h={};
-				if(typeof(lst)=="string") lst=lst.split(' ');
-				lst.forEach(function(l){
-					if((v=val((pfx||'')+l)).length)
-						if(/^(x|y|radius|radiuspoint|marks|linewidth|width|height|barspace|anim)$/.test(l))
-							h[l]=parseInt(v,10);
-						else if(/^(opacity)$/.test(l))
-							h[l]=parseFloat(v);
-						else if(/^(margins)$/.test(l))
-							h[l]=values(v);
-						else
-							h[l]=v;
-				});
-				return h;
-			},
-			setlst=function(lst,pfx,h){
-				var v;
-				if(h){
-					if(typeof(lst)=="string") lst=lst.split(' ');
-					lst.forEach(function(l){
-						if(l in h)
-							val(
-								(pfx||'')+l,
-								(l[h] instanceof Array) ? h[l].join(',') : h[l]
-							);
-					});
-				}
-				return h;
-			},
-			save=function(){
-				var o={container:'plot'},v,w,i,d=[],z;
-				//get datas
-				for(i=0;_('#data'+i);i++)
-					if((w=val('data'+i)).length) {
-						z={};
-						if((v=val('title'+i)).length) z.title=v;
-						if((v=val('color'+i)).length) z.color=v;
-						z.values=values(w);
-						d.push(z);
-					}
-				if(d.length) o.datas=d;
-				//get title
-				if((v=val('titletext')).length) {
-					o.title=getlst('font color x y z shadow','title');
-					o.title.text=v;
-				}
-				//get grid
-				z={};
-				getlst('color linewidth','grid',z);
-				if((v=val('gridy')).length) z.y=/none|false/.test(v)?w:values(v);
-				if((v=val('gridx')).length) z.x=v;
-				if(!isEmpty(z)) o.grid=z;
-				//get labels
-				if((v=val('labelx')).length+(w=val('labely')).length) {
-					o.labels=getlst('font color marks shadow ypos','label');
-					if(v.length) o.labels.x=v=='auto'?v:parseInt(v,10);
-					if(w.length) o.labels.y=values(w);
-				}
-				//get render
-				getlst('width height mode fill opacity margins background linewidth linejoin radiuspoint anim autoscale','',o);
-				if(/chart/.test(o.mode)) {
-					_('#barspace').removeAttribute('disabled');
-					getlst('barspace','',o);
-				} else
-					_('#barspace').setAttribute('disabled','disabled');
-				//get mouseover
-				if(_('#mouseover').checked) {
-					var m=getlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo'),
-					    h=getlst('text font color shadow','head');
-					if(_('#mosort').checked) m.sort=true;
-					if(!isEmpty(h)) m.header=h;
-					if(!isEmpty(m)) o.mouseover=m;
-				} else
-					o.mouseover=false;
-				//get legends
-				if(_('#legends').checked) {
-					var m=getlst('layout x y font background color border border2 shadow shadowbox','leg');
-					if(!isEmpty(m)) o.legends=m;
-				} else
-					o.legends=false;
-
-				//let's show
-				var plot=_('#plot'),bg=plot.firstChild?plot.firstChild.className:'bgnone',ae=document.activeElement;
-				_('#jsout',"plotter("+js.tidy(js.encode(o))+")");
-				_('#plot','');
-				if(ae && ae.id!="anim") delete o.anim;
-				plotter(o);
-				plot.firstChild.className=bg;
-			},
-			load=function(o){
-				_('#fgen').reset();
-				if(typeof(o)=="string") {
-					o=o
-						.replace(/[\n\r]+/g,'')
-						.replace(/(^\s+|\s+$)/g,'')
-						.replace(/^(plotter|harry)\s*\(/,'')
-						.replace(/\s*\)$/,'');
-					try{ o=JSON.parse(o) }
-					catch(e){ error((e.name||'')+' '+(e.message||'unknown error')) }
-				}
-				if(o!==undefined) {
-					var v,n,d,s,l;
-					if(o.datas) {
-						for(n in o.datas) {
-							d=o.datas[n];
-							s='';
-							if(d.values instanceof Array){
-								s=d.values.join(',');
-							} else if (typeof(d.values)=='object') {
-								l=[];
-								for(var k in d.values) l.push(k+':'+d.values[k]);
-								s=l.join(',');
-							}
-							val('data'+n,s);
-							val('title'+n,d.title||'');
-							val('color'+n,d.color||'');
-						}
-						setlst('text font color x y z shadow','title',o.title);
-						setlst('x y color linewidth','grid',o.grid);
-						setlst('x y color font color marks shadow ypos','label',o.labels);
-						setlst('width height mode fill opacity margins background linewidth linejoin radiuspoint anim autoscale barspace','',o);
-						_('#mouseover').checked=(o.mouseover==undefined || o.mouseover!==false);
-						_('#mosort').checked=(o.mouseover && o.mouseover.sort);
-						setlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo',o.mouseover);
-						setlst('text font color shadow','head',o.mouseover.header||{});
-						_('#legends').checked=(o.legends==undefined || o.legends!==false);
-
-						setlst('layout x y font background color border border2 shadow shadowbox','leg',o.legends);
-					}
-				}
-				_('input.color').forEach(function(e){ setcolor(e.value,'#i'+e.id) });
-				save();
-			};
-			return {
-				load: load,
-				save: save,
-				bgswitch: bgswitch,
-				loadpreset: function(n){
-					load(PRESETS[n]);
-					hash.set('preset',n);
-					settab('generator');
-				}
-			};
-		})(),
-
-		settab=function(id,ps){
-			if(ps && ps in PRESETS) builder.load(PRESETS[ps]);
-			id=id||TABS[0];
-			TABS.forEach(function(n){
-				_('#'+n).className=id==n?'on':'';
-				_('#but'+n).className=id==n?'on':'';
-			});
-			hash.set('tab',id);
-		},
-
-		setcolor=function(col,id){
-			var v='#000000',o=_(id);
-			col=col.replace(/(^\s+|\s+$)/,'');
-			if(/^#[0-9A-F]{6}$/i.test(col))
-				v=col;
-			else if(/^#([0-9A-F])([0-9A-F])([0-9A-F])$/i.test(col))
-				v='#'+RegExp.$1+RegExp.$1+RegExp.$2+RegExp.$2+RegExp.$3+RegExp.$3;
-			else if(/^rgba?\((\d+),(\d+),(\d+)(?:,[\d\.]+)?\)$/i.test(col))
-				v='#'+('0'+RegExp.$1.toString(16)).substr(-2)+('0'+RegExp.$2.toString(16)).substr(-2)+('0'+RegExp.$3.toString(16)).substr(-2);
-			if(o.value.toLowerCase()!=v.toLowerCase()) o.value=v;
-		},
-
-		animode="chart",
-		anitimer=false,
-		anidata=[],
-		anicount=0,
-		setupanim=function(){
-			var w=window.innerWidth,c=_('#headanim'),p,nbd=w/4,
-			fn=function(){
-				// return Math.abs(Math.cos(++anicount/10)*100);
-				return Math.floor(Math.random()*100);
-			};
-return;
-			if(anitimer!==false) clearInterval(anitimer);
-			css(c,{width:w+'px'});
-			c.setAttribute('width',w+'px');
-
-			while(anidata.length>nbd) anidata.pop();
-			while(anidata.length<nbd) anidata.push(fn());
-			p=plotter({
-				canvas:c,
-				datas:[{color:"#5d5f55",values:anidata}],
-				grid:{ y:"", x:"" },
-				width:w,
-				height:9,
-				mode:animode,
-				barspace: 1,
-				mouseover:false
-			});
-			anitimer=setInterval(function(){
-				anidata.shift();
-				anidata.push(fn());
-				p.clear().load([{color:"#5d5f55",values:anidata}]).draw();
-			},40);
-		};
-
-		//INIT
-
-		ready(function(){
-
-			if(![].forEach) alert('this page requires a decent browser');
-
-			console.log('load readme.md');
-			ajax({
-				url: "readme.md",
-				datatype: 'text/plain',
-				ok: function(d){
-					console.log('readme.md loaded');
-					_('#readme',md.html(d,2));
-				}
-			});
-
-			console.log('load presets.js');
-			ajax('presets.js',function(d){
-				console.log('presets.js loaded');
-				PRESETS={};
-				var p=_('#samples'),n=0,s,t;
-				p.innerHTML='';
-				for(s in d) {
-					append(p,'<header>'+s+'</header>');
-					for(t in d[s]) {
-						var j=d[s][t],bg=j.bg,h=
-						'<div class="block">'+
-							'<h2>'+t+'</h2>'+
-							'<div id="box'+n+'" class="plotbox"></div>'+
-							'<hr/>'+
-							'<div class="src hide" id="src'+n+'">'+
-								'<pre>plotter('+js.tidy(js.encode(j))+');</pre>'+
-								'<hr/>'+
-							'</div>'+
-							'<div class="footer">'+
-								'<input type="button" value="edit" onclick="builder.loadpreset(\''+t+'\',\''+t+'\')"/>'+
-								'<input type="button" value="source" onclick="css(\'#src'+n+'\',\'*hide\')"/>'+
-							'</div>'+
-						'</div>';
-						append(p,h);
-						delete j.bg;
-						PRESETS[t]=j;
-						PRESETS[t].container="box"+n;
-						plotter(PRESETS[t]);
-						if(!j.background) builder.bgswitch('box'+n,bg);
-						n++;
-					}
-				}
-				console.log(n+' presets generated');
-				if((t=hash.get('preset')) && t in PRESETS) builder.load(PRESETS[t]);
-			});
-						
-			for(var i=0, l=document.getElementsByTagName("input"); i<l.length; ++i)
-				if(/checkbox|text/.test(l[i].type))
-					l[i].onclick=l[i].onkeyup=builder.save;
-			for(var i=0, l=document.getElementsByTagName("select"); i<l.length; ++i)
-				l[i].onclick=l[i].onkeyup=builder.save;
-
-			_(".rnd").forEach(function(b){
-				b.onclick=function(){
-					var i,t=this.getAttribute('target'), d=[];
-					for(i=0;i<MAXDATA;++i) d.push(Math.floor(Math.random()*100));
-					_('#'+t).value=d.join(',');
-					builder.save();
-				};
-			});
-			_("#butreset").onclick=function(){
-				_('#fgen').reset();
-				hash.del('preset');
-				builder.save();
-			};
-			_("#forkme").onclick=function(){
-				document.location="https://github.com/nikopol/Harry-Plotter";
-			}
-
-			_('input.color').forEach(function(e){
-				//e.onchange=
-				//e.onkeyup
-				e.oninput=function(){
-					setcolor(this.value,'#i'+this.id);
-					builder.save();
-				 };
-			});
-
-			_('input[type=color]').forEach(function(e){
-				e.onchange=function(){
-					setcolor(this.value,'#'+this.id.substr(1));
-					builder.save();
-				 };
-			});
-
-			TABS.forEach(function(n){
-				var id=n;
-				_('#but'+n).onclick=function(){ settab(id) };
-			});
-			settab(hash.get("tab"));
-			hash.onchange(function(){
-				settab(hash.get("tab"),hash.get("preset"))
-			});
-			builder.bgswitch('plot');
-			builder.save();
-
-			hotkeys
-				.add("alt+r",function(){ settab("readme") }, true)
-				.add("alt+g",function(){ settab("generator") }, true)
-				.add("alt+p",function(){ settab("presets") }, true);
-
-			setupanim();
-			window.onresize=setupanim;
-		});
-	</script>
 </head>
 <body>
 
@@ -852,6 +371,487 @@ return;
 		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 		})();
 	</script>
+
+	<script type="text/javascript">
+		"use strict";
+		var
+		PRESETS,
+		MAXDATA=16,
+		TABS=['readme','generator','presets'],
+
+		//MARKDOWN
+
+		md=(function(){
+			var
+			conv=function(s){
+				return s
+					.replace(/</g,'&lt;')
+					.replace(/>/g,'&gt;')
+					.replace(/\[([^\]]+)\]\((http[^\)]+)\)/,'<a href="$2">$1</a>')
+					.replace(/\s\s+$/,"<br/>")
+					.replace('\t','  ')
+				;
+			},
+			colorize=function(s){
+				return s
+					.replace(/(\/\/.+$)/,'<span class="comment">$1</span>')
+				;
+			};
+			return {
+				html: function(md,start){
+					var l=md.split(/[\n\r]/),b='',i=(start||0),s;
+					while(i<l.length) {
+						//list
+						if(/^\s+\-\s/.test(l[i])) {
+							b+="<ul>";
+							while(i<l.length && /^\s+\-\s(.+)/.test(l[i])) {
+								b+="<li>"+conv(RegExp.$1)+"</li>";
+								i++;
+							}
+							b+="</ul>";
+						//code
+						} else if(/^[\s\s|\t]/.test(l[i])) {
+							b+="<pre>";
+							while(i<l.length && (l[i]=="" || /^[\s\s|\t](.*)$/.test(l[i])))
+								b+= l[i++]=="" ? "\n" : colorize(conv(RegExp.$1))+"\n";
+							b+="</pre>";
+						//subtitle
+						} else if(/^\*\*(.+)\*\*$/.test(l[i])) {
+							b+="<h2>"+conv(RegExp.$1)+"</h2>";
+							i++;
+						} else {
+							b+=conv(l[i++]);
+						}
+					}
+					return b;
+				}
+			};
+		})(),
+
+		//JSON
+
+		js=(function(){
+			var newline=function(i){
+				return "\n"+("                                      ".substr(0,i*3));
+			};
+			return {
+				encode: function(o,quote) { /*ignore functions*/
+					if(o==undefined) return 'null';
+					var lines=[], isarray=(o.constructor==Array),k,v,s,qk;
+					for(k in o) {
+						v=o[k];
+						qk=quote||/[\: ]/.test(k)?'"'+k+'"':k;
+						if(typeof v=="object") {
+							if(isarray) lines.push(js.encode(v,quote));
+							else lines.push(qk+':'+js.encode(v,quote));
+						} else if(typeof v!="function") {
+							s=isarray?"":qk+':';
+							if(typeof v=="number") s+=v.toString(10);
+							else if(v===false) s+='false';
+							else if(v===true) s+='true';
+							else s+='"'+(v || "").replace(/"/g,"\\\"").replace(/\n|\r/g,' ')+'"';
+							lines.push(s);
+						}
+					}
+					return (isarray) ? "["+lines.join(",")+"]" : "{"+lines.join(",")+"}";
+				},
+
+				tidy: function(txt) {
+					txt=txt.replace(/\n|\r|\t/gi,"").replace(/^\s+/g,'');
+					var l=txt.length,n=0,c,nc,i=0,fmt="",iq=false,ip=0;
+					while(n<l) {
+						c=txt[n++];
+						nc=(n<l) ? txt[n] : '';
+						if(c=='"') { fmt+=c; iq=!iq; } 
+						else if(iq) fmt+=c;
+						else if(c=='[') {ip++; fmt+=c;}
+						else if(c==']') {ip--; fmt+=c;}
+						else if(ip)     fmt+=c;
+						else if(c=='{') fmt+=c+newline(++i);
+						else if(c==',') fmt+=c+newline(i);
+						else if(c=='}') fmt+=newline(--i)+c;
+						else fmt+=c;
+					}
+					return fmt;
+				}
+			}
+		})(),
+
+		error=function(){
+			console.log(arguments.join(' '));
+		},
+
+		//PAGE STUFFS
+
+		builder=(function(){
+			var
+			val=function(id,val){
+				var o=_('#'+id);
+				if(!o) console.log(id,"not found!");
+				if(val!==undefined) o.value=val;
+				return o.value;
+			},
+			isEmpty=function(o){
+				for(var i in o) return false;
+				return true;
+			},
+			values=function(str){
+				var n,s=str.split(/\s*,\s*/),i,v,k;
+				if(/:/.test(str)){
+					n={};
+					for(i=0;i<s.length;i++){
+						if(s[i].match(/^(.+)\:(.+)$/)){
+							k=RegExp.$1;
+							v=RegExp.$2;
+						} else {
+							k=i;
+							v=s[i];
+						}
+						v=v==""||v=="null"?null:parseFloat(v);
+						n[k]=v;
+					} 
+				} else {
+					n=[];
+					for(i=0;i<s.length;i++){
+						v=s[i]==""||s[i]=="null"?null:parseFloat(s[i]);
+						n.push(v);
+					} 
+				}
+				return n;
+			},
+			nswitch=0,
+			bgswitch=function(cid,dft){
+				var tgt=_('#'+cid),n=nswitch++,d=document.createElement('div');
+				if(!dft) dft='none';
+				d.className='bgswitch';
+				['white','black','none'].forEach(function(c){
+					var col=c,r=document.createElement('input');
+					r.setAttribute('type','radio');
+					r.setAttribute('name','bgswitch'+n);
+					r.className=col;
+					if(col==dft) r.checked=true;
+					r.onclick=function(){ 
+						if(tgt.firstChild) tgt.firstChild.className='bg'+col;
+					};
+					d.appendChild(r);
+				});
+				if(tgt.firstChild) tgt.firstChild.className='bg'+dft;
+				tgt.parentNode.getElementsByTagName('h2')[0].appendChild(d);
+			},
+			getlst=function(lst,pfx,h){
+				var v;
+				if(!h) h={};
+				if(typeof(lst)=="string") lst=lst.split(' ');
+				lst.forEach(function(l){
+					if((v=val((pfx||'')+l)).length)
+						if(/^(x|y|radius|radiuspoint|marks|linewidth|width|height|barspace|anim)$/.test(l))
+							h[l]=parseInt(v,10);
+						else if(/^(opacity)$/.test(l))
+							h[l]=parseFloat(v);
+						else if(/^(margins)$/.test(l))
+							h[l]=values(v);
+						else
+							h[l]=v;
+				});
+				return h;
+			},
+			setlst=function(lst,pfx,h){
+				var v;
+				if(h){
+					if(typeof(lst)=="string") lst=lst.split(' ');
+					lst.forEach(function(l){
+						if(l in h)
+							val(
+								(pfx||'')+l,
+								(l[h] instanceof Array) ? h[l].join(',') : h[l]
+							);
+					});
+				}
+				return h;
+			},
+			save=function(){
+				var o={container:'plot'},v,w,i,d=[],z;
+				//get datas
+				for(i=0;_('#data'+i);i++)
+					if((w=val('data'+i)).length) {
+						z={};
+						if((v=val('title'+i)).length) z.title=v;
+						if((v=val('color'+i)).length) z.color=v;
+						z.values=values(w);
+						d.push(z);
+					}
+				if(d.length) o.datas=d;
+				//get title
+				if((v=val('titletext')).length) {
+					o.title=getlst('font color x y z shadow','title');
+					o.title.text=v;
+				}
+				//get grid
+				z={};
+				getlst('color linewidth','grid',z);
+				if((v=val('gridy')).length) z.y=/none|false/.test(v)?w:values(v);
+				if((v=val('gridx')).length) z.x=v;
+				if(!isEmpty(z)) o.grid=z;
+				//get labels
+				if((v=val('labelx')).length+(w=val('labely')).length) {
+					o.labels=getlst('font color marks shadow ypos','label');
+					if(v.length) o.labels.x=v=='auto'?v:parseInt(v,10);
+					if(w.length) o.labels.y=values(w);
+				}
+				//get render
+				getlst('width height mode fill opacity margins background linewidth linejoin radiuspoint anim autoscale','',o);
+				if(/chart/.test(o.mode)) {
+					_('#barspace').removeAttribute('disabled');
+					getlst('barspace','',o);
+				} else
+					_('#barspace').setAttribute('disabled','disabled');
+				//get mouseover
+				if(_('#mouseover').checked) {
+					var m=getlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo'),
+					    h=getlst('text font color shadow','head');
+					if(_('#mosort').checked) m.sort=true;
+					if(!isEmpty(h)) m.header=h;
+					if(!isEmpty(m)) o.mouseover=m;
+				} else
+					o.mouseover=false;
+				//get legends
+				if(_('#legends').checked) {
+					var m=getlst('layout x y font background color border border2 shadow shadowbox','leg');
+					if(!isEmpty(m)) o.legends=m;
+				} else
+					o.legends=false;
+
+				//let's show
+				var plot=_('#plot'),bg=plot.firstChild?plot.firstChild.className:'bgnone',ae=document.activeElement;
+				_('#jsout',"plotter("+js.tidy(js.encode(o))+")");
+				_('#plot','');
+				if(ae && ae.id!="anim") delete o.anim;
+				plotter(o);
+				plot.firstChild.className=bg;
+			},
+			load=function(o){
+				_('#fgen').reset();
+				if(typeof(o)=="string") {
+					o=o
+						.replace(/[\n\r]+/g,'')
+						.replace(/(^\s+|\s+$)/g,'')
+						.replace(/^(plotter|harry)\s*\(/,'')
+						.replace(/\s*\)$/,'');
+					try{ o=JSON.parse(o) }
+					catch(e){ error((e.name||'')+' '+(e.message||'unknown error')) }
+				}
+				if(o!==undefined) {
+					var v,n,d,s,l;
+					if(o.datas) {
+						for(n in o.datas) {
+							d=o.datas[n];
+							s='';
+							if(d.values instanceof Array){
+								s=d.values.join(',');
+							} else if (typeof(d.values)=='object') {
+								l=[];
+								for(var k in d.values) l.push(k+':'+d.values[k]);
+								s=l.join(',');
+							}
+							val('data'+n,s);
+							val('title'+n,d.title||'');
+							val('color'+n,d.color||'');
+						}
+						setlst('text font color x y z shadow','title',o.title);
+						setlst('x y color linewidth','grid',o.grid);
+						setlst('x y color font color marks shadow ypos','label',o.labels);
+						setlst('width height mode fill opacity margins background linewidth linejoin radiuspoint anim autoscale barspace','',o);
+						_('#mouseover').checked=(o.mouseover==undefined || o.mouseover!==false);
+						_('#mosort').checked=(o.mouseover && o.mouseover.sort);
+						setlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo',o.mouseover);
+						setlst('text font color shadow','head',o.mouseover.header||{});
+						_('#legends').checked=(o.legends==undefined || o.legends!==false);
+
+						setlst('layout x y font background color border border2 shadow shadowbox','leg',o.legends);
+					}
+				}
+				_('input.color').forEach(function(e){ setcolor(e.value,'#i'+e.id) });
+				save();
+			};
+			return {
+				load: load,
+				save: save,
+				bgswitch: bgswitch,
+				loadpreset: function(n){
+					load(PRESETS[n]);
+					hash.set('preset',n);
+					settab('generator');
+				}
+			};
+		})(),
+
+		settab=function(id,ps){
+			if(ps && ps in PRESETS) builder.load(PRESETS[ps]);
+			id=id||TABS[0];
+			TABS.forEach(function(n){
+				_('#'+n).className=id==n?'on':'';
+				_('#but'+n).className=id==n?'on':'';
+			});
+			hash.set('tab',id);
+		},
+
+		setcolor=function(col,id){
+			var v='#000000',o=_(id);
+			col=col.replace(/(^\s+|\s+$)/,'');
+			if(/^#[0-9A-F]{6}$/i.test(col))
+				v=col;
+			else if(/^#([0-9A-F])([0-9A-F])([0-9A-F])$/i.test(col))
+				v='#'+RegExp.$1+RegExp.$1+RegExp.$2+RegExp.$2+RegExp.$3+RegExp.$3;
+			else if(/^rgba?\((\d+),(\d+),(\d+)(?:,[\d\.]+)?\)$/i.test(col))
+				v='#'+('0'+RegExp.$1.toString(16)).substr(-2)+('0'+RegExp.$2.toString(16)).substr(-2)+('0'+RegExp.$3.toString(16)).substr(-2);
+			if(o.value.toLowerCase()!=v.toLowerCase()) o.value=v;
+		},
+
+		animode="chart",
+		anitimer=false,
+		anidata=[],
+		anicount=0,
+		setupanim=function(){
+			var w=window.innerWidth,c=_('#headanim'),p,nbd=w/4,
+			fn=function(){
+				// return Math.abs(Math.cos(++anicount/10)*100);
+				return Math.floor(Math.random()*100);
+			};
+			if(anitimer!==false) clearInterval(anitimer);
+			css(c,{width:w+'px'});
+			c.setAttribute('width',w+'px');
+
+			while(anidata.length>nbd) anidata.pop();
+			while(anidata.length<nbd) anidata.push(fn());
+			p=plotter({
+				canvas:c,
+				datas:[{color:"#5d5f55",values:anidata}],
+				grid:{ y:"", x:"" },
+				width:w,
+				height:9,
+				mode:animode,
+				barspace: 1,
+				mouseover:false
+			});
+			anitimer=setInterval(function(){
+				anidata.shift();
+				anidata.push(fn());
+				p.clear().load([{color:"#5d5f55",values:anidata}]).draw();
+			},40);
+		};
+
+		//INIT
+
+		ready(function(){
+
+			if(![].forEach) alert('this page requires a decent browser');
+
+			console.log('load readme.md');
+			ajax({
+				url: "readme.md",
+				datatype: 'text/plain',
+				ok: function(d){
+					console.log('readme.md loaded');
+					_('#readme',md.html(d,2));
+				}
+			});
+
+			console.log('load presets.js');
+			ajax('presets.js',function(d){
+				console.log('presets.js loaded');
+				PRESETS={};
+				var p=_('#samples'),n=0,s,t;
+				p.innerHTML='';
+				for(s in d) {
+					append(p,'<header>'+s+'</header>');
+					for(t in d[s]) {
+						var j=d[s][t],bg=j.bg,h=
+						'<div class="block">'+
+							'<h2>'+t+'</h2>'+
+							'<div id="box'+n+'" class="plotbox"></div>'+
+							'<hr/>'+
+							'<div class="src hide" id="src'+n+'">'+
+								'<pre>plotter('+js.tidy(js.encode(j))+');</pre>'+
+								'<hr/>'+
+							'</div>'+
+							'<div class="footer">'+
+								'<input type="button" value="edit" onclick="builder.loadpreset(\''+t+'\',\''+t+'\')"/>'+
+								'<input type="button" value="source" onclick="css(\'#src'+n+'\',\'*hide\')"/>'+
+							'</div>'+
+						'</div>';
+						append(p,h);
+						delete j.bg;
+						PRESETS[t]=j;
+						PRESETS[t].container="box"+n;
+						plotter(PRESETS[t]);
+						if(!j.background) builder.bgswitch('box'+n,bg);
+						n++;
+					}
+				}
+				console.log(n+' presets generated');
+				if((t=hash.get('preset')) && t in PRESETS) builder.load(PRESETS[t]);
+			});
+						
+			for(var i=0, l=document.getElementsByTagName("input"); i<l.length; ++i)
+				if(/checkbox|text/.test(l[i].type))
+					l[i].onclick=l[i].onkeyup=builder.save;
+			for(var i=0, l=document.getElementsByTagName("select"); i<l.length; ++i)
+				l[i].onclick=l[i].onkeyup=builder.save;
+
+			_(".rnd").forEach(function(b){
+				b.onclick=function(){
+					var i,t=this.getAttribute('target'), d=[];
+					for(i=0;i<MAXDATA;++i) d.push(Math.floor(Math.random()*100));
+					_('#'+t).value=d.join(',');
+					builder.save();
+				};
+			});
+			_("#butreset").onclick=function(){
+				_('#fgen').reset();
+				hash.del('preset');
+				builder.save();
+			};
+			_("#forkme").onclick=function(){
+				document.location="https://github.com/nikopol/Harry-Plotter";
+			}
+
+			_('input.color').forEach(function(e){
+				//e.onchange=
+				//e.onkeyup
+				e.oninput=function(){
+					setcolor(this.value,'#i'+this.id);
+					builder.save();
+				 };
+			});
+
+			_('input[type=color]').forEach(function(e){
+				e.onchange=function(){
+					setcolor(this.value,'#'+this.id.substr(1));
+					builder.save();
+				 };
+			});
+
+			TABS.forEach(function(n){
+				var id=n;
+				_('#but'+n).onclick=function(){ settab(id) };
+			});
+			settab(hash.get("tab"));
+			hash.onchange(function(){
+				settab(hash.get("tab"),hash.get("preset"))
+			});
+			builder.bgswitch('plot');
+			builder.save();
+
+			hotkeys
+				.add("alt+r",function(){ settab("readme") }, true)
+				.add("alt+g",function(){ settab("generator") }, true)
+				.add("alt+p",function(){ settab("presets") }, true);
+
+			setupanim();
+			window.onresize=setupanim;
+		});
+	</script>
+
 </body>
 </html>
 
