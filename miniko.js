@@ -60,15 +60,17 @@ if content is provided, all matching element will have it.
 
 	W._ = function(s,h){
 		var o,l,n;
-		if(typeof(s)=='object') o = s;
+		if(typeof(s)=='object')
+			o = s;
 		else if(s.length) {
-			if(s[0]=='#' && !/[ \.\>\<]/.test(s)) o = D.getElementById(s.substr(1));
+			if(s[0]=='#' && !/[ \.\>\<]/.test(s))
+				o = D.getElementById(s.substr(1));
 			else {
 				l = D.querySelectorAll(s);
 				for(o=[],n=0; n<l.length; ++n) o.push(l[n]);
 			}
 		}
-		if(o && h!=undefined) A(o).forEach(function(e){ e.innerHTML = h });
+		if(o && h!=undefined) A(o).forEach(function(e){ e.innerHTML = h });
 		return o;
 	};
 
@@ -94,8 +96,10 @@ if content is provided, all matching element will have it.
 			c = RegExp.$2;
 			A(o).forEach(function(e){
 				l = e.className.split(/\s+/).filter(function(n){return n});
-				if(z!='-' && l.indexOf(c)==-1) l.push(c);  //add class
-				else if(z!='+') l=l.filter(function(n){return n!=c}); //remove class
+				if(z!='-' && l.indexOf(c)==-1)
+					l.push(c);  //add class
+				else if(z!='+')
+					l=l.filter(function(n){return n!=c}); //remove class
 				o.className = l.join(' ');
 			});
 		} else
@@ -107,15 +111,17 @@ if content is provided, all matching element will have it.
 		if(typeof(o)=='string') o = { url:o, ok:fn };
 		var
 			app  = 'application/',
-			type = o.type || 'GET',
+			type = o.type || 'GET',
 			url  = o.url || '',
-			ctyp = o.contenttype || app+'x-www-form-urlencoded',
-			dtyp = o.datatype || app+'json',
+			ctyp = o.contenttype || app+'x-www-form-urlencoded',
+			dtyp = o.datatype || app+'json',
 			xhr  = new window.XMLHttpRequest(),
 			timer,d,n;
 		if(o.data){
-			if(typeof(o.data)=='string') d = o.data;
-			else if(/json/.test(ctyp))   d = JSON.stringify(o.data);
+			if(typeof(o.data)=='string')
+				d = o.data;
+			else if(/json/.test(ctyp))
+				d = JSON.stringify(o.data);
 			else {
 				d = [];
 				for(n in o.data)
@@ -128,7 +134,7 @@ if content is provided, all matching element will have it.
 			}
 		}
 		if(!o.error) o.error=function(t,xhr){ console.error(t,xhr) };
-		if(!o.ok)    o.ok=function(){};
+		if(!o.ok) o.ok=function(){};
 		xhr.onreadystatechange = function(){
 			if(xhr.readyState==4) {
 				if(timer) clearTimeout(timer);
@@ -145,7 +151,8 @@ if content is provided, all matching element will have it.
 		};
 		xhr.open(type, url, true);
 		xhr.setRequestHeader('Content-Type', ctyp);
-		if(o.headers) for(n in o.headers) xhr.setRequestHeader(n, o.headers[n]);
+		if(o.headers)
+			for(n in o.headers) xhr.setRequestHeader(n, o.headers[n]);
 		if(o.timeout) timer = setTimeout(function(){
 			xhr.onreadystatechange = function(){};
 			xhr.abort();
@@ -170,9 +177,12 @@ if content is provided, all matching element will have it.
 	};
 
 	W.ready = function(cb){
-		if(/complete|loaded|interactive/.test(D.readyState)) cb();
-		else if(D.attachEvent) D.attachEvent('ondocumentready',cb()); 
-		else D.addEventListener('DOMContentLoaded',function(){cb()}, false);
+		if(/complete|loaded|interactive/.test(D.readyState))
+			cb();
+		else if(D.attachEvent)
+			D.attachEvent('ondocumentready',cb()); 
+		else
+			D.addEventListener('DOMContentLoaded',function(){cb()}, false);
 	};
 
 })(window);

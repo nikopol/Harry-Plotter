@@ -137,10 +137,8 @@ var h=plotter({...});
 
 h.clear()             //delete all datasets
  .load(data)          //add a dataset (see contructor)
- .draw();             //draw all datasets without anim
-h.canvas.onclick=function(){
-	h.draw('chart'); //redraw
-};
+ .draw();             //draw all datasets
+ .draw(mode);         //draw all datasets in a given mode (see constructor)
 
 */
 
@@ -790,14 +788,14 @@ harry=(function(o){
 			gc.lineTo(x2,y2);
 			gc.lineTo(x1,y2);
 			gc.closePath();
-			if(mo.bullet){
+			if(mo.bullet) {
 				setShadow(mo.shadowbox);
 				gc.strokStyle='';
 				gc.fillStyle=mo.bullet;
 				gc.fill();
 				unsetShadow();
 			}
-			if(mo.border) {
+			if(mo.border) {
 				gc.lineWidth=1;
 				gc.lineJoin='round';
 				gc.strokeStyle=mo.border;
@@ -1144,8 +1142,8 @@ harry=(function(o){
 			}
 		},
 
-		chart: function(x,y){ over.line(x,y) },
-		curve: function(x,y){ over.line(x,y) },
+		chart: function(x,y){ over.line(x,y) },
+		curve: function(x,y){ over.line(x,y) },
 
 		pie: function(x,y) {
 			var d=Math.sqrt(Math.pow(x-overpie.x,2)+Math.pow(y-overpie.y,2)),a,n,i=0;

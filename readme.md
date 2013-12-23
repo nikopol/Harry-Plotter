@@ -160,9 +160,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 	h.clear()             //delete all dataset
 	 .load(data)          //add a dataset, see contructor
 	 .draw();             //draw all dataset
-	h.canvas.onclick=function(){
-	    h.draw('river');  //redraw on click
-	};
+	 .draw(mode);         //draw all dataset in a specific mode
 
 **short sample**
 
@@ -171,7 +169,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		harry({
 			canvas:'box',
 			datas:[1,2,4,8,4,2,1],
-			mode:'river',
+			mode:'curve',
 			fill:'vertical'
 		});
 	</script>
