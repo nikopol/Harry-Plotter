@@ -137,10 +137,8 @@ var h=plotter({...});
 
 h.clear()             //delete all datasets
  .load(data)          //add a dataset (see contructor)
- .draw();             //draw all datasets without anim
-h.canvas.onclick=function(){
-	h.draw('chart'); //redraw
-};
+ .draw();             //draw all datasets
+ .draw(mode);         //draw all datasets in a given mode (see constructor)
 
 */
 
