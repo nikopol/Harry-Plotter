@@ -45,28 +45,33 @@ harry.timeline = (function(){
 	"use strict";
 	var
 	build = function(series,dur,fnparse,fnfmt){
-		var min=null,max=null,r=[],ds=[],labs=[],nlabs={},ns,nl,d,n,k;
+		var min=null,max=null,r=[],ds=[],da=[],labs=[],nlabs={},ns,nl,d,n,k;
 		if(!(series instanceof Array)) series=[series];
 		dur*=1000;
 		//norm+min&max
 		for(ns in series){
-			var s={};
-			for(k in series[ns]){
+			var s={}, src=series[ns];
+			if(src.datas) src=src.datas;
+			for(k in src){
 				d=fnparse(k);
 				n=Math.floor(d.getTime()/dur)*dur;
 				if(min===null || n<min) min=n;
 				if(max===null || n>max) max=n;
-				var v=parseFloat(series[ns][k]);
+				var v=parseFloat(src[k]);
 				if(s[n]) s[n]+=v; else s[n]=v;
 			}
 			ds.push(s);
+			da.push(
+				series[ns].datas
+				? {title:series[ns].title, color:series[ns].color}
+				: {title:false, color:false}
+			)
 		}
 		//init
 		for(nl in ds) {
-			var o={
-				values: [],
-				labels: []
-			};
+			var o={ values: [] };
+			if(da[nl].title) o.title=da[nl].title;
+			if(da[nl].color) o.color=da[nl].color;
 			if(nl==0)
 				for(n=min,nl=0;n<=max;n+=dur,nl++) {
 					labs.push(fnfmt(new Date(n)));
