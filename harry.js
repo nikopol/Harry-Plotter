@@ -80,7 +80,7 @@ var h=harry({
 		shadow: "x,y,blur,#col",  //  label text shadow, default=none
 		y: [0,50,100],            //  y axis, numbers are %, default=none
 		ypos: "left+right",       //  y labels position, default=right
-		x: int,                   //  x axis, display 1/int labels, 1=all..., default=none
+		x: int,                   //  x axis, display 1/int labels, 1=all, auto=auto, default=0
 		marks: int                //  graduation's marks size, default=0
 	},
 
@@ -318,7 +318,7 @@ harry=(function(o){
 			color: "#fff",
 			bullet: "rgba(99,99,99,0.8)",
 			axis: false,
-			text: "%v"
+			text: "%t: %v"
 		},o.mouseover),
 	mousepos,
 	overpts=[],
