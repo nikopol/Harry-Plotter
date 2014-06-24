@@ -1,10 +1,10 @@
-harry plotter 0.9
------------------
-~L~ nikopol 2009-2013
+harry plotter 0.9c
+------------------
+~L~ nikopol 2009-2014
 
 **what's that**
 
-harry is a lightweight standalone javascript library to plot data as charts, pies, lines or curves.
+harry is a lightweight standalone javascript library to plot data as charts, pies, donuts, lines or curves.
 
 samples can be viewed [here](http://nikopol.github.com/Harry-Plotter/#tab=presets)  
 a generator, that let's you play with all parameters can be used [here](http://nikopol.github.com/Harry-Plotter/#tab=generator)
@@ -20,7 +20,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
   - lightweight (15k minified)
   - standalone
   - highly configurable
-  - animation
+  - basic animation
 
 **constructor**
 
@@ -58,6 +58,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		background: "rgba(0,0,0,0.5)" //background color, default=transparent
 		mode: "curve:stack",          //draw mode, can be:
 		                              //  pie          cheesecake
+		                              //  pie:donut    cheesecake
 		                              //  chart        histogram, side by side
 		                              //  chart:stack  stacked histograms
 		                              //  chart:vertical  vert. histograms
