@@ -1,4 +1,4 @@
-// harry plotter 0.9b
+// harry plotter 0.9c
 // ~L~ nikomomo@gmail.com 2009-2014
 // https://github.com/nikopol/Harry-Plotter
 
@@ -38,6 +38,7 @@ var h=harry({
    background: "rgba(0,0,0,0.5)" //background color, default=transparent
    mode: "curve:stack",          //draw mode, can be:
                                  //  pie          cheesecake
+                                 //  pie:donut    donut
                                  //  chart        histogram, side by side
                                  //  chart:stack  stacked histograms
                                  //  chart:vertical  vert. histograms
@@ -141,7 +142,7 @@ var h=plotter({...});
 h.clear()             //delete all datasets
  .load(data)          //add a dataset (see contructor)
  .draw();             //draw all datasets
- .draw(mode);         //draw all datasets in a given mode (see constructor)
+h.draw(mode);         //draw all datasets in a given mode (see constructor)
 
 */
 
@@ -1025,7 +1026,7 @@ harry=(function(o){
             //draw
             var cx=rx+Math.round(rw/2),cy=ry+Math.round(rh/2),
                 r=Math.min(rh/2,rw/2)-1, rl=r+labels.fontpx,dx,dy,
-                g,a1=Math.PI*1.5,a2,a,nx,ny,n=overpie.n;
+                g,a1=Math.PI*1.5,a2,a,nx,ny,n=overpie.n,rc;
             overpie={r:r,x:cx,y:cy,n:n};
             for(i=0;i<nb;i++) {
                a2=a1+va[i];
@@ -1039,12 +1040,19 @@ harry=(function(o){
                   dy=cy;
                }
                gc.beginPath();
-               gc.moveTo(dx,dy);
-               gc.arc(dx,dy,r,a1,a2,false);
+               if(flag.donut) {
+                  gc.arc(dx,dy,r/2,a1,a2,false);
+                  gc.arc(dx,dy,r,a2,a1,true);
+                  rc=1.5;
+               } else {
+                  gc.moveTo(dx,dy);
+                  gc.arc(dx,dy,r,a1,a2,false);
+                  rc=2;
+               }
                fillstroke(vc[i]);
                if(i===n) {
-                  nx=dx+rl/2*Math.cos(a);
-                  ny=dy+rl/2*Math.sin(a);
+                  nx=dx+rl/rc*Math.cos(a);
+                  ny=dy+rl/rc*Math.sin(a);
                } else
                   drawXLabel(lab[i],dx+rl*Math.cos(a),dy+rl*Math.sin(a),'center','middle');
                a1=a2;
