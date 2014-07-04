@@ -56,6 +56,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		//rendering
 
 		background: "rgba(0,0,0,0.5)" //background color, default=transparent
+		color: "#rgb",                //allow to specify a color for a simple dataset
 		mode: "curve:stack",          //draw mode, can be:
 		                              //  pie          cheesecake
 		                              //  pie:donut    cheesecake

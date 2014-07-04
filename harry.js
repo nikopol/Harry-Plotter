@@ -35,7 +35,8 @@ var h=harry({
    
    //rendering
 
-   background: "rgba(0,0,0,0.5)" //background color, default=transparent
+   background: "rgba(0,0,0,0.5)",//background color, default=transparent
+   color: "#rgb",                //allow to specify a color for a simple dataset
    mode: "curve:stack",          //draw mode, can be:
                                  //  pie          cheesecake
                                  //  pie:donut    donut
@@ -411,7 +412,7 @@ harry=(function(o){
       ds={
          val:[], lab:[], len:0, sum:0, avg:0, max:0, min:0xffffffffffff,
          tit:d.title || "dataset#"+(data.length+1), maxlab: '',
-         col:d.color || COLORS[data.length%COLORS.length]
+         col:d.color || o.color || COLORS[data.length%COLORS.length]
       };
       for(k in vals) {
          v=parseFloat(vals[k]);
