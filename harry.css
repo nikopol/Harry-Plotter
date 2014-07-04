@@ -547,8 +547,10 @@ content#generator {
 }
 
 #plot {
-	overflow: auto;
+	overflow: hidden;
 	text-align: center;
+	width: 100%;
+	height: 150px;
 }
 
 #jsgen {
