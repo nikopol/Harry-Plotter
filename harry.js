@@ -1,4 +1,4 @@
-// harry plotter 0.9c
+// harry plotter 0.9d
 // ~L~ nikomomo@gmail.com 2009-2014
 // https://github.com/nikopol/Harry-Plotter
 
@@ -30,8 +30,8 @@ var h=harry({
    id: "str",                    //canvas's id, by default "harry"+count++
    container: "str/elem",        //container where create canvas, default=body
    canvas: "str/elem",           //canvas element, default=create it into container
-   width: int,                   //canvas's width, default=container.width or 300
-   height: int,                  //canvas's height, default=container.height or 150
+   width: int,                   //canvas's width, default=canvas or container width
+   height: int,                  //canvas's height, default=canvas or container height
    
    //rendering
 
@@ -217,14 +217,11 @@ harry=(function(o){
    },
 
    buildCanvas=function(o,w,h) {
-      var c=document.createElement('canvas'),p;
-      c.setAttribute('width',w+'px');
-      c.setAttribute('height',h+'px');
-      if(o) {
-         p=typeof(o)=='string'?document.getElementById(o):o;
-         if(!p) return;
-      } else
-         p=document.body;
+      var c=document.createElement('canvas'),
+          p=o?(typeof(o)=='string'?document.getElementById(o):o):document.body;
+      if(!p) return;
+      c.setAttribute('width',(w||p.clientWidth)+'px');
+      c.setAttribute('height',(h||p.clientHeight)+'px');
       p.appendChild(c);
       return c;
    },
@@ -292,7 +289,7 @@ harry=(function(o){
 
    canvas=o.canvas
       ? (o.canvas.constructor == HTMLCanvasElement ? o.canvas : document.getElementById(o.canvas))
-      : buildCanvas(o.container,o.width||300,o.height||150),
+      : buildCanvas(o.container,o.width,o.height),
    w=canvas.width,
    h=canvas.height,
    gc=canvas.getContext("2d"),

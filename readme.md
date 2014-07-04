@@ -1,4 +1,4 @@
-harry plotter 0.9c
+harry plotter 0.9d
 ------------------
 ~L~ nikopol 2009-2014
 
@@ -50,8 +50,8 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		id: "str",                    //canvas's id, by default "harry"+count++
 		container: "str/elem",	      //container where create canvas, default=body
 		canvas: "str/elem",           //canvas element, default=create it into container
-		width: int,                   //canvas's width, default=container.width or 300
-		height: int,                  //canvas's height, default=container.height or 150
+		width: int,                   //canvas's width, default=canvas or container width
+		height: int,                  //canvas's height, default=canvas or container height
 		
 		//rendering
 
