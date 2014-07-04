@@ -102,6 +102,19 @@
 			"legends":{"x":2,"y":2,"font":"normal 12px \"Sans Serif\""},
 			"labels":{"x":1,"color":"#444"},
 			"bg":"white"
+		},
+		"Simple Donut": {
+			"datas": [
+				{"title":"yellow","color":"#fc0","values":[51,52,47,6,5,86,95,93,96,22,55,49,21,21,6,49]},
+				{"title":"blue","color":"#0cf","values":[59,21,30,86,5,75,24,92,80,11,22,83,19,91,99,74]},
+				{"title":"green","color":"#0f8","values":[58,0,5,40,82,4,37,8,92,1,38,0,98,1,3,3]}
+			],
+			"mode":"pie:donut",
+			"margins":[20,20,20,100],
+			"mouseover":{"text":"%t: %p"},
+			"legends":{"x":2,"y":2,"font":"normal 12px \"Sans Serif\""},
+			"labels":{"x":1,"color":"#444"},
+			"bg":"white"
 		}
 	}
 }
