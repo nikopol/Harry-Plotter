@@ -431,7 +431,7 @@ harry=(function(o){
 
    //load datasets
    loads=function(datas) {
-      if(datas instanceof Array && typeof(datas[0])=='object')
+      if(datas instanceof Array && typeof(datas[0])=='object' && datas[0]!=null)
          for(var i=0,l=datas.length;i<l;++i)
             load(datas[i]);
       else
