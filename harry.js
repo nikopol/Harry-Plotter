@@ -1,4 +1,4 @@
-// harry plotter 0.9d
+// harry plotter 0.9e
 // ~L~ nikomomo@gmail.com 2009-2014
 // https://github.com/nikopol/Harry-Plotter
 
@@ -140,7 +140,7 @@ var h=harry({
 var h=plotter({...});
 
 
-h.clear()             //delete all datasets
+h.clear()             //delete all datasets & remove events handler
  .load(data)          //add a dataset (see contructor)
  .draw();             //draw all datasets
 h.draw(mode);         //draw all datasets in a given mode (see constructor)
@@ -1176,6 +1176,9 @@ harry=(function(o){
    },
 
    clear=function() {
+      canvas.onmouseover=
+      canvas.onmousemove=
+      canvas.onmouseout=undefined;
       data=[];
       dlen=0;
       setup();
@@ -1183,6 +1186,7 @@ harry=(function(o){
 
    draw=function(nover) {
       lxl=-1;
+      gc.translate(0.5,0.5);
       cls();
       drawYGrid();
       drawYLabels();
@@ -1219,6 +1223,7 @@ harry=(function(o){
          } else
             mousepos=undefined;
       }
+      gc.translate(-0.5,-0.5);
    },
 
    anim=function(s){
@@ -1237,11 +1242,8 @@ harry=(function(o){
    
 //INIT ========================================================================
 
-   gc.translate(0.5,0.5);
-   if(o.datas) loads(o.datas);
-   else setup();
-   if(o.anim) anim(o.anim);
-   else draw();
+   if(o.datas) loads(o.datas); else setup();
+   if(o.anim) anim(o.anim); else draw();
 
 //PUBLIC METHODS ==============================================================
 
