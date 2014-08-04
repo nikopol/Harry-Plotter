@@ -1,4 +1,4 @@
-// harry plotter timeline serie generator - 0.2
+// harry plotter timeline serie generator - 0.3
 // ~L~ nikomomo@gmail.com 2012-2014
 // https://github.com/nikopol/Harry-Plotter
 
