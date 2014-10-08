@@ -1016,7 +1016,7 @@ harry=(function(o){
                if(d.sum)
                   for(nb=d.len,i=0;i<nb;i++) {
                      va[i]=acf*d.val[i]/d.sum*pi2;
-                     vc[i]=COLORS[i%COLORS.length];
+                     vc[i]=d.col;
                      lab.push(d.val[i]);
                      pct.push(percent(d.val[i],d.sum));
                   }
