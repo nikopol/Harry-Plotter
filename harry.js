@@ -1165,7 +1165,7 @@ harry=(function(o){
             a=(a+3*Math.PI)%(2*Math.PI);
             while(i<overpts.length && a>overpts[i].a) i++;
             if(--i<0) i=overpts.length-1;
-            overpie.n=overpts[i].n;
+            if(i>=0) overpie.n=overpts[i].n;
             draw(true);
          } else if(overpie.n!==false) {
             overpie.n=false;
