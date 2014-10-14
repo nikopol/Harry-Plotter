@@ -408,7 +408,8 @@ harry=(function(o){
 
    //load a dataset
    load=function(d) { 
-      var t,v,k,vals=d.values||d,labs=d.labels||[],l,
+      var t,v,k,labs=d.labels||[],l,
+      vals=d.values && typeof(d.values)!="function" ? d.values : d,
       ds={
          val:[], lab:[], len:0, sum:0, avg:0, max:0, min:0xffffffffffff,
          tit:d.title || "dataset#"+(data.length+1), maxlab: '',
