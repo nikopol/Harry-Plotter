@@ -1,4 +1,4 @@
-// harry plotter 0.9d
+// harry plotter 0.9e
 // ~L~ nikomomo@gmail.com 2009-2014
 // https://github.com/nikopol/Harry-Plotter
 
@@ -35,7 +35,8 @@ var h=harry({
    
    //rendering
 
-   background: "rgba(0,0,0,0.5)" //background color, default=transparent
+   background: "rgba(0,0,0,0.5)",//background color, default=transparent
+   color: "#rgb",                //allow to specify a color for a simple dataset
    mode: "curve:stack",          //draw mode, can be:
                                  //  pie          cheesecake
                                  //  pie:donut    donut
@@ -139,7 +140,7 @@ var h=harry({
 var h=plotter({...});
 
 
-h.clear()             //delete all datasets
+h.clear()             //delete all datasets & remove events handler
  .load(data)          //add a dataset (see contructor)
  .draw();             //draw all datasets
 h.draw(mode);         //draw all datasets in a given mode (see constructor)
@@ -407,11 +408,12 @@ harry=(function(o){
 
    //load a dataset
    load=function(d) { 
-      var t,v,k,vals=d.values||d,labs=d.labels||[],l,
+      var t,v,k,labs=d.labels||[],l,
+      vals=d.values && typeof(d.values)!="function" ? d.values : d,
       ds={
          val:[], lab:[], len:0, sum:0, avg:0, max:0, min:0xffffffffffff,
          tit:d.title || "dataset#"+(data.length+1), maxlab: '',
-         col:d.color || COLORS[data.length%COLORS.length]
+         col:d.color || o.color || COLORS[data.length%COLORS.length]
       };
       for(k in vals) {
          v=parseFloat(vals[k]);
@@ -1015,7 +1017,7 @@ harry=(function(o){
                if(d.sum)
                   for(nb=d.len,i=0;i<nb;i++) {
                      va[i]=acf*d.val[i]/d.sum*pi2;
-                     vc[i]=COLORS[i%COLORS.length];
+                     vc[i]=d.col;
                      lab.push(d.val[i]);
                      pct.push(percent(d.val[i],d.sum));
                   }
@@ -1164,7 +1166,7 @@ harry=(function(o){
             a=(a+3*Math.PI)%(2*Math.PI);
             while(i<overpts.length && a>overpts[i].a) i++;
             if(--i<0) i=overpts.length-1;
-            overpie.n=overpts[i].n;
+            if(i>=0) overpie.n=overpts[i].n;
             draw(true);
          } else if(overpie.n!==false) {
             overpie.n=false;
@@ -1175,6 +1177,9 @@ harry=(function(o){
    },
 
    clear=function() {
+      canvas.onmouseover=
+      canvas.onmousemove=
+      canvas.onmouseout=undefined;
       data=[];
       dlen=0;
       setup();
@@ -1182,6 +1187,7 @@ harry=(function(o){
 
    draw=function(nover) {
       lxl=-1;
+      gc.translate(0.5,0.5);
       cls();
       drawYGrid();
       drawYLabels();
@@ -1218,6 +1224,7 @@ harry=(function(o){
          } else
             mousepos=undefined;
       }
+      gc.translate(-0.5,-0.5);
    },
 
    anim=function(s){
@@ -1236,11 +1243,8 @@ harry=(function(o){
    
 //INIT ========================================================================
 
-   gc.translate(0.5,0.5);
-   if(o.datas) loads(o.datas);
-   else setup();
-   if(o.anim) anim(o.anim);
-   else draw();
+   if(o.datas) loads(o.datas); else setup();
+   if(o.anim) anim(o.anim); else draw();
 
 //PUBLIC METHODS ==============================================================
 

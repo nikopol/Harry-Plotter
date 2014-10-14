@@ -1,4 +1,4 @@
-// harry plotter timeline serie generator - 0.2
+// harry plotter timeline serie generator - 0.3
 // ~L~ nikomomo@gmail.com 2012-2014
 // https://github.com/nikopol/Harry-Plotter
 
@@ -44,7 +44,7 @@ harry.timeline = (function(){
    var
    parse = function(d){
       var o = new Date(d);
-      if(!isNaN(o)) return o;
+      if(!isNaN(d)) return o;
       if(/^(\d{4})\D(\d{2})\D(\d{2})(?:\D(\d{2}))?(?:\D(\d{2}))?(?:\D(\d{2}))?/.test(d) )
          return new Date(RegExp.$1,RegExp.$2-1,RegExp.$3,RegExp.$4||0,RegExp.$5||0,RegExp.$6||0);
       console.error("unable to parse date ",d," please setup a parser");
@@ -53,7 +53,7 @@ harry.timeline = (function(){
    formats = {
       year: function(d){ return d.getFullYear() },
       month: function(d){ return d.toISOString().substr(0,7) },
-      day: function(d){ return d.getFullYear() },
+      day: function(d){ return d.getDate() },
       hour: function(d){ return d.getDate()+' '+d.getHours() },
       minute: function(d){ return d.toTimeString().substr(0,5) },
       second: function(d){ return d.toTimeString().substr(0,8) }
@@ -65,24 +65,18 @@ harry.timeline = (function(){
          date: function(e){ return new Date(e+"-01-01T00:00:00Z") }
       },
       month: {
-         eval: function(d){ return d.getFullYear()*100+d.getMonth()+1 },
+         eval: function(d){ return (new Date(d.getFullYear(),d.getMonth(),1,0,0,0,0)).toISOString() },
          next: function(e){
-            var y=Math.floor(e/100),m=e%100;
-            if(m<12) m++; else { y++; m=1; }
-            return y*100+m;
+            var d=new Date(e), y=d.getFullYear(), m=d.getMonth()+1;
+            if(m>11) { y++; m=0; }
+            return (new Date(y,m,1,0,0,0,0)).toISOString()
          },
-         date: function(e){
-            var d=("0000"+e).substr(-6);
-            return new Date(d.substr(0,4)+"-"+d.substr(-2)+"-01T00:00:00Z");
-         }
+         date: function(e){ return new Date(e) }
       },
       day: {
-         eval: function(d){ return d.getFullYear()*10000+d.getMonth()*100+d.getDate() },
-         next: function(e){ return this.eval(new Date(this.date(e).getTime()+86400000)) },
-         date: function(e){
-            var d=("0000"+e).substr(-8);
-            return new Date(d.substr(0,4)+"-"+d.substr(4,2)+"-"+d.substr(-2)+"T00:00:00Z");
-         }
+         eval: function(d){ return (new Date(d.getFullYear(),d.getMonth(),d.getDate(),0,0,0,0)).toISOString() },
+         next: function(e){ return (new Date((new Date(e)).getTime()+86400000)).toISOString() },
+         date: function(e){ return new Date(e) }
       },
       hour: {
          eval: function(d){ return Math.floor(d.getTime()/3600000) },
@@ -101,7 +95,7 @@ harry.timeline = (function(){
       }
    },
    build = function(series,iter,fnparse,fnfmt){
-      var min=null,max=null,r=[],ds=[],da=[],labs=[],nlabs={},ns,nl,d,n,k;
+      var min=null,max=null,r=[],ds=[],da=[],labs=[],nlabs={},ns,nl,nm,d,n,k;
       if(!(series instanceof Array)) series=[series];
       //norm+min&max
       for(ns in series){
@@ -129,9 +123,9 @@ harry.timeline = (function(){
          if(da[nl].title) o.title=da[nl].title;
          if(da[nl].color) o.color=da[nl].color;
          if(nl==0)
-            for(n=min,nl=0;n<=max;n=iter.next(n),nl++) {
+            for(n=min,nm=0;n<=max;n=iter.next(n),nm++) {
                labs.push(fnfmt(iter.date(n)));
-               nlabs[n]=nl;
+               nlabs[n]=nm;
             }
          for(n=min;n<=max;n=iter.next(n)) o.values.push(null);
          o.labels=labs;
