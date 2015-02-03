@@ -125,7 +125,8 @@ var h=harry({
       text: "%v",                //  text in the bullet
                                  //      %v=value %l=label %n=index %t=title %s=sum
                                  //      %V=abbreviated value %S=abbreviated sum
-      text: callback(obj)        //  or text can trigger a callback
+      text: callback(params)     //  or text can trigger a callback called with an object
+                                 //     {v:..., l:..., n:.. ,...} as defined before
                                  //     if it returns a string, it'll be displayed
       header: {                  //  header in the bullet 
          text: "%l: %s",           //  text in the bullet (same var than mouseover.text)
@@ -747,7 +748,7 @@ harry=(function(o){
             V: smallNum(b.v),
             l: data[b.nds].lab[b.n],
             n: b.n,
-            t: data[b.nds].tit[b.n]||data[b.nds].tit,
+            t: data[b.nds].tit,
             p: b.pct||percent(b.v,mx),
             s: mx,
             S: smallNum(mx)
