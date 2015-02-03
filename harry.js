@@ -1,5 +1,5 @@
 // harry plotter 0.9e
-// ~L~ nikomomo@gmail.com 2009-2014
+// ~L~ nikomomo@gmail.com 2009-2015
 // https://github.com/nikopol/Harry-Plotter
 
 /*
@@ -155,6 +155,7 @@ harry=(function(o){
 //CONSTS ======================================================================
 
    COLORS=["#88a4d7","#d685c9","#86d685","#ffc34f","#93c2ea","#f28989","#f9eb8a"],
+   DFTFONT="Helvetica, Arial, Sans-Serif",
 
 //TOOLS LIB ===================================================================
 
@@ -308,7 +309,7 @@ harry=(function(o){
    scalebot=o.autoscale && /bot/i.test(o.autoscale),
    labels=merge({
       color: "#a0a0a0",
-      font: 'normal 9px "Sans Serif"',
+      font: 'normal 9px '+DFTFONT,
       marks: 0,
       xwidth: 0,
       ywidth: 0,
@@ -320,7 +321,7 @@ harry=(function(o){
          radius: 5,
          linewidth: linewidth*2,
          circle: "#888",
-         font: 'normal 10px "Sans Serif"',
+         font: 'normal 10px '+DFTFONT,
          color: "#fff",
          bullet: "rgba(99,99,99,0.8)",
          axis: false,
@@ -339,7 +340,7 @@ harry=(function(o){
    },o.grid),
    title=o.title
       ? merge({
-         font: 'bold 12px "Sans Serif"',
+         font: 'bold 12px '+DFTFONT,
          color: 'rgba(4,4,4,0.5)',
          z: 'top'
       }, o.title)
@@ -348,7 +349,7 @@ harry=(function(o){
       ? false
       : merge({
          color: "#666",
-         font: '10px "Sans Serif"',
+         font: 'normal 10px '+DFTFONT,
          layout: 'v'
       },o.legends),
    data=[], dmin, dmax, dlen=0, dsum, drng, dinc,
@@ -746,7 +747,7 @@ harry=(function(o){
             V: smallNum(b.v),
             l: data[b.nds].lab[b.n],
             n: b.n,
-            t: data[b.nds].tit,
+            t: data[b.nds].tit[b.n]||data[b.nds].tit,
             p: b.pct||percent(b.v,mx),
             s: mx,
             S: smallNum(mx)
