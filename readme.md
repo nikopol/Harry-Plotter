@@ -1,6 +1,6 @@
-harry plotter 0.9d
+harry plotter 0.9e
 ------------------
-~L~ nikopol 2009-2014
+~L~ nikopol 2009-2015
 
 **what's that**
 
@@ -141,7 +141,11 @@ a generator, that let's you play with all parameters can be used [here](http://n
 			border2: "#fff",          //  spot color, default=none
 			axis: "xy|x|y",           //  draw spot axis, default=none
 			text: "%v",               //  text in the bullet (%v=value %l=label %n=index %t=title)
-			text: callback(obj)       //  or text can trigger a callback
+			text: "%v",               //  text in the bullet
+			                          //      %v=value %l=label %n=index %t=title %s=sum
+			                          //      %V=abbreviated value %S=abbreviated sum
+			text: callback(params)    //  or text can trigger a callback called with an object
+			                          //     {v:..., l:..., n:.. ,...} as defined before
 			                          //     if it returns a string, it'll be displayed
 			header: {                 //  header in the bullet 
 				text: "%v",               //  text in the bullet (same var than mouseover.text)

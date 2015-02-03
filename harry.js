@@ -1,5 +1,5 @@
 // harry plotter 0.9e
-// ~L~ nikomomo@gmail.com 2009-2014
+// ~L~ nikomomo@gmail.com 2009-2015
 // https://github.com/nikopol/Harry-Plotter
 
 /*
@@ -125,7 +125,8 @@ var h=harry({
       text: "%v",                //  text in the bullet
                                  //      %v=value %l=label %n=index %t=title %s=sum
                                  //      %V=abbreviated value %S=abbreviated sum
-      text: callback(obj)        //  or text can trigger a callback
+      text: callback(params)     //  or text can trigger a callback called with an object
+                                 //     {v:..., l:..., n:.. ,...} as defined before
                                  //     if it returns a string, it'll be displayed
       header: {                  //  header in the bullet 
          text: "%l: %s",           //  text in the bullet (same var than mouseover.text)
@@ -155,6 +156,7 @@ harry=(function(o){
 //CONSTS ======================================================================
 
    COLORS=["#88a4d7","#d685c9","#86d685","#ffc34f","#93c2ea","#f28989","#f9eb8a"],
+   DFTFONT="Helvetica, Arial, Sans-Serif",
 
 //TOOLS LIB ===================================================================
 
@@ -308,7 +310,7 @@ harry=(function(o){
    scalebot=o.autoscale && /bot/i.test(o.autoscale),
    labels=merge({
       color: "#a0a0a0",
-      font: 'normal 9px "Sans Serif"',
+      font: 'normal 9px '+DFTFONT,
       marks: 0,
       xwidth: 0,
       ywidth: 0,
@@ -320,7 +322,7 @@ harry=(function(o){
          radius: 5,
          linewidth: linewidth*2,
          circle: "#888",
-         font: 'normal 10px "Sans Serif"',
+         font: 'normal 10px '+DFTFONT,
          color: "#fff",
          bullet: "rgba(99,99,99,0.8)",
          axis: false,
@@ -339,7 +341,7 @@ harry=(function(o){
    },o.grid),
    title=o.title
       ? merge({
-         font: 'bold 12px "Sans Serif"',
+         font: 'bold 12px '+DFTFONT,
          color: 'rgba(4,4,4,0.5)',
          z: 'top'
       }, o.title)
@@ -348,7 +350,7 @@ harry=(function(o){
       ? false
       : merge({
          color: "#666",
-         font: '10px "Sans Serif"',
+         font: 'normal 10px '+DFTFONT,
          layout: 'v'
       },o.legends),
    data=[], dmin, dmax, dlen=0, dsum, drng, dinc,
