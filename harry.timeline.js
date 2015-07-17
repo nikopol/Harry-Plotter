@@ -1,5 +1,5 @@
-// harry plotter timeline serie generator - 0.3
-// ~L~ nikomomo@gmail.com 2012-2014
+// harry plotter timeline serie generator - 0.4
+// ~L~ nikomomo@gmail.com 2012-2015
 // https://github.com/nikopol/Harry-Plotter
 
 /*
@@ -43,10 +43,8 @@ harry.timeline = (function(){
    "use strict";
    var
    parse = function(d){
-      var o = new Date(d);
-      if(!isNaN(d)) return o;
       if(/^(\d{4})\D(\d{2})\D(\d{2})(?:\D(\d{2}))?(?:\D(\d{2}))?(?:\D(\d{2}))?/.test(d) )
-         return new Date(RegExp.$1,RegExp.$2-1,RegExp.$3,RegExp.$4||0,RegExp.$5||0,RegExp.$6||0);
+         return new Date(Date.UTC(RegExp.$1,RegExp.$2-1,RegExp.$3,RegExp.$4||0,RegExp.$5||0,RegExp.$6||0));
       console.error("unable to parse date ",d," please setup a parser");
       return null;
    },
@@ -54,7 +52,7 @@ harry.timeline = (function(){
       year: function(d){ return d.getFullYear() },
       month: function(d){ return d.toISOString().substr(0,7) },
       day: function(d){ return d.getDate() },
-      hour: function(d){ return d.getDate()+' '+d.getHours() },
+      hour: function(d){ return d.getHours()+'h' },
       minute: function(d){ return d.toTimeString().substr(0,5) },
       second: function(d){ return d.toTimeString().substr(0,8) }
    },
@@ -65,18 +63,21 @@ harry.timeline = (function(){
          date: function(e){ return new Date(e+"-01-01T00:00:00Z") }
       },
       month: {
-         eval: function(d){ return (new Date(d.getFullYear(),d.getMonth(),1,0,0,0,0)).toISOString() },
+         eval: function(d){ return (new Date(Date.UTC(d.getFullYear(),d.getMonth(),1))).toISOString() },
          next: function(e){
-            var d=new Date(e), y=d.getFullYear(), m=d.getMonth()+1;
-            if(m>11) { y++; m=0; }
-            return (new Date(y,m,1,0,0,0,0)).toISOString()
+            var y=parseInt(e.substr(0,4),10), m=parseInt(e.substr(5,2),10)+1;
+            if(m>12) { y++; m=1; }
+            return (new Date(Date.UTC(y,m-1,1))).toISOString()
          },
-         date: function(e){ return new Date(e) }
+         date: function(e){
+            var y=parseInt(e.substr(0,4),10), m=parseInt(e.substr(5,2),10);
+            return new Date(Date.UTC(y,m-1,1));
+         }
       },
       day: {
-         eval: function(d){ return (new Date(d.getFullYear(),d.getMonth(),d.getDate(),0,0,0,0)).toISOString() },
-         next: function(e){ return (new Date((new Date(e)).getTime()+86400000)).toISOString() },
-         date: function(e){ return new Date(e) }
+         eval: function(d){ return Math.floor(d.getTime()/86400000) },
+         next: function(e){ return e+1 },
+         date: function(e){ return new Date(e*86400000) }
       },
       hour: {
          eval: function(d){ return Math.floor(d.getTime()/3600000) },
