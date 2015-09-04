@@ -1,4 +1,4 @@
-harry plotter 0.9e
+harry plotter 0.9f
 ------------------
 ~L~ nikopol 2009-2015
 
@@ -68,6 +68,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		                              //  line:stack   stacked lines
 		                              //  curve        curved lines
 		                              //  curve:stack  stacked curved lines
+		mirror: {x:false,y:false},    //vertical/horizontal mirror rendering
 		barspace: int,                //space between bars for mode chart only, default=auto
 		linewidth: int,               //line width, default=1
 		linejoin: "round",            //line join, can be round|bevel|miter default=miter
