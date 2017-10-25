@@ -1,5 +1,5 @@
-// harry plotter 0.9f
-// ~L~ nikomomo@gmail.com 2009-2015
+// harry plotter 1.0
+// ~L~ nikomomo@gmail.com 2009-2017
 // https://github.com/nikopol/Harry-Plotter
 
 /*
@@ -10,7 +10,7 @@
 var h=harry({
 
    //datas can be provided in these formats :
-   
+
    datas: [v1,v2,v3,...],        //simple dataset values
    datas: {l1:v1,l2:v2,l3:v3,..},//simple dataset labels/values
    datas: [[v1,v2],[w1,w2],...], //multiple dataset values
@@ -32,7 +32,7 @@ var h=harry({
    canvas: "str/elem",           //canvas element, default=create it into container
    width: int,                   //canvas's width, default=canvas or container width
    height: int,                  //canvas's height, default=canvas or container height
-   
+
    //rendering
 
    background: "rgba(0,0,0,0.5)",//background color, default=transparent
@@ -62,9 +62,13 @@ var h=harry({
                                  //  radial       radial gradient fill
    opacity: 0.8,                 //fill opacity, between 0 and 1
    margins:[top,right,bot,left], //margin size (for labels), default=auto
-   autoscale: "top+bottom",      //auto round top and/or bottom y scale, default=none
    pointradius: int,             //radius point size in mode line/curve only, default=none
    anim: int,                    //initial animation duration in seconds, default=disabled
+
+   scale: {                      //setup bottom and top of y scale
+       top: int/'auto'/null,     //  int value or "auto" to round scale, default=max data value
+       bottom: int/'auto'/null,  //  int value or "auto" to round scale, default=0
+   },
 
    title: {                      //title options
       text: "title",             //  clear enough
@@ -129,7 +133,7 @@ var h=harry({
       text: callback(params)     //  or text can trigger a callback called with an object
                                  //     {v:..., l:..., n:.. ,...} as defined before
                                  //     if it returns a string, it'll be displayed
-      header: {                  //  header in the bullet 
+      header: {                  //  header in the bullet
          text: "%l: %s",           //  text in the bullet (same var than mouseover.text)
          font: "9px Trebuchet MS", //  bullet header font, default=mouveover.font
          color: "#666",            //  bullet text color, default=mouseover.color
@@ -307,8 +311,7 @@ harry=(function(o){
    linejoin=o.linejoin||"miter",
    barspace=o.barspace==undefined?'a':parseInt(o.barspace,10),
    radiuspoint=parseInt(o.radiuspoint,10)||0,
-   scaletop=o.autoscale && /top/i.test(o.autoscale),
-   scalebot=o.autoscale && /bot/i.test(o.autoscale),
+   scale=o.scale||{},
    mirror=o.mirror||{},
    labels=merge({
       color: "#a0a0a0",
@@ -369,7 +372,9 @@ harry=(function(o){
 
    //setup precalc vars
    setup=function() {
-      var i,j,l,d,s;
+      var i,j,l,d,s,
+          autotop = /auto/i.test(scale.top),
+          autobot = /auto/i.test(scale.bottom);
       //datasets vars
       dlen=data.length;
       dmin=dmax=false;
@@ -383,19 +388,21 @@ harry=(function(o){
             dmax=dmax===false?d.max:Math.max(d.max,dmax);
             if(d.maxlab) labels.xwidth=Math.max(labels.xwidth,gc.measureText(d.maxlab).width);
          }
-         if(scaletop) dmax=scaleUp(dmax);
+         if(autotop) dmax=scaleUp(dmax);
+         else if (scale.top) dmax=scale.top;
+         if (!autobot && scale.bottom) dmin=scale.bottom;
          if(flag.stack) {
             for(i=0,l=data[0].len;i<l;++i) {
                s=0;
                for(j=0;j<dlen;++j) s+=(data[j].val[i]||0);
-               if(s>dsum) dsum=scaletop ? scaleUp(s) : s;
+               if(s>dsum) dsum=scaletop ? scaleUp(s) : scale.top ? scale.top : s;
             }
-            drng=scalebot ? dsum-dmin : dsum;
+            drng=scale.bottom ? dsum-dmin : dsum;
          } else {
             dsum=dmax;
-            drng=scalebot ? dmax-dmin : dmax;
+            drng=autobot ? dmax-dmin : dmax;
          }
-         dinc=scalebot ? dmin : 0;
+         dinc=autobot ? dmin : scale.bottom || 0;
          labels.ywidth=gc.measureText(dsum||'0').width;
       }
       //misc
@@ -426,7 +433,7 @@ harry=(function(o){
    },
 
    //load a dataset
-   load=function(d) { 
+   load=function(d) {
       var t,v,k,labs=d.labels||[],l,
       vals=d.values && typeof(d.values)!="function" ? d.values : d,
       ds={
@@ -501,7 +508,7 @@ harry=(function(o){
          gc.stroke();
       }
    },
-   
+
    fillstroke=function(s){
       gc.closePath();
       setGradient(s) && gc.fill();
@@ -521,7 +528,8 @@ harry=(function(o){
 
    //unset shadow
    unsetShadow=function() {
-      if(gc.hasOwnProperty('clearShadow')) gc.clearShadow();
+      if(gc.hasOwnProperty('clearShadow'))
+         gc.clearShadow();
       else if(gc.hasOwnProperty('shadowBlur'))
          gc.shadowOffsetX=
          gc.shadowOffsetY=
@@ -552,7 +560,7 @@ harry=(function(o){
          unsetShadow();
       }
    },
-   
+
    //draw the background grid Y axis
    drawYGrid=function() {
       if(!flag.pie && grid.y) {
@@ -587,7 +595,7 @@ harry=(function(o){
       if(gx) {
          gc.lineWidth=grid.linewidth;
          gc.strokeStyle=grid.color;
-         for(i=0;gx && i<l;++i) 
+         for(i=0;gx && i<l;++i)
             if(ga || (n && i%n==0) || (i==0 && gl) || (i==l-1 && gr)) {
                gc.beginPath();
                if(flag.vertical) {
@@ -1011,7 +1019,7 @@ harry=(function(o){
                      if(!fs) x+=bw+1;
                   }
                   x+=fs?bw+1+m:m;
-               }              
+               }
          }
       },
 
@@ -1258,7 +1266,7 @@ harry=(function(o){
       acf=0;
       cb();
    };
-   
+
 //INIT ========================================================================
 
    if(o.datas) loads(o.datas); else setup();
