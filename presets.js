@@ -9,9 +9,9 @@
 			"mode":"line",
 			"fill":"none",
 			"opacity":0.5,
-			"linewidth":3, 
+			"linewidth":3,
 			"background":"#666",
-			"autoscale":"top",
+			"scale":{"top":"auto"},
 			"grid":{"x":[0,100]},
 			"mouseover":{"radius":4,"linewidth":2,"circle":"#fff","bullet":"#444","shadowbox":"1,1,0,#000","axis":"x"},
 			"legends":{"color":"#fff","shadow":"1,1,0,#000"}
@@ -28,7 +28,7 @@
 			"fill":"solid",
 			"anim":1,
 			"linewidth":3,
-			"autoscale":"top",
+			"scale":{"top":"auto"},
 			"mouseover":{"radius":4,"linewidth":0,"circle":"#fff"},
 			"legends":{"layout":"h","color":"#fff","x":1,"y":133},
 			"bg":"black"
@@ -42,7 +42,7 @@
 			"linewidth":2,
 			"radiuspoint":3,
 			"anim":1,
-			"autoscale":"top",
+			"scale":{"top":"auto"},
 			"mouseover":{"radius":4,"linewidth":2,"circle":"#666"},
 			"legends":false
 		}
@@ -56,7 +56,7 @@
 			"labels":{"color":"#666","x":1,"y":[0,50,100],"ypos":"left+right"},
 			"mode":"chart",
 			"fill":"vertical",
-			"autoscale":"top",
+			"scale":{"top":"auto"},
 			"legends":false,
 			"bg":"white",
 			"anim":2,
@@ -72,7 +72,7 @@
 			"labels":{"color":"#aaa","x":1,"y":[0,50,100]},
 			"mode":"chart:stack",
 			"fill":"solid",
-			"autoscale":"top",
+			"scale":{"top":"auto"},
 			"mouseover":{"radius":3,"linewidth":3,"circle":"#666","border":"#fff","border2":"#fff","bullet":"#666"},
 			"legends":{"color":"#fff","layout":"h"}
 		},
@@ -83,11 +83,11 @@
 			],
 			"labels":{"color":"#333","ypos":"left+right","x":1,"y":[0,50,100]},
 			"mode":"chart:vertical",
-			"autoscale":"top",
+			"scale":{"top":"auto"},
 			"mouseover":{"radius":3,"linewidth":3,"circle":"#666","border":"#fff","border2":"#fff","bullet":"#666"},
 			"legends":{"x":240,"color":"#000"},
 			"bg":"white"
-		}		
+		}
 	},
 	"Pies": {
 		"Simple Pie": {

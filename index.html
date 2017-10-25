@@ -17,7 +17,7 @@
 	<menu>
 		<button id="butreadme">Read me</button><button id="butgenerator">Generator</button><button id="butpresets">Presets</button>
 	</menu>
-	
+
 	<div id="forkme">Fork me on <img src="octocat-icon.png"/></div>
 
 	<content id="readme">
@@ -40,7 +40,7 @@
 				<hr/>
 
 				<h2>Title</h2>
-				
+
 				<div class="formcol">
 					<label for="titletext">text</label><input type="text" id="titletext" /><br/>
 					<label for="titlefont">font</label><input type="text" id="titlefont" class="font" placeholder='bold 12px "Sans Serif"' /><br/>
@@ -87,7 +87,7 @@
 				<hr/>
 
 				<h2>Rendering</h2>
-				
+
 				<div class="formcol">
 					<label for="mode">mode</label><select id="mode">
 						<option value="">auto</option>
@@ -116,11 +116,13 @@
 					<label for="margins">margins</label><input type="text" id="margins" placeholder="top,right,bottom,left" value="" />px<br/>
 				</div>
 				<div class="formcol">
-					<label for="autoscale">autoscale</label><select id="autoscale">
-						<option value="">none</option>
-						<option>top</option>
-						<option>bottom</option>
-						<option>top+bottom</option>
+					<label for="scaletop">scale top</label><select id="scaletop">
+						<option value="">max value</option>
+						<option value="auto">rounded max value</option>
+					</select><br/>
+					<label for="scalebottom">scale bottom</label><select id="scalebottom">
+						<option value="">0</option>
+						<option value="auto">min value</option>
 					</select><br/>
 					<label for="background">background</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="background" value="" class="color"/><input type="color" id="ibackground"/><br/>
 					<label for="radiuspoint">radiuspoint</label><select title="line or curve mode" id="radiuspoint">
@@ -235,7 +237,7 @@
 					<label for="gridcolor">color</label><input type="text" placeholder="#rrggbb or rgba(r,g,b,a)" id="gridcolor" value="" class="color"/><input type="color" id="igridcolor"/><br/>
 				</div>
 				<hr/>
-				
+
 				<h2>Labels</h2>
 
 				<div class="formcol">
@@ -463,7 +465,7 @@
 					while(n<l) {
 						c=txt[n++];
 						nc=(n<l) ? txt[n] : '';
-						if(c=='"') { fmt+=c; iq=!iq; } 
+						if(c=='"') { fmt+=c; iq=!iq; }
 						else if(iq) fmt+=c;
 						else if(c=='[') {ip++; fmt+=c;}
 						else if(c==']') {ip--; fmt+=c;}
@@ -510,13 +512,13 @@
 						}
 						v=v==""||v=="null"?null:parseFloat(v);
 						n[k]=v;
-					} 
+					}
 				} else {
 					n=[];
 					for(i=0;i<s.length;i++){
 						v=s[i]==""||s[i]=="null"?null:parseFloat(s[i]);
 						n.push(v);
-					} 
+					}
 				}
 				return n;
 			},
@@ -531,7 +533,7 @@
 					r.setAttribute('name','bgswitch'+n);
 					r.className=col;
 					if(col==dft) r.checked=true;
-					r.onclick=function(){ 
+					r.onclick=function(){
 						if(tgt.firstChild) tgt.firstChild.className='bg'+col;
 					};
 					d.appendChild(r);
@@ -600,12 +602,14 @@
 					if(w.length) o.labels.y=values(w);
 				}
 				//get render
-				getlst('width height mode fill opacity margins background linewidth linejoin radiuspoint anim autoscale','',o);
+				getlst('width height mode fill opacity margins background linewidth linejoin radiuspoint anim','',o);
 				if(/chart/.test(o.mode)) {
 					_('#barspace').removeAttribute('disabled');
 					getlst('barspace','',o);
 				} else
 					_('#barspace').setAttribute('disabled','disabled');
+				z=getlst('top bottom','scale');
+				if(z.top || z.bottom) o.scale = z;
 				//get mouseover
 				if(_('#mouseover').checked) {
 					var m=getlst('radius linewidth circle font color border border2 bullet axis text shadow shadowbox','mo'),
@@ -792,7 +796,7 @@
 				console.log(n+' presets generated');
 				if((t=hash.get('preset')) && t in PRESETS) builder.load(PRESETS[t]);
 			});
-						
+
 			for(var i=0, l=document.getElementsByTagName("input"); i<l.length; ++i)
 				if(/checkbox|text/.test(l[i].type))
 					l[i].onclick=l[i].onkeyup=builder.save;
