@@ -1,5 +1,5 @@
-// harry plotter 0.9e
-// ~L~ nikomomo@gmail.com 2009-2015
+// harry plotter 1.0
+// ~L~ nikomomo@gmail.com 2009-2017
 // https://github.com/nikopol/Harry-Plotter
 
 /*
@@ -10,7 +10,7 @@
 var h=harry({
 
    //datas can be provided in these formats :
-   
+
    datas: [v1,v2,v3,...],        //simple dataset values
    datas: {l1:v1,l2:v2,l3:v3,..},//simple dataset labels/values
    datas: [[v1,v2],[w1,w2],...], //multiple dataset values
@@ -32,7 +32,7 @@ var h=harry({
    canvas: "str/elem",           //canvas element, default=create it into container
    width: int,                   //canvas's width, default=canvas or container width
    height: int,                  //canvas's height, default=canvas or container height
-   
+
    //rendering
 
    background: "rgba(0,0,0,0.5)",//background color, default=transparent
@@ -48,6 +48,7 @@ var h=harry({
                                  //  line:stack   stacked lines
                                  //  curve        curved lines
                                  //  curve:stack  stacked curved lines
+   mirror: {x:false,y:false},    //vertical/horizontal mirror rendering
    barspace: int,                //space between bars for mode chart only, default=auto
    linewidth: int,               //line width, default=1
    linejoin: "round",            //line join, can be round|bevel|miter default=miter
@@ -61,9 +62,13 @@ var h=harry({
                                  //  radial       radial gradient fill
    opacity: 0.8,                 //fill opacity, between 0 and 1
    margins:[top,right,bot,left], //margin size (for labels), default=auto
-   autoscale: "top+bottom",      //auto round top and/or bottom y scale, default=none
    pointradius: int,             //radius point size in mode line/curve only, default=none
    anim: int,                    //initial animation duration in seconds, default=disabled
+
+   scale: {                      //setup bottom and top of y scale
+       top: int/'auto'/null,     //  int value or "auto" to round scale, default=max data value
+       bottom: int/'auto'/null,  //  int value or "auto" to round scale, default=0
+   },
 
    title: {                      //title options
       text: "title",             //  clear enough
@@ -128,7 +133,7 @@ var h=harry({
       text: callback(params)     //  or text can trigger a callback called with an object
                                  //     {v:..., l:..., n:.. ,...} as defined before
                                  //     if it returns a string, it'll be displayed
-      header: {                  //  header in the bullet 
+      header: {                  //  header in the bullet
          text: "%l: %s",           //  text in the bullet (same var than mouseover.text)
          font: "9px Trebuchet MS", //  bullet header font, default=mouveover.font
          color: "#666",            //  bullet text color, default=mouseover.color
@@ -306,8 +311,8 @@ harry=(function(o){
    linejoin=o.linejoin||"miter",
    barspace=o.barspace==undefined?'a':parseInt(o.barspace,10),
    radiuspoint=parseInt(o.radiuspoint,10)||0,
-   scaletop=o.autoscale && /top/i.test(o.autoscale),
-   scalebot=o.autoscale && /bot/i.test(o.autoscale),
+   scale=o.scale||{},
+   mirror=o.mirror||{},
    labels=merge({
       color: "#a0a0a0",
       font: 'normal 9px '+DFTFONT,
@@ -360,9 +365,16 @@ harry=(function(o){
 
    draw,
 
+   _x=mirror.x ? function(x){ return w-x; } : function(x){ return x; },
+   _y=mirror.y ? function(y){ return h-y; } : function(y){ return y; },
+   _w=mirror.x ? function(w){ return -w; } : function(w){ return w; },
+   _h=mirror.y ? function(h){ return -h; } : function(h){ return h; },
+
    //setup precalc vars
    setup=function() {
-      var i,j,l,d,s;
+      var i,j,l,d,s,
+          autotop = /auto/i.test(scale.top),
+          autobot = /auto/i.test(scale.bottom);
       //datasets vars
       dlen=data.length;
       dmin=dmax=false;
@@ -376,19 +388,21 @@ harry=(function(o){
             dmax=dmax===false?d.max:Math.max(d.max,dmax);
             if(d.maxlab) labels.xwidth=Math.max(labels.xwidth,gc.measureText(d.maxlab).width);
          }
-         if(scaletop) dmax=scaleUp(dmax);
+         if(autotop) dmax=scaleUp(dmax);
+         else if (scale.top) dmax=scale.top;
+         if (!autobot && scale.bottom) dmin=scale.bottom;
          if(flag.stack) {
             for(i=0,l=data[0].len;i<l;++i) {
                s=0;
                for(j=0;j<dlen;++j) s+=(data[j].val[i]||0);
-               if(s>dsum) dsum=scaletop ? scaleUp(s) : s;
+               if(s>dsum) dsum=scaletop ? scaleUp(s) : scale.top ? scale.top : s;
             }
-            drng=scalebot ? dsum-dmin : dsum;
+            drng=scale.bottom ? dsum-dmin : dsum;
          } else {
             dsum=dmax;
-            drng=scalebot ? dmax-dmin : dmax;
+            drng=autobot ? dmax-dmin : dmax;
          }
-         dinc=scalebot ? dmin : 0;
+         dinc=autobot ? dmin : scale.bottom || 0;
          labels.ywidth=gc.measureText(dsum||'0').width;
       }
       //misc
@@ -406,10 +420,20 @@ harry=(function(o){
       rh=Math.max(h-margins[0]-margins[2],0);
       rx2=rx+rw;
       ry2=ry+rh;
+      if(mirror.x || mirror.y){
+         var _=CanvasRenderingContext2D.prototype;
+         gc.createLinearGradient=function(x1,y1,x2,y2){ return _.createLinearGradient.call(gc,_x(x1),_y(y1),_x(x2),_y(y2)) };
+         gc.clearRect=function(x,y,w,h){ return _.clearRect.call(gc,_x(x),_y(y),_w(w),_h(h)) };
+         gc.fillRect=function(x,y,w,h){ return _.fillRect.call(gc,_x(x),_y(y),_w(w),_h(h)) };
+         gc.fillText=function(t,x,y){ return _.fillText.call(gc,t,_x(x),_y(y)) };
+         gc.moveTo=function(x,y){ return _.moveTo.call(gc,_x(x),_y(y)) };
+         gc.lineTo=function(x,y){ return _.lineTo.call(gc,_x(x),_y(y)) };
+         gc.arc=function(x,y,r,a1,a2){ return _.arc.call(gc,_x(x),_y(y),r,a1,a2) };
+      }
    },
 
    //load a dataset
-   load=function(d) { 
+   load=function(d) {
       var t,v,k,labs=d.labels||[],l,
       vals=d.values && typeof(d.values)!="function" ? d.values : d,
       ds={
@@ -484,7 +508,7 @@ harry=(function(o){
          gc.stroke();
       }
    },
-   
+
    fillstroke=function(s){
       gc.closePath();
       setGradient(s) && gc.fill();
@@ -495,21 +519,21 @@ harry=(function(o){
    setShadow=function(s) {
       if(s && gc.hasOwnProperty('shadowBlur')) {
          var p=s.split(/[ ,;:-]/);
-         gc.shadowOffsetX = parseInt(p[0]||1,10);
-         gc.shadowOffsetY = parseInt(p[1]||1,10);
-         gc.shadowBlur    = parseInt(p[2]||1,10);
-         gc.shadowColor   = p[3]||'#000';
+         gc.shadowOffsetX=parseInt(p[0]||1,10);
+         gc.shadowOffsetY=parseInt(p[1]||1,10);
+         gc.shadowBlur   =parseInt(p[2]||1,10);
+         gc.shadowColor  =p[3]||'#000';
       }
    },
 
    //unset shadow
    unsetShadow=function() {
-      if(gc.hasOwnProperty('clearShadow')) gc.clearShadow();
-      else if(gc.hasOwnProperty('shadowBlur')) {
-         gc.shadowOffsetX = 0;
-         gc.shadowOffsetY = 0;
-         gc.shadowBlur    = 0;
-      }
+      if(gc.hasOwnProperty('clearShadow'))
+         gc.clearShadow();
+      else if(gc.hasOwnProperty('shadowBlur'))
+         gc.shadowOffsetX=
+         gc.shadowOffsetY=
+         gc.shadowBlur   =0;
    },
 
    //erase canvas
@@ -525,8 +549,8 @@ harry=(function(o){
       if(title) {
          setShadow(title.shadow);
          gc.font=title.font;
-         gc.textAlign='left';
-         gc.textBaseline='top';
+         gc.textAlign=mirror.x?'right':'left';
+         gc.textBaseline=mirror.y?'bottom':'top';
          gc.fillStyle=title.color;
          gc.fillText(
             title.text,
@@ -536,7 +560,7 @@ harry=(function(o){
          unsetShadow();
       }
    },
-   
+
    //draw the background grid Y axis
    drawYGrid=function() {
       if(!flag.pie && grid.y) {
@@ -571,7 +595,7 @@ harry=(function(o){
       if(gx) {
          gc.lineWidth=grid.linewidth;
          gc.strokeStyle=grid.color;
-         for(i=0;gx && i<l;++i) 
+         for(i=0;gx && i<l;++i)
             if(ga || (n && i%n==0) || (i==0 && gl) || (i==l-1 && gr)) {
                gc.beginPath();
                if(flag.vertical) {
@@ -603,12 +627,12 @@ harry=(function(o){
                   if(labels.yabr) v=smallNum(v);
                   if(/r/i.test(labels.ypos)) {
                      y=ry2+1;
-                     gc.textBaseline='top';
+                     gc.textBaseline=mirror.y?'bottom':'top';
                      gc.fillText(v,x,y);
                   }
                   if(/l/i.test(labels.ypos)) {
                      y=ry-2;
-                     gc.textBaseline='bottom';
+                     gc.textBaseline=mirror.y?'top':'bottom';
                      gc.fillText(v,x,y);
                   }
                }
@@ -621,12 +645,12 @@ harry=(function(o){
                   if(labels.yabr) v=smallNum(v);
                   if(/r/i.test(labels.ypos)){
                      x=rx2+1;
-                     gc.textAlign='left';
+                     gc.textAlign=mirror.x?'right':'left';
                      gc.fillText(v,x,y);
                   }
                   if(/l/i.test(labels.ypos)) {
                      x=rx-2;
-                     gc.textAlign='right';
+                     gc.textAlign=mirror.x?'left':'right';
                      gc.fillText(v,x,y);
                   }
                }
@@ -718,10 +742,10 @@ harry=(function(o){
                gc.strokeStyle=g;
                gc.strokeRect(px,py,bs,bs);
             }
-            //draw text
+            //draw textgc
             setShadow(leg.shadow);
-            gc.textAlign='left';
-            gc.textBaseline='top';
+            gc.textAlign=mirror.x?'right':'left';
+            gc.textBaseline=mirror.y?'bottom':'top';
             gc.fillStyle=leg.color;
             gc.fillText(d.tit,px+s+bs,py);
             unsetShadow();
@@ -813,8 +837,8 @@ harry=(function(o){
             gc.stroke();
          }
          //draw texts
-         gc.textAlign='left';
-         gc.textBaseline='top';
+         gc.textAlign=mirror.x?'right':'left';
+         gc.textBaseline=mirror.y?'bottom':'top';
          y=y2+s;
          if(head) {
             x=x1+s;
@@ -917,7 +941,7 @@ harry=(function(o){
                //draw x labels
                if(nds==0)
                   for(i=0;i<l;++i)
-                     drawXLabel(i,x[i],ly,'center','top','h');
+                     drawXLabel(i,x[i],ly,'center',mirror.y?'bottom':'top','h');
                //draw points
                if(radiuspoint) {
                   gc.fillStyle=d.col;
@@ -938,8 +962,8 @@ harry=(function(o){
          overpts = [];
          if(dlen){
             var nd,nds,nbd=data[0].len,m=barspace=='a'?(dlen>1?4:0):barspace,
-               fs=flag.stack,fv=flag.vertical,nbdsv=fs?1:dlen,tbw=fv?rh:rw,
-               bw=(nbd && dlen)?(((tbw-(m*(nbd-1)))/nbd)/nbdsv)-1:0,
+                fs=flag.stack,fv=flag.vertical,nbdsv=fs?1:dlen,tbw=fv?rh:rw,
+                bw=(nbd && dlen)?(((tbw-(m*(nbd-1)))/nbd)/nbdsv)-1:0,
                 d,g,y,y1,y2,x,x1,x2,tcf=fv?rw:rh,ly=ry2+labels.marks+2,gx=[],
                 cf=fs?(dsum?tcf/dsum:0):(dmax?tcf/dmax:0);
             if(bw<0) bw=0;
@@ -973,7 +997,7 @@ harry=(function(o){
                }
             else
                for(x=rx,nd=0;nd<nbd;nd++) {
-                  drawXLabel(nd,x+(((bw+1)*nbdsv)/2),ly,'center','top','h');
+                  drawXLabel(nd,x+(((bw+1)*nbdsv)/2),ly,'center',mirror.y?'bottom':'top','h');
                   y=ry2;
                   for(nds=0;nds<dlen;nds++) {
                      d=data[nds];
@@ -995,7 +1019,7 @@ harry=(function(o){
                      if(!fs) x+=bw+1;
                   }
                   x+=fs?bw+1+m:m;
-               }              
+               }
          }
       },
 
@@ -1216,7 +1240,7 @@ harry=(function(o){
                if(mousepos) {
                   if(!flag.pie) gc.putImageData(imgdata,0,0);
                   mousepos=mouseXY(e);
-                  over[mode](mousepos.x,mousepos.y);
+                  over[mode](_x(mousepos.x),_y(mousepos.y));
                };
             };
             canvas.onmouseout=function(){
@@ -1242,7 +1266,7 @@ harry=(function(o){
       acf=0;
       cb();
    };
-   
+
 //INIT ========================================================================
 
    if(o.datas) loads(o.datas); else setup();

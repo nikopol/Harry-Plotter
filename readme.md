@@ -1,12 +1,12 @@
-harry plotter 0.9e
+harry plotter 1.0
 ------------------
-~L~ nikopol 2009-2015
+nikopol 2009-2017
 
 **what's that**
 
 harry is a lightweight standalone javascript library to plot data as charts, pies, donuts, lines or curves.
 
-samples can be viewed [here](http://nikopol.github.com/Harry-Plotter/#tab=presets)  
+samples can be viewed [here](http://nikopol.github.com/Harry-Plotter/#tab=presets)
 a generator, that let's you play with all parameters can be used [here](http://nikopol.github.com/Harry-Plotter/#tab=generator)
 
 **prerequisite**
@@ -30,7 +30,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 	var h=harry({
 
 		//datas can be provided in these formats :
-		
+
 		datas: [v1,v2,v3,...],        //simple dataset values
 		datas: {l1:v1,l2:v2,l3:v3,..},//simple dataset labels/values
 		datas: [[v1,v2],[w1,w2],...], //multiple dataset values
@@ -52,7 +52,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		canvas: "str/elem",           //canvas element, default=create it into container
 		width: int,                   //canvas's width, default=canvas or container width
 		height: int,                  //canvas's height, default=canvas or container height
-		
+
 		//rendering
 
 		background: "rgba(0,0,0,0.5)" //background color, default=transparent
@@ -68,6 +68,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		                              //  line:stack   stacked lines
 		                              //  curve        curved lines
 		                              //  curve:stack  stacked curved lines
+		mirror: {x:false,y:false},    //vertical/horizontal mirror rendering
 		barspace: int,                //space between bars for mode chart only, default=auto
 		linewidth: int,               //line width, default=1
 		linejoin: "round",            //line join, can be round|bevel|miter default=miter
@@ -79,13 +80,17 @@ a generator, that let's you play with all parameters can be used [here](http://n
 		                              //  vertical     vertical gradient fill
 		                              //  horizontal   horizontal gradient fill
 		                              //  radial       radial gradient fill
-		opacity: 0.8,                 //fill opacity, between 0 and 1
-		margins:[top,right,bot,left], //margin size (for labels), default=auto
-		autoscale: "top+bottom",      //auto round top and/or bottom y scale, default=none
-		pointradius: int,             //radius point size in mode line/curve only, default=none
-		anim: int,                    //initial animation duration in seconds, default=disabled
+    opacity: 0.8,                 //fill opacity, between 0 and 1
+    margins:[top,right,bot,left], //margin size (for labels), default=auto
+    pointradius: int,             //radius point size in mode line/curve only, default=none
+    anim: int,                    //initial animation duration in seconds, default=disabled
 
-		title: {                      //title options
+    scale: {                      //setup bottom and top of y scale
+      top: int/'auto'/null,       //  int value or "auto" to round scale, default=max data value
+      bottom: int/'auto'/null,    //  int value or "auto" to round scale, default=0
+    },
+
+		title: {                    //title options
 			text: "title",            //  clear enough
 			font:'9px "Trebuchet MS"',//  font size & family, default=bold 12px "Sans Serif"
 			color: "rgba(4,4,4,0.3)", //  font color, default=rgba(4,4,4,0.3)
@@ -95,7 +100,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 			z: "background"           //  behind or on top of the graph, default=top
 		},
 
-		labels: {                     //axis labels options
+		labels: {                   //axis labels options
 			font: "9px Trebuchet MS", //  font size & family, important:use px size,
 			                          //    default=normal 9px "Sans Serif"
 			color: "#a0a0a0",         //  font color, default=a0a0a0
@@ -106,7 +111,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 			marks: int                //  graduation's marks size, default=0
 		},
 
-		legends: {                    //set to false to disable legends box, default=auto
+		legends: {                  //set to false to disable legends box, default=auto
 			x: int,                   //  left corner position, default=5
 			y: int,                   //  top corner position,  default=5
 			background: "rgba(180,180,180,0.5)",//background color, default=rgba(255,255,255,0.5)
@@ -119,7 +124,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 			layout: 'h'               //  legends layout h(orizontal) or v(ertical) default=v
 		},
 
-		grid: {                       //grid options
+		grid: {                     //grid options
 			color:"#a0a0a0",          //  grid color, default=#a0a0a0
 			y: [0,50,100],            //  y axis, numbers are %, default=[0,25,50,75,100]
 			x: [0,100]                //  x axis, numbers are %, default=[0,100]
@@ -127,7 +132,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 
 		//interaction
 
-		mouseover: {,                 //set to false to disable mouseover, default=enabled
+		mouseover: {                //set to false to disable mouseover, default=enabled
 			sort: true,               //  sort values, default=false
 			bullet: "rgba(0,0,0,0.5)",//  bullet background color, default=rgba(99,99,99,0.8)
 			border: "#fc0",           //  bullet border color, default=none,
@@ -147,7 +152,7 @@ a generator, that let's you play with all parameters can be used [here](http://n
 			text: callback(params)    //  or text can trigger a callback called with an object
 			                          //     {v:..., l:..., n:.. ,...} as defined before
 			                          //     if it returns a string, it'll be displayed
-			header: {                 //  header in the bullet 
+			header: {                 //  header in the bullet
 				text: "%v",               //  text in the bullet (same var than mouseover.text)
 				font: "9px Trebuchet MS", //  bullet header font, default=mouveover.font
 				color: "#666",            //  bullet text color, default=mouseover.color
