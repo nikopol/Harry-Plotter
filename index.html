@@ -528,13 +528,14 @@
 				if(!dft) dft='none';
 				d.className='bgswitch';
 				['white','black','none'].forEach(function(c){
-					var col=c,r=document.createElement('input');
+					var r=document.createElement('input');
 					r.setAttribute('type','radio');
 					r.setAttribute('name','bgswitch'+n);
-					r.className=col;
-					if(col==dft) r.checked=true;
+					r.className='bg'+c;
+					r.title="background "+c;
+					if(c==dft) r.checked=true;
 					r.onclick=function(){
-						if(tgt.firstChild) tgt.firstChild.className='bg'+col;
+						if(tgt.firstChild) tgt.firstChild.className='bg'+c;
 					};
 					d.appendChild(r);
 				});
